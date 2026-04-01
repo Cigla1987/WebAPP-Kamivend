@@ -34,10 +34,8 @@ const Stepper: React.FC = () => {
   ];
 
   return (
-    // <div className="container relative overflow-x-hidden py-12 sm:py-16 md:py-20">
-    <div className="container relative overflow-x-hidden pt-4">
-      {/* <div className="absolute inset-0 left-6 hidden h-full w-px bg-border dark:bg-accent sm:left-1/2 sm:block" /> */}
-      <div className="relative grid">
+    <div className="container pt-4">
+      <div className="grid">
         {stepperList.map((item, index) => (
           <StepperCard key={index} props={item} />
         ))}
