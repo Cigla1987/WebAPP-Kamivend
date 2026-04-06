@@ -1,27 +1,41 @@
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { useEffect, useRef, useState } from 'react';
+import { z } from 'zod/v4';
+import { useState } from 'react';
+import { useForm } from '@tanstack/react-form';
 import { Button } from '#/components/ui/button';
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '#/components/ui/form';
+  Field,
+  FieldLabel,
+  FieldError,
+  FieldGroup,
+} from '#/components/ui/field';
 import { Input } from '#/components/ui/input';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { Alert, AlertTitle } from '#/components/ui/alert';
 import { AlertCircleIcon } from 'lucide-react';
 import LoadingSpinner from '../loading-spinner';
-import { Alert, AlertTitle } from '#/components/ui/alert';
 import { authClient } from '#/lib/auth-client';
 import { useNavigate } from '@tanstack/react-router';
 
-const signupSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  username: z.string().min(2, 'Username must be at least 2 characters'),
+export const signupSchema = z.object({
+  username: z
+    .string()
+    .min(5, { error: 'Username must be at least 5 characters long.' })
+    .max(30, { error: 'Username must be at most 30 characters long.' })
+    .regex(/^[a-zA-Z0-9]+$/, {
+      error: 'Username can only contain letters and numbers.',
+    }),
+  password: z
+    .string()
+    .min(12, 'Password must be at least 12 characters')
+    .regex(/[A-Z]/, 'Must contain uppercase letter')
+    .regex(/[a-z]/, 'Must contain lowercase letter')
+    .regex(/[0-9]/, 'Must contain a number'),
+  confirmPassword: z
+    .string()
+    .min(12, 'Password must be at least 12 characters')
+    .regex(/[A-Z]/, 'Must contain uppercase letter')
+    .regex(/[a-z]/, 'Must contain lowercase letter')
+    .regex(/[0-9]/, 'Must contain a number'),
+  email: z.email({ error: 'Invalid email address.' }),
 });
 
 const Signup: React.FC = () => {
@@ -29,107 +43,169 @@ const Signup: React.FC = () => {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const signupForm = useForm<z.infer<typeof signupSchema>>({
-    resolver: zodResolver(signupSchema),
+  const signupForm = useForm({
     defaultValues: {
-      username: '',
-      password: '',
       email: '',
+      password: '',
+      username: '',
+      confirmPassword: '',
+    },
+    validators: {
+      onSubmit: signupSchema,
+    },
+    onSubmit: async ({ value }) => {
+      setIsPending(true);
+      setError(null);
+
+      try {
+        const result = await authClient.signUp.email({
+          email: value.email,
+          password: value.password,
+          name: value.username,
+        });
+
+        if (result.error) {
+          setError(result.error.message || 'Signup failed');
+        } else {
+          navigate({ to: '/' });
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setIsPending(false);
+      }
     },
   });
 
-  // Watch for form changes to reset error
-  const formValues = signupForm.watch();
-  const prevValuesRef = useRef(formValues);
-  useEffect(() => {
-    if (
-      JSON.stringify(formValues) !== JSON.stringify(prevValuesRef.current) &&
-      error
-    ) {
-      setError(null);
-    }
-    prevValuesRef.current = formValues;
-  }, [formValues, error]);
-
-  const onSubmit = async (values: z.infer<typeof signupSchema>) => {
-    setIsPending(true);
-    setError(null);
-
-    try {
-      const result = await authClient.signUp.email({
-        email: values.email,
-        password: values.password,
-        name: values.username,
-      });
-
-      if (result.error) {
-        setError(result.error.message || 'Signup failed');
-      } else {
-        // Navigate to dashboard or home after successful signup
-        navigate({ to: '/' });
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setIsPending(false);
-    }
-  };
-
   return (
-    <Form {...signupForm}>
-      <form onSubmit={signupForm.handleSubmit(onSubmit)} className="space-y-8">
-        <div className="grid w-full items-center gap-6">
-          <FormField
-            control={signupForm.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem className="flex flex-col space-y-1.5">
-                <FormLabel>Email address</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={signupForm.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem className="flex flex-col space-y-1.5">
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input {...field} type="password" />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={signupForm.control}
-            name="username"
-            render={({ field }) => (
-              <FormItem className="flex flex-col space-y-1.5">
-                <FormLabel>Username</FormLabel>
-                <FormControl>
-                  <Input {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <Button className="w-full" type="submit" disabled={isPending}>
-            {isPending ? <LoadingSpinner size={48} /> : <span>Signup</span>}
-          </Button>
-          {error ? (
-            <Alert variant="destructive" className="bg-destructive/20">
-              <AlertCircleIcon />
-              <AlertTitle>{error}</AlertTitle>
-            </Alert>
-          ) : null}
-        </div>
-      </form>
-    </Form>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        signupForm.handleSubmit();
+      }}
+      className="space-y-8"
+    >
+      <FieldGroup className="grid w-full items-center gap-6">
+        <signupForm.Field
+          name="username"
+          children={(field) => (
+            <Field className="flex flex-col space-y-1.5">
+              <FieldLabel htmlFor={field.name}>Username</FieldLabel>
+              <Input
+                id={field.name}
+                name={field.name}
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => {
+                  field.handleChange(e.target.value);
+                  if (error) setError(null);
+                }}
+              />
+              <FieldError
+                errors={[{ message: field.state.meta.errors?.[0]?.message }]}
+              />
+            </Field>
+          )}
+        ></signupForm.Field>
+
+        <signupForm.Field
+          name="email"
+          children={(field) => (
+            <Field className="flex flex-col space-y-1.5">
+              <FieldLabel htmlFor={field.name}>Email address</FieldLabel>
+              <Input
+                id={field.name}
+                name={field.name}
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => {
+                  field.handleChange(e.target.value);
+                  if (error) setError(null);
+                }}
+              />
+              <FieldError
+                errors={[{ message: field.state.meta.errors?.[0]?.message }]}
+              />
+            </Field>
+          )}
+        ></signupForm.Field>
+
+        <signupForm.Field
+          name="password"
+          children={(field) => (
+            <Field className="flex flex-col space-y-1.5">
+              <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+              <Input
+                id={field.name}
+                name={field.name}
+                type="password"
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => {
+                  field.handleChange(e.target.value);
+                  if (error) setError(null);
+                }}
+              />
+              <FieldError
+                errors={field.state.meta.errors?.map((err) => ({
+                  message: typeof err === 'string' ? err : err?.message,
+                }))}
+              />
+            </Field>
+          )}
+        ></signupForm.Field>
+
+        <signupForm.Field
+          name="confirmPassword"
+          validators={{
+            onChangeListenTo: ['password'],
+            onChange: ({ value, fieldApi }) => {
+              if (value !== fieldApi.form.getFieldValue('password')) {
+                return 'Passwords do not match';
+              }
+              return undefined;
+            },
+          }}
+          children={(field) => (
+            <Field className="flex flex-col space-y-1.5">
+              <FieldLabel htmlFor={field.name}>Confirm password</FieldLabel>
+              <Input
+                id={field.name}
+                name={field.name}
+                type="password"
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => {
+                  field.handleChange(e.target.value);
+                  if (error) setError(null);
+                }}
+              />
+              <FieldError
+                errors={field.state.meta.errors?.map((err) => ({
+                  message: typeof err === 'string' ? err : err?.message,
+                }))}
+              />
+            </Field>
+          )}
+        ></signupForm.Field>
+
+        <Button
+          className="w-full"
+          type="submit"
+          disabled={isPending || !signupForm.state.canSubmit}
+        >
+          {isPending ? <LoadingSpinner size={48} /> : <span>Signup</span>}
+        </Button>
+
+        {error && (
+          <Alert variant="destructive" className="bg-destructive/20 w-full">
+            <AlertCircleIcon />
+            <AlertTitle>{error}</AlertTitle>
+          </Alert>
+        )}
+      </FieldGroup>
+    </form>
   );
 };
 
