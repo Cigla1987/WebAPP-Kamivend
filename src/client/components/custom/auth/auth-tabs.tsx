@@ -1,11 +1,16 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '#/components/ui/tabs';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '#/client/components/ui/tabs';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '#/components/ui/card';
+} from '#/client/components/ui/card';
 import Login from './login';
 import Signup from './signup';
 
@@ -17,7 +22,7 @@ const AuthTabs: React.FC = () => {
           <TabsTrigger value="login">Login</TabsTrigger>
           <TabsTrigger value="signup">Sign Up</TabsTrigger>
         </TabsList>
-        <div className="relative min-h-[500px]">
+        <div className="relative min-h-125">
           <TabsContent value="login" className="absolute inset-0">
             <Card>
               <CardHeader>

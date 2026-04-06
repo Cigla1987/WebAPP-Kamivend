@@ -1,13 +1,13 @@
-import { createFileRoute } from '@tanstack/react-router'
-import { ReactLenis } from 'lenis/react'
-import Hero from '#/components/custom/hero'
-import Navbar from '#/components/custom/navbar'
-import Stepper from '#/components/custom/stepper'
-import Features from '#/components/custom/features'
+import { createFileRoute } from '@tanstack/react-router';
+import { ReactLenis } from 'lenis/react';
+import Hero from '#/client/components/custom/hero';
+import Navbar from '#/client/components/custom/navbar';
+import Stepper from '#/client/components/custom/stepper';
+import Features from '#/client/components/custom/features';
 
 export const Route = createFileRoute('/')({
   component: PublicPage,
-})
+});
 
 function PublicPage() {
   return (
@@ -21,5 +21,5 @@ function PublicPage() {
         </div>
       </ReactLenis>
     </>
-  )
+  );
 }

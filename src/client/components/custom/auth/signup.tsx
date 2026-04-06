@@ -1,18 +1,18 @@
 import { z } from 'zod/v4';
 import { useState } from 'react';
 import { useForm } from '@tanstack/react-form';
-import { Button } from '#/components/ui/button';
+import { Button } from '#/client/components/ui/button';
 import {
   Field,
   FieldLabel,
   FieldError,
   FieldGroup,
-} from '#/components/ui/field';
-import { Input } from '#/components/ui/input';
-import { Alert, AlertTitle } from '#/components/ui/alert';
+} from '#/client/components/ui/field';
+import { Input } from '#/client/components/ui/input';
+import { Alert, AlertTitle } from '#/client/components/ui/alert';
 import { AlertCircleIcon } from 'lucide-react';
 import LoadingSpinner from '../loading-spinner';
-import { authClient } from '#/lib/auth-client';
+import { authClient } from '#/client/lib/auth-client';
 import { useNavigate } from '@tanstack/react-router';
 
 export const signupSchema = z.object({

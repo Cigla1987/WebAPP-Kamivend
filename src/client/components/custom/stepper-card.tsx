@@ -7,7 +7,7 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from '#/components/ui/card';
+} from '#/client/components/ui/card';
 
 type StepperCardProps = {
   step: number;
