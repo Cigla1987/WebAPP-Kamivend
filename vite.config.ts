@@ -18,7 +18,8 @@ const config = defineConfig({
           files: ['**/*.server.*', '**/server/**'],
         },
         server: {
-          files: ['**/*.client.*', '**/client/**'],
+          files: ['**/*.client.*'],
+          excludeFiles: ['**/node_modules/**', '**/client/components/**'],
         },
       },
     }),

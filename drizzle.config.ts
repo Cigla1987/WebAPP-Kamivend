@@ -1,13 +1,19 @@
-import { config } from 'dotenv'
-import { defineConfig } from 'drizzle-kit'
+import { config } from 'dotenv';
+import { defineConfig } from 'drizzle-kit';
+import z from 'zod';
 
-config({ path: ['.env.local', '.env'] })
+config({ path: ['.env.local', '.env'] });
+
+const envSchema = z.object({
+  DATABASE_URL: z.url(),
+});
+const env = envSchema.parse(process.env);
 
 export default defineConfig({
   out: './drizzle',
-  schema: './src/db/schema.ts',
+  schema: './src/server/db/schema',
   dialect: 'postgresql',
   dbCredentials: {
-    url: process.env.DATABASE_URL,
+    url: env.DATABASE_URL,
   },
-})
+});
