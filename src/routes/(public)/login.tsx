@@ -1,7 +1,7 @@
 import AuthTabs from '#/client/components/custom/auth/auth-tabs';
 import { createFileRoute } from '@tanstack/react-router';
 
-export const Route = createFileRoute('/login')({
+export const Route = createFileRoute('/(public)/login')({
   component: LoginPage,
 });
 

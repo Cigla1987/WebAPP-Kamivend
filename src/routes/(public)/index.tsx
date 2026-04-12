@@ -1,11 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { ReactLenis } from 'lenis/react';
-import Hero from '#/client/components/custom/hero';
 import Navbar from '#/client/components/custom/navbar';
+import Hero from '#/client/components/custom/hero';
 import Stepper from '#/client/components/custom/stepper';
 import Features from '#/client/components/custom/features';
+import { ReactLenis } from 'lenis/react';
 
-export const Route = createFileRoute('/')({
+export const Route = createFileRoute('/(public)/')({
   component: PublicPage,
 });
 

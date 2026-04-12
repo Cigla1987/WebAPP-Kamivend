@@ -12,17 +12,7 @@ const config = defineConfig({
     devtools(),
     tsconfigPaths({ projects: ['./tsconfig.json'] }),
     tailwindcss(),
-    tanstackStart({
-      importProtection: {
-        client: {
-          files: ['**/*.server.*', '**/server/**'],
-        },
-        server: {
-          files: ['**/*.client.*'],
-          excludeFiles: ['**/node_modules/**', '**/client/components/**'],
-        },
-      },
-    }),
+    tanstackStart(),
     viteReact({
       babel: {
         plugins: ['babel-plugin-react-compiler'],

@@ -29,7 +29,11 @@ const Login: React.FC = () => {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const loginForm = useForm({
+  const {
+    Field: FormField,
+    handleSubmit,
+    state,
+  } = useForm({
     defaultValues: {
       email: '',
       password: '',
@@ -50,7 +54,7 @@ const Login: React.FC = () => {
         if (result.error) {
           setError(result.error.message || 'Login failed');
         } else {
-          navigate({ to: '/' });
+          navigate({ to: '/dashboard' });
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');
@@ -65,12 +69,12 @@ const Login: React.FC = () => {
       onSubmit={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        loginForm.handleSubmit();
+        handleSubmit();
       }}
       className="space-y-8"
     >
       <FieldGroup className="grid w-full items-center gap-6">
-        <loginForm.Field
+        <FormField
           name="email"
           children={(field) => (
             <Field className="flex flex-col space-y-1.5">
@@ -90,9 +94,9 @@ const Login: React.FC = () => {
               />
             </Field>
           )}
-        ></loginForm.Field>
+        ></FormField>
 
-        <loginForm.Field
+        <FormField
           name="password"
           children={(field) => (
             <Field className="flex flex-col space-y-1.5">
@@ -113,12 +117,12 @@ const Login: React.FC = () => {
               />
             </Field>
           )}
-        ></loginForm.Field>
+        ></FormField>
 
         <Button
           className="w-full"
           type="submit"
-          disabled={isPending || !loginForm.state.canSubmit}
+          disabled={isPending || !state.canSubmit}
         >
           {isPending ? <LoadingSpinner size={48} /> : <span>Login</span>}
         </Button>
