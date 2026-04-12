@@ -25,16 +25,16 @@ export const signupSchema = z.object({
     }),
   password: z
     .string()
-    .min(12, 'Password must be at least 12 characters')
-    .regex(/[A-Z]/, 'Must contain uppercase letter')
-    .regex(/[a-z]/, 'Must contain lowercase letter')
-    .regex(/[0-9]/, 'Must contain a number'),
+    .min(12, 'Password must be at least 12 characters.')
+    .regex(/[A-Z]/, 'Must contain uppercase letter.')
+    .regex(/[a-z]/, 'Must contain lowercase letter.')
+    .regex(/[0-9]/, 'Must contain a number.'),
   confirmPassword: z
     .string()
-    .min(12, 'Password must be at least 12 characters')
-    .regex(/[A-Z]/, 'Must contain uppercase letter')
-    .regex(/[a-z]/, 'Must contain lowercase letter')
-    .regex(/[0-9]/, 'Must contain a number'),
+    .min(12, 'Password must be at least 12 characters.')
+    .regex(/[A-Z]/, 'Must contain uppercase letter.')
+    .regex(/[a-z]/, 'Must contain lowercase letter.')
+    .regex(/[0-9]/, 'Must contain a number.'),
   email: z.email({ error: 'Invalid email address.' }),
 });
 
@@ -67,7 +67,7 @@ const Signup: React.FC = () => {
         if (result.error) {
           setError(result.error.message || 'Signup failed');
         } else {
-          navigate({ to: '/' });
+          navigate({ to: '/dashboard' });
         }
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred');

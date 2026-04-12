@@ -22,7 +22,7 @@ const AuthTabs: React.FC = () => {
           <TabsTrigger value="login">Login</TabsTrigger>
           <TabsTrigger value="signup">Sign Up</TabsTrigger>
         </TabsList>
-        <div className="relative min-h-125">
+        <div className="relative mb-20 min-h-125">
           <TabsContent value="login" className="absolute inset-0">
             <Card>
               <CardHeader>

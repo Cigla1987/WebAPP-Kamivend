@@ -1,3 +1,5 @@
+import AppSidebar from '#/client/components/custom/app-sidebar';
+import Header from '#/client/components/custom/header';
 import { SidebarProvider } from '#/client/components/ui/sidebar';
 import { authClient } from '#/client/lib/auth-client';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';

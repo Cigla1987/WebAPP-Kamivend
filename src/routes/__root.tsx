@@ -11,6 +11,7 @@ import appCss from '../styles.css?url';
 import type { QueryClient } from '@tanstack/react-query';
 import { formDevtoolsPlugin } from '@tanstack/react-form-devtools';
 import { TooltipProvider } from '#/client/components/ui/tooltip';
+import { ThemeProvider } from '#/client/components/ui/theme-provider';
 
 interface MyRouterContext {
   queryClient: QueryClient;
@@ -58,7 +59,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
       </head>
       <body className="font-sans wrap-anywhere antialiased selection:bg-[rgba(79,184,178,0.24)]">
         <TanStackQueryProvider>
-          <TooltipProvider>{children}</TooltipProvider>
+          <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
+            <TooltipProvider>{children}</TooltipProvider>
+          </ThemeProvider>
 
           <TanStackDevtools
             config={{

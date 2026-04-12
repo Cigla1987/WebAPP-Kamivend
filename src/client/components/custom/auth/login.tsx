@@ -1,20 +1,14 @@
 import { useState } from 'react';
 import { useForm } from '@tanstack/react-form';
-
 import { Button } from '#/client/components/ui/button';
-import {
-  Field,
-  FieldLabel,
-  FieldError,
-  FieldGroup,
-} from '#/client/components/ui/field';
-import { Input } from '#/client/components/ui/input';
+import { FieldGroup } from '#/client/components/ui/field';
 import { Alert, AlertTitle } from '#/client/components/ui/alert';
 import { AlertCircleIcon } from 'lucide-react';
 import LoadingSpinner from '../loading-spinner';
 import { authClient } from '#/client/lib/auth-client';
 import { useNavigate } from '@tanstack/react-router';
 import { z } from 'zod';
+import { FormInput } from '#/client/components/ui/form-fields';
 
 export const loginSchema = z.object({
   email: z.email({ error: 'Invalid email address.' }),
@@ -29,11 +23,7 @@ const Login: React.FC = () => {
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const {
-    Field: FormField,
-    handleSubmit,
-    state,
-  } = useForm({
+  const { Field, handleSubmit, state } = useForm({
     defaultValues: {
       email: '',
       password: '',
@@ -74,50 +64,28 @@ const Login: React.FC = () => {
       className="space-y-8"
     >
       <FieldGroup className="grid w-full items-center gap-6">
-        <FormField
+        <Field
           name="email"
           children={(field) => (
-            <Field className="flex flex-col space-y-1.5">
-              <FieldLabel htmlFor={field.name}>Email address</FieldLabel>
-              <Input
-                id={field.name}
-                name={field.name}
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(e) => {
-                  field.handleChange(e.target.value);
-                  if (error) setError(null);
-                }}
-              />
-              <FieldError
-                errors={[{ message: field.state.meta.errors?.[0]?.message }]}
-              />
-            </Field>
+            <FormInput
+              field={field}
+              label="Email address"
+              onChange={() => error && setError(null)}
+            />
           )}
-        ></FormField>
+        />
 
-        <FormField
+        <Field
           name="password"
           children={(field) => (
-            <Field className="flex flex-col space-y-1.5">
-              <FieldLabel htmlFor={field.name}>Password</FieldLabel>
-              <Input
-                id={field.name}
-                name={field.name}
-                type="password"
-                value={field.state.value}
-                onBlur={field.handleBlur}
-                onChange={(e) => {
-                  field.handleChange(e.target.value);
-                  if (error) setError(null);
-                }}
-              />
-              <FieldError
-                errors={[{ message: field.state.meta.errors?.[0]?.message }]}
-              />
-            </Field>
+            <FormInput
+              field={field}
+              label="Password"
+              type="password"
+              onChange={() => error && setError(null)}
+            />
           )}
-        ></FormField>
+        />
 
         <Button
           className="w-full"
