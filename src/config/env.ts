@@ -1,4 +1,3 @@
-import { createServerOnlyFn } from '@tanstack/react-start';
 import { z } from 'zod';
 
 const serverEnvSchema = z.object({
@@ -11,6 +10,4 @@ const serverEnvSchema = z.object({
   ADMIN_NAME: z.string(),
 });
 
-const _serverEnv = serverEnvSchema.parse(process.env);
-
-export const serverEnv = createServerOnlyFn(() => _serverEnv);
+export const serverEnv = () => serverEnvSchema.parse(process.env);

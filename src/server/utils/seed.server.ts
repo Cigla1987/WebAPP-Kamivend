@@ -13,14 +13,15 @@ import {
   compartments,
 } from '../db/schema'; // Adjust path to your schema
 import { fileTypeFromBuffer } from 'file-type';
-import logger from './logger';
+import logger from './logger.server';
 import { db } from '../db';
 import { serverEnv } from '#/config/env';
 import { auth } from '../lib/auth';
+import { createServerOnlyFn } from '@tanstack/react-start';
 
 const env = serverEnv();
 
-async function seedDb(): Promise<boolean> {
+const seedDb = createServerOnlyFn(async (): Promise<boolean> => {
   logger.info('Checking if tables exist and seeding is needed...');
 
   try {
@@ -166,11 +167,7 @@ async function seedDb(): Promise<boolean> {
       console.log('Superadmin already exists');
     }
 
-    const symbolsDir = path.join(
-      process.cwd(),
-      '..',
-      'symbols_singles_pictures_png'
-    );
+    const symbolsDir = path.join(process.cwd(), 'symbols_singles_pictures_png');
     const pngFiles = fs
       .readdirSync(symbolsDir)
       .filter((file) => file.endsWith('.png'));
@@ -489,11 +486,11 @@ async function seedDb(): Promise<boolean> {
     logger.error(error, 'Error seeding database:');
     return false;
   }
-}
+});
 
 export default seedDb;
 
-async function seedProdDb(): Promise<boolean> {
+const seedProdDb = createServerOnlyFn(async (): Promise<boolean> => {
   logger.info('Production seeding: Checking essential data...');
 
   try {
@@ -733,7 +730,7 @@ async function seedProdDb(): Promise<boolean> {
     logger.error(error, 'Error seeding production database:');
     return false;
   }
-}
+});
 
 export { seedProdDb };
 

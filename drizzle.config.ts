@@ -10,7 +10,7 @@ const envSchema = z.object({
 const env = envSchema.parse(process.env);
 
 export default defineConfig({
-  out: './drizzle',
+  out: './migrations',
   schema: './src/server/db/schema',
   dialect: 'postgresql',
   dbCredentials: {
