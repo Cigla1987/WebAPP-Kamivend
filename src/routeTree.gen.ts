@@ -13,6 +13,8 @@ import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as publicIndexRouteImport } from './routes/(public)/index'
 import { Route as AuthDashboardRouteImport } from './routes/_auth/dashboard'
 import { Route as publicLoginRouteImport } from './routes/(public)/login'
+import { Route as AuthMachinesRouteRouteImport } from './routes/_auth/machines/route'
+import { Route as AuthMachinesIndexRouteImport } from './routes/_auth/machines/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const AuthRoute = AuthRouteImport.update({
@@ -34,6 +36,16 @@ const publicLoginRoute = publicLoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthMachinesRouteRoute = AuthMachinesRouteRouteImport.update({
+  id: '/machines',
+  path: '/machines',
+  getParentRoute: () => AuthRoute,
+} as any)
+const AuthMachinesIndexRoute = AuthMachinesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthMachinesRouteRoute,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -42,36 +54,49 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof publicIndexRoute
+  '/machines': typeof AuthMachinesRouteRouteWithChildren
   '/login': typeof publicLoginRoute
   '/dashboard': typeof AuthDashboardRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/machines/': typeof AuthMachinesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof publicIndexRoute
   '/login': typeof publicLoginRoute
   '/dashboard': typeof AuthDashboardRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/machines': typeof AuthMachinesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_auth': typeof AuthRouteWithChildren
+  '/_auth/machines': typeof AuthMachinesRouteRouteWithChildren
   '/(public)/login': typeof publicLoginRoute
   '/_auth/dashboard': typeof AuthDashboardRoute
   '/(public)/': typeof publicIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_auth/machines/': typeof AuthMachinesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/dashboard' | '/api/auth/$'
+  fullPaths:
+    | '/'
+    | '/machines'
+    | '/login'
+    | '/dashboard'
+    | '/api/auth/$'
+    | '/machines/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/login' | '/dashboard' | '/api/auth/$'
+  to: '/' | '/login' | '/dashboard' | '/api/auth/$' | '/machines'
   id:
     | '__root__'
     | '/_auth'
+    | '/_auth/machines'
     | '/(public)/login'
     | '/_auth/dashboard'
     | '/(public)/'
     | '/api/auth/$'
+    | '/_auth/machines/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -111,6 +136,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof publicLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_auth/machines': {
+      id: '/_auth/machines'
+      path: '/machines'
+      fullPath: '/machines'
+      preLoaderRoute: typeof AuthMachinesRouteRouteImport
+      parentRoute: typeof AuthRoute
+    }
+    '/_auth/machines/': {
+      id: '/_auth/machines/'
+      path: '/'
+      fullPath: '/machines/'
+      preLoaderRoute: typeof AuthMachinesIndexRouteImport
+      parentRoute: typeof AuthMachinesRouteRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -121,11 +160,24 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthMachinesRouteRouteChildren {
+  AuthMachinesIndexRoute: typeof AuthMachinesIndexRoute
+}
+
+const AuthMachinesRouteRouteChildren: AuthMachinesRouteRouteChildren = {
+  AuthMachinesIndexRoute: AuthMachinesIndexRoute,
+}
+
+const AuthMachinesRouteRouteWithChildren =
+  AuthMachinesRouteRoute._addFileChildren(AuthMachinesRouteRouteChildren)
+
 interface AuthRouteChildren {
+  AuthMachinesRouteRoute: typeof AuthMachinesRouteRouteWithChildren
   AuthDashboardRoute: typeof AuthDashboardRoute
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
+  AuthMachinesRouteRoute: AuthMachinesRouteRouteWithChildren,
   AuthDashboardRoute: AuthDashboardRoute,
 }
 

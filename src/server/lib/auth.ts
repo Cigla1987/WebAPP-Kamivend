@@ -2,9 +2,11 @@ import { betterAuth, type BetterAuthOptions } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { tanstackStartCookies } from 'better-auth/tanstack-start';
 import { db } from '../db';
-import { serverEnv as env } from '#/config/env.ts';
+import { serverEnv } from '#/config/env.ts';
 import { admin, customSession } from 'better-auth/plugins';
-import { ac, employee, owner, superadmin } from '../utils/permissions.server';
+import { ac, employee, owner, superadmin } from '../utils/permissions';
+
+const env = serverEnv();
 
 const options = {
   secret: env.BETTER_AUTH_SECRET,
