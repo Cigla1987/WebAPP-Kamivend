@@ -18,15 +18,15 @@ const options = {
     enabled: true,
     requireEmailVerification: false,
   },
-  session: {
-    expiresIn: 60 * 60 * 24 * 7,
-    updateAge: 60 * 24,
-    cookieCache: {
-      enabled: true,
-      strategy: 'jwe',
-      maxAge: 60 * 1000,
-    },
-  },
+  // session: {
+  //   expiresIn: 60 * 60 * 24 * 7,
+  //   updateAge: 60 * 24,
+  //   cookieCache: {
+  //     enabled: true,
+  //     strategy: 'jwe',
+  //     maxAge: 60 * 1000,
+  //   },
+  // },
   user: {
     additionalFields: {
       role: {

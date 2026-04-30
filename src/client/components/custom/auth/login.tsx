@@ -5,18 +5,10 @@ import { FieldGroup } from '#/client/components/ui/field';
 import { Alert, AlertTitle } from '#/client/components/ui/alert';
 import { AlertCircleIcon } from 'lucide-react';
 import LoadingSpinner from '../loading-spinner';
-import { authClient } from '#/client/lib/auth-client';
+import authClient from '#/client/lib/auth-client';
 import { useNavigate } from '@tanstack/react-router';
-import { z } from 'zod';
 import { FormInput } from '#/client/components/ui/form-fields';
-
-export const loginSchema = z.object({
-  email: z.email({ error: 'Invalid email address.' }),
-  password: z
-    .string()
-    .min(8, { error: 'Password must be at least 8 characters long.' })
-    .max(30, { error: 'Password must be at most 30 characters long.' }),
-});
+import { loginSchema } from '#/shared/schemas/auth';
 
 const Login: React.FC = () => {
   const navigate = useNavigate();

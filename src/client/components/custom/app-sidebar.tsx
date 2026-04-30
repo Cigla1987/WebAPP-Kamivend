@@ -11,7 +11,7 @@ import {
 } from '#/client/components/ui/sidebar';
 import { Link, useLocation } from '@tanstack/react-router';
 import { FileImage, Home, Package2, Users, Shapes } from 'lucide-react';
-// import { Icon } from '@iconify/react';
+import { Icon } from '@iconify/react';
 // import { RoleProtected } from './role-protected';
 
 const AppSidebar = () => {
@@ -42,24 +42,24 @@ const AppSidebar = () => {
                 </Link>
               </SidebarMenuItem>
 
-              {/* <SidebarMenuItem> */}
-              {/*   <Link to="/machines"> */}
-              {/*     <SidebarMenuButton */}
-              {/*       className={`hover:cursor-pointer ${ */}
-              {/*         pathname === '/machines' */}
-              {/*           ? 'bg-sidebar-accent rounded-md' */}
-              {/*           : '' */}
-              {/*       }`} */}
-              {/*     > */}
-              {/*       <Icon */}
-              {/*         icon="roentgen:vending-machine" */}
-              {/*         width={24} */}
-              {/*         height={24} */}
-              {/*       /> */}
-              {/*       Machines */}
-              {/*     </SidebarMenuButton> */}
-              {/*   </Link> */}
-              {/* </SidebarMenuItem> */}
+              <SidebarMenuItem>
+                <Link to="/machines">
+                  <SidebarMenuButton
+                    className={`hover:cursor-pointer ${
+                      pathname === '/machines'
+                        ? 'bg-sidebar-accent rounded-md'
+                        : ''
+                    }`}
+                  >
+                    <Icon
+                      icon="roentgen:vending-machine"
+                      width={24}
+                      height={24}
+                    />
+                    Machines
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
               {/**/}
               {/* <SidebarMenuItem> */}
               {/*   <Link to="/products"> */}

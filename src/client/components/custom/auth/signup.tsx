@@ -1,4 +1,3 @@
-import { z } from 'zod/v4';
 import { useState } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { Button } from '#/client/components/ui/button';
@@ -12,31 +11,9 @@ import { Input } from '#/client/components/ui/input';
 import { Alert, AlertTitle } from '#/client/components/ui/alert';
 import { AlertCircleIcon } from 'lucide-react';
 import LoadingSpinner from '../loading-spinner';
-import { authClient } from '#/client/lib/auth-client';
+import authClient from '#/client/lib/auth-client';
 import { useNavigate } from '@tanstack/react-router';
-
-export const signupSchema = z.object({
-  username: z
-    .string()
-    .min(5, { error: 'Username must be at least 5 characters long.' })
-    .max(30, { error: 'Username must be at most 30 characters long.' })
-    .regex(/^[a-zA-Z0-9]+$/, {
-      error: 'Username can only contain letters and numbers.',
-    }),
-  password: z
-    .string()
-    .min(12, 'Password must be at least 12 characters.')
-    .regex(/[A-Z]/, 'Must contain uppercase letter.')
-    .regex(/[a-z]/, 'Must contain lowercase letter.')
-    .regex(/[0-9]/, 'Must contain a number.'),
-  confirmPassword: z
-    .string()
-    .min(12, 'Password must be at least 12 characters.')
-    .regex(/[A-Z]/, 'Must contain uppercase letter.')
-    .regex(/[a-z]/, 'Must contain lowercase letter.')
-    .regex(/[0-9]/, 'Must contain a number.'),
-  email: z.email({ error: 'Invalid email address.' }),
-});
+import { signupSchema } from '#/shared/schemas/auth';
 
 const Signup: React.FC = () => {
   const navigate = useNavigate();
