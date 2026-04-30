@@ -38,3 +38,12 @@ export const selectMachineTypeSchema = createSelectSchema(machineTypes);
 
 export const insertMachineModeSchema = createInsertSchema(machineModes);
 export const selectMachineModeSchema = createSelectSchema(machineModes);
+
+export type Machine = z.infer<typeof selectMachineSchema>;
+export type MachineType = z.infer<typeof selectMachineTypeSchema>;
+
+export type MachineWithTypeName = Machine & {
+  machineTypeName: string | null;
+  machineModeName: string | null;
+  ownerName: string | null;
+};

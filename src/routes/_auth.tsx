@@ -1,14 +1,14 @@
 import AppSidebar from '#/client/components/custom/app-sidebar';
 import Header from '#/client/components/custom/header';
 import { SidebarProvider } from '#/client/components/ui/sidebar';
-import { authClient } from '#/client/lib/auth-client';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
+import { getSession } from '#/shared/server/auth';
 
 export const Route = createFileRoute('/_auth')({
   beforeLoad: async ({ location }) => {
-    const session = await authClient.getSession();
+    const session = await getSession();
 
-    if (session.data === null || !session.data?.user) {
+    if (!session || !session.user) {
       throw redirect({
         to: '/login',
         search: { redirect: location.href },
@@ -16,7 +16,7 @@ export const Route = createFileRoute('/_auth')({
     }
 
     return {
-      user: session.data.user,
+      user: session.user,
     };
   },
   component: AuthenticatedLayout,
