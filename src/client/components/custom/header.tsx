@@ -1,19 +1,26 @@
-// import { useLogoutMutation } from '@/queries/auth';
+import { useRouter } from '@tanstack/react-router';
 import { ModeToggle } from '#/client/components/ui/mode-toggle';
 import { Button } from '#/client/components/ui/button';
+import authClient from '#/client/lib/auth-client';
 
 const Header = () => {
-  // const logoutMutation = useLogoutMutation();
-  const content = (
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await authClient.signOut();
+    router.navigate({ to: '/login' });
+  };
+
+  return (
     <header className="container mx-auto mt-2 sm:px-6">
       <nav className="flex items-center justify-end gap-3">
         <ModeToggle />
-        <Button variant="outline">Logout</Button>
+        <Button variant="outline" onClick={handleLogout}>
+          Logout
+        </Button>
       </nav>
     </header>
   );
-
-  return content;
 };
 
 export default Header;

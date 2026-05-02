@@ -13,6 +13,7 @@ import {
   TabsTrigger,
 } from '#/client/components/ui/tabs';
 import type { ColumnDef } from '@tanstack/react-table';
+
 interface Tab<T> {
   label: string;
   value: string;
@@ -20,6 +21,7 @@ interface Tab<T> {
   title?: string;
   description?: string;
 }
+
 interface TabbedListProps<T> {
   data: T[];
   tabs: Tab<T>[];
@@ -27,6 +29,7 @@ interface TabbedListProps<T> {
   defaultTab?: string;
   actions?: React.ReactNode;
 }
+
 function TabbedList<T>({
   data,
   tabs,

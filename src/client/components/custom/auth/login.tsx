@@ -8,7 +8,15 @@ import LoadingSpinner from '../loading-spinner';
 import authClient from '#/client/lib/auth-client';
 import { useNavigate } from '@tanstack/react-router';
 import { FormInput } from '#/client/components/ui/form-fields';
-import { loginSchema } from '#/shared/schemas/auth';
+import { z } from 'zod';
+
+const loginSchema = z.object({
+  email: z.email({ error: 'Invalid email address.' }),
+  password: z
+    .string()
+    .min(8, { error: 'Password must be at least 8 characters long.' })
+    .max(30, { error: 'Password must be at most 30 characters long.' }),
+});
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
