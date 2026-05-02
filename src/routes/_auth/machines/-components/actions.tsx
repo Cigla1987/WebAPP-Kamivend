@@ -1,6 +1,6 @@
 import { MoreHorizontal } from 'lucide-react';
 
-import type { MachineWithTypeName } from '#/shared/schemas/machines';
+import type { MachineDto } from '../-machines.server';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +13,7 @@ import { useState } from 'react';
 import authClient from '#/client/lib/auth-client';
 // import UpdateMachineMode from './update-machine-mode';
 
-const Actions = ({ machine }: { machine: MachineWithTypeName }) => {
+const Actions = ({ machine }: { machine: MachineDto }) => {
   const [isUpdateOpen, setIsUpdateOpen] = useState(false);
   const role = authClient.useSession().data?.user.role;
 

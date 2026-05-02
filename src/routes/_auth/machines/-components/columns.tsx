@@ -2,17 +2,17 @@ import { type ColumnDef } from '@tanstack/react-table';
 import { Button } from '#/client/components/ui/button';
 import { ArrowUpDown } from 'lucide-react';
 import Actions from './actions';
-import type { MachineWithTypeName } from '#/shared/schemas/machines';
+import type { MachineDto } from '../-machines.server';
 
 export const getColumns = (
-  machines: MachineWithTypeName[],
+  machines: MachineDto[],
   userRole?: string
-): ColumnDef<MachineWithTypeName>[] => {
+): ColumnDef<MachineDto>[] => {
   // Check if there are any lockbox machines in the data
   const hasLockboxMachines = machines.some(
     (machine) => machine.machineTypeName === 'lockbox'
   );
-  const columns: ColumnDef<MachineWithTypeName>[] = [
+  const columns: ColumnDef<MachineDto>[] = [
     {
       accessorKey: 'id',
       sortingFn: 'basic',
@@ -133,7 +133,7 @@ export const getColumns = (
 };
 // Keep the hook for backward compatibility
 export const useColumns = (
-  machines?: MachineWithTypeName[]
-): ColumnDef<MachineWithTypeName>[] => {
+  machines?: MachineDto[]
+): ColumnDef<MachineDto>[] => {
   return getColumns(machines || []);
 };

@@ -2,7 +2,7 @@ import AppSidebar from '#/client/components/custom/app-sidebar';
 import Header from '#/client/components/custom/header';
 import { SidebarProvider } from '#/client/components/ui/sidebar';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
-import { getSession } from '#/shared/server/auth';
+import { getSession } from './_auth/-api/auth';
 
 export const Route = createFileRoute('/_auth')({
   beforeLoad: async ({ location }) => {

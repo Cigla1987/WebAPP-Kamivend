@@ -1,24 +1,38 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useSuspenseQueries } from '@tanstack/react-query';
 import MachinesList from './-components/machine-list';
-import { machineQueries } from './-queries';
+import { getMachines, getMachineTypes } from './-machines.functions';
+import type { MachineDto, MachineTypeDto } from './-machines.server';
 
 export const Route = createFileRoute('/_auth/machines/')({
   loader: async ({ context: { queryClient } }) => {
-    const machinesOptions = machineQueries.getMachines();
-    const typesOptions = machineQueries.getMachineTypes();
     await Promise.all([
-      queryClient.ensureQueryData(machinesOptions),
-      queryClient.ensureQueryData(typesOptions),
+      queryClient.ensureQueryData({
+        queryKey: ['machines'] as const,
+        queryFn: () => getMachines(),
+      }),
+      queryClient.ensureQueryData({
+        queryKey: ['machineTypes'] as const,
+        queryFn: () => getMachineTypes(),
+      }),
     ]);
   },
-  pendingComponent: () => <p className="text-9xl text-white">loadingasdasda</p>,
+  pendingComponent: () => <p className="text-9xl text-white">loading</p>,
   component: MachinesIndex,
 });
 
 function MachinesIndex() {
   const [machinesQuery, typesQuery] = useSuspenseQueries({
-    queries: [machineQueries.getMachines(), machineQueries.getMachineTypes()],
+    queries: [
+      {
+        queryKey: ['machines'] as const,
+        queryFn: (): Promise<MachineDto[]> => getMachines(),
+      },
+      {
+        queryKey: ['machineTypes'] as const,
+        queryFn: (): Promise<MachineTypeDto[]> => getMachineTypes(),
+      },
+    ],
   });
 
   const machines = machinesQuery.data;

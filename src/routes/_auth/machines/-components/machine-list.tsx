@@ -3,14 +3,11 @@ import TabbedList from '#/client/components/custom/tabbed-list';
 import authClient from '#/client/lib/auth-client';
 import { getColumns } from './columns';
 import { capitalizeFirstLetter } from '#/client/lib/utils';
-import type {
-  MachineWithTypeName,
-  MachineType,
-} from '#/shared/schemas/machines';
+import type { MachineDto, MachineTypeDto } from '../-machines.server';
 
 interface MachinesListProps {
-  machines: MachineWithTypeName[];
-  machineTypes: MachineType[];
+  machines: MachineDto[];
+  machineTypes: MachineTypeDto[];
 }
 
 const AddMachine = () => <button>Add Machine</button>;
@@ -27,7 +24,7 @@ const MachinesList: FC<MachinesListProps> = ({ machines, machineTypes }) => {
     ...machineTypes.map((machineType) => ({
       label: capitalizeFirstLetter(machineType.machineTypeName),
       value: machineType.machineTypeName,
-      filterFn: (data: MachineWithTypeName[]) =>
+      filterFn: (data: MachineDto[]) =>
         data.filter((m) => m.machineTypeName === machineType.machineTypeName),
     })),
   ];
@@ -39,7 +36,7 @@ const MachinesList: FC<MachinesListProps> = ({ machines, machineTypes }) => {
     </>
   );
 
-  const columnsFunction = (filteredData: MachineWithTypeName[]) => {
+  const columnsFunction = (filteredData: MachineDto[]) => {
     return getColumns(filteredData, userRole!);
   };
 
