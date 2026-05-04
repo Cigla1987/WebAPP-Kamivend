@@ -2,7 +2,8 @@ import AppSidebar from '#/client/components/custom/app-sidebar';
 import Header from '#/client/components/custom/header';
 import { SidebarProvider } from '#/client/components/ui/sidebar';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
-import { getSession } from './_auth/-api/auth';
+import { getSession } from '#/lib/auth-isomorphic';
+import { authMiddleware } from '#/server/middleware/auth';
 
 export const Route = createFileRoute('/_auth')({
   beforeLoad: async ({ location }) => {
@@ -20,6 +21,9 @@ export const Route = createFileRoute('/_auth')({
     };
   },
   component: AuthenticatedLayout,
+  server: {
+    middleware: [authMiddleware],
+  },
 });
 
 function AuthenticatedLayout() {

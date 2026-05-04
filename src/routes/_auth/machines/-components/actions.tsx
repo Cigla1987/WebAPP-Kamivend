@@ -8,14 +8,16 @@ import {
   DropdownMenuTrigger,
 } from '#/client/components/ui/dropdown-menu';
 import { Button } from '#/client/components/ui/button';
-import { Link } from '@tanstack/react-router';
+import { getRouteApi, Link } from '@tanstack/react-router';
 import { useState } from 'react';
-import authClient from '#/client/lib/auth-client';
 // import UpdateMachineMode from './update-machine-mode';
+
+const authRouteApi = getRouteApi('/_auth');
 
 const Actions = ({ machine }: { machine: MachineDto }) => {
   const [isUpdateOpen, setIsUpdateOpen] = useState(false);
-  const role = authClient.useSession().data?.user.role;
+  const { user } = authRouteApi.useRouteContext();
+  const userRole = user.role;
 
   const handleUpdate = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -36,15 +38,15 @@ const Actions = ({ machine }: { machine: MachineDto }) => {
       )}
       <DropdownMenuContent align="end">
         {/* Available to all authenticated users */}
-        {/* <Link */}
-        {/*   to="/machines/$machineId/compartments" */}
-        {/*   params={{ machineId: machine.id.toString() }} */}
-        {/* > */}
-        {/*   <DropdownMenuItem>View compartments</DropdownMenuItem> */}
-        {/* </Link> */}
+        <Link
+          to="/machines/$machineId/compartments"
+          params={{ machineId: machine.id.toString() }}
+        >
+          <DropdownMenuItem>View compartments</DropdownMenuItem>
+        </Link>
 
         {/* Owner-only actions */}
-        {role === 'owner' && (
+        {userRole === 'owner' && (
           <>
             <DropdownMenuItem onClick={handleUpdate}>
               Update machine mode

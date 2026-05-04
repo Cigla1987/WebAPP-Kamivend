@@ -1,9 +1,9 @@
 import { type FC } from 'react';
 import TabbedList from '#/client/components/custom/tabbed-list';
-import authClient from '#/client/lib/auth-client';
 import { getColumns } from './columns';
 import { capitalizeFirstLetter } from '#/client/lib/utils';
 import type { MachineDto, MachineTypeDto } from '../-machines.server';
+import { getRouteApi } from '@tanstack/react-router';
 
 interface MachinesListProps {
   machines: MachineDto[];
@@ -13,8 +13,11 @@ interface MachinesListProps {
 const AddMachine = () => <button>Add Machine</button>;
 const AssignMachine = () => <button>Assign Machine</button>;
 
+const authRouteApi = getRouteApi('/_auth');
+
 const MachinesList: FC<MachinesListProps> = ({ machines, machineTypes }) => {
-  const userRole = authClient.useSession().data?.user.role;
+  const { user } = authRouteApi.useRouteContext();
+  const userRole = user.role;
 
   const tabs = [
     {
