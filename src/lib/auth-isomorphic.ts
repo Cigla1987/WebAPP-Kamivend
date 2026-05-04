@@ -9,11 +9,9 @@ export const getSession = createIsomorphicFn()
     const session = await auth.api.getSession({
       headers: request.headers,
     });
-    console.log('getSession.server', session);
     return session;
   })
   .client(async () => {
     const { data } = await authClient.getSession();
-    console.log('getSession.client', data);
     return data;
   });

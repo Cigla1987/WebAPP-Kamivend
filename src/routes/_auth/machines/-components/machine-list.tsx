@@ -4,13 +4,13 @@ import { getColumns } from './columns';
 import { capitalizeFirstLetter } from '#/client/lib/utils';
 import type { MachineDto, MachineTypeDto } from '../-machines.server';
 import { getRouteApi } from '@tanstack/react-router';
+import CreateMachine from './create-machine';
 
 interface MachinesListProps {
   machines: MachineDto[];
   machineTypes: MachineTypeDto[];
 }
 
-const AddMachine = () => <button>Add Machine</button>;
 const AssignMachine = () => <button>Assign Machine</button>;
 
 const authRouteApi = getRouteApi('/_auth');
@@ -34,7 +34,7 @@ const MachinesList: FC<MachinesListProps> = ({ machines, machineTypes }) => {
 
   const actions = userRole === 'superadmin' && (
     <>
-      <AddMachine />
+      <CreateMachine />
       <AssignMachine />
     </>
   );

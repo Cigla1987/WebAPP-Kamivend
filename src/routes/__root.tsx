@@ -12,6 +12,7 @@ import type { QueryClient } from '@tanstack/react-query';
 import { formDevtoolsPlugin } from '@tanstack/react-form-devtools';
 import { TooltipProvider } from '#/client/components/ui/tooltip';
 import { ThemeProvider } from '#/client/components/ui/theme-provider';
+import { Toaster } from '#/client/components/ui/sonner';
 
 interface MyRouterContext {
   queryClient: QueryClient;
@@ -79,6 +80,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         </TanStackQueryProvider>
 
         <Scripts />
+        <Toaster />
       </body>
     </html>
   );
