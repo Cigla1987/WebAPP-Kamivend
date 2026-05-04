@@ -14,11 +14,8 @@ import {
 } from '@/server/db/schema';
 import { user } from '@/server/db/schema/auth';
 import { eq } from 'drizzle-orm';
+import { auth } from '@/server/lib/auth';
 
-/**
- * Machine type with joined relations
- * Matches the actual query result from fetchMachines()
- */
 export type MachineDto = {
   id: number;
   machineName: string;
@@ -26,82 +23,11 @@ export type MachineDto = {
   productionYear: number;
   compartmentCount: number;
   machineDateCreated: Date | null;
-  latitude: string | null;
-  longitude: string | null;
-  machineModeId: number | null;
-  machineTypeId: number;
-  ownerId: string | null;
-  machineTypeName: string | null;
   machineModeName: string | null;
+  machineTypeName: string | null;
   ownerName: string | null;
 };
 
-/**
- * Machine type definition
- */
-export type MachineTypeDto = {
-  id: number;
-  machineTypeName: string;
-};
-
-/**
- * Machine mode definition
- */
-export type MachineModeDto = {
-  id: number;
-  machineModeName: string | null;
-};
-/**
- * Get all machines with joined type, mode, and owner data
- * @returns Array of machines with relations
- */
-export async function getMachines(): Promise<MachineDto[]> {
-  const results = await db
-    .select({
-      id: machines.id,
-      machineName: machines.machineName,
-      serialNumber: machines.serialNumber,
-      productionYear: machines.productionYear,
-      compartmentCount: machines.compartmentCount,
-      machineDateCreated: machines.machineDateCreated,
-      latitude: machines.latitude,
-      longitude: machines.longitude,
-      machineModeId: machines.machineModeId,
-      machineTypeId: machines.machineTypeId,
-      ownerId: machines.ownerId,
-      machineTypeName: machineTypes.machineTypeName,
-      machineModeName: machineModes.machineModeName,
-      ownerName: user.name,
-    })
-    .from(machines)
-    .leftJoin(machineTypes, eq(machines.machineTypeId, machineTypes.id))
-    .leftJoin(machineModes, eq(machines.machineModeId, machineModes.id))
-    .leftJoin(user, eq(machines.ownerId, user.id));
-
-  return results;
-}
-
-/**
- * Get all machine types
- * @returns Array of machine types
- */
-export async function getMachineTypes(): Promise<MachineTypeDto[]> {
-  const results = await db.select().from(machineTypes);
-  return results;
-}
-
-/**
- * Get all machine modes
- * @returns Array of machine modes
- */
-export async function getMachineModes(): Promise<MachineModeDto[]> {
-  const results = await db.select().from(machineModes);
-  return results;
-}
-
-/**
- * Create machine payload type
- */
 export type CreateMachineDto = {
   machineName: string;
   serialNumber: string;
@@ -111,19 +37,93 @@ export type CreateMachineDto = {
   compartmentCount: number;
 };
 
-/**
- * Create a new machine
- * @param payload Machine data
- * @returns Created machine id
- */
+export type MachineTypeDto = {
+  id: number;
+  machineTypeName: string;
+};
+
+export type MachineModeDto = {
+  id: number;
+  machineModeName: string | null;
+};
+
+export async function getMachines(request: Request): Promise<MachineDto[]> {
+  const session = await auth.api.getSession({ headers: request.headers });
+
+  if (!session?.user) {
+    throw new Error('Unauthorized');
+  }
+
+  const userId = session.user.id;
+  const role = session.user.role;
+
+  // Base query with inner joins (machines must have mode and type)
+  const baseQuery = db
+    .select({
+      id: machines.id,
+      machineName: machines.machineName,
+      serialNumber: machines.serialNumber,
+      productionYear: machines.productionYear,
+      compartmentCount: machines.compartmentCount,
+      machineDateCreated: machines.machineDateCreated,
+      machineModeName: machineModes.machineModeName,
+      machineTypeName: machineTypes.machineTypeName,
+      ownerName: user.name,
+    })
+    .from(machines)
+    .innerJoin(machineModes, eq(machines.machineModeId, machineModes.id))
+    .innerJoin(machineTypes, eq(machines.machineTypeId, machineTypes.id))
+    .leftJoin(user, eq(machines.ownerId, user.id));
+
+  let results: MachineDto[];
+
+  if (role === 'superadmin') {
+    // Superadmin sees all machines
+    results = await baseQuery;
+  } else if (role === 'owner') {
+    // Owner sees only their machines
+    results = await baseQuery.where(eq(machines.ownerId, userId));
+  } else if (role === 'member') {
+    // Member sees machines where they manage compartments
+    results = await baseQuery
+      .innerJoin(compartments, eq(machines.id, compartments.machineId))
+      .where(eq(compartments.managedBy, userId))
+      .groupBy(
+        machines.id,
+        machines.machineName,
+        machines.serialNumber,
+        machines.productionYear,
+        machineModes.machineModeName,
+        machineTypes.machineTypeName,
+        machines.compartmentCount,
+        machines.machineDateCreated,
+        user.name
+      );
+  } else {
+    throw new Error('Unauthorized');
+  }
+
+  return results;
+}
+
+export async function getMachineTypes(): Promise<MachineTypeDto[]> {
+  const results = await db.select().from(machineTypes);
+  return results;
+}
+
+export async function getMachineModes(): Promise<MachineModeDto[]> {
+  const results = await db.select().from(machineModes);
+  return results;
+}
+
 export async function createMachine(
-  payload: CreateMachineDto
+  data: CreateMachineDto
 ): Promise<{ id: number }> {
   // Check for duplicate serial number
   const existingMachine = await db
     .select({ id: machines.id })
     .from(machines)
-    .where(eq(machines.serialNumber, payload.serialNumber))
+    .where(eq(machines.serialNumber, data.serialNumber))
     .limit(1);
 
   if (existingMachine.length > 0) {
@@ -134,7 +134,7 @@ export async function createMachine(
   const [machineType] = await db
     .select({ machineTypeName: machineTypes.machineTypeName })
     .from(machineTypes)
-    .where(eq(machineTypes.id, payload.machineTypeId))
+    .where(eq(machineTypes.id, data.machineTypeId))
     .limit(1);
 
   // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -144,7 +144,7 @@ export async function createMachine(
 
   // Validate compartment count for lockbox machines
   if (machineType.machineTypeName === 'lockbox') {
-    if (!payload.compartmentCount || payload.compartmentCount <= 0) {
+    if (!data.compartmentCount || data.compartmentCount <= 0) {
       throw new Error('Compartment count is required for lockbox machines');
     }
   }
@@ -153,22 +153,19 @@ export async function createMachine(
   const [machine] = await db
     .insert(machines)
     .values({
-      machineName: payload.machineName,
-      serialNumber: payload.serialNumber,
-      productionYear: payload.productionYear,
-      machineModeId: payload.machineModeId,
-      machineTypeId: payload.machineTypeId,
-      compartmentCount: payload.compartmentCount || 0,
+      machineName: data.machineName,
+      serialNumber: data.serialNumber,
+      productionYear: data.productionYear,
+      machineModeId: data.machineModeId,
+      machineTypeId: data.machineTypeId,
+      compartmentCount: data.compartmentCount || 0,
     })
     .returning();
 
   // Create compartments for lockbox machines
-  if (
-    machineType.machineTypeName === 'lockbox' &&
-    payload.compartmentCount > 0
-  ) {
+  if (machineType.machineTypeName === 'lockbox' && data.compartmentCount > 0) {
     const compartmentsToInsert = Array.from(
-      { length: payload.compartmentCount },
+      { length: data.compartmentCount },
       (_, index) => ({
         machineId: machine.id,
         compartmentNumber: index + 1,

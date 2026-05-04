@@ -46,7 +46,7 @@ const createMachineSchema = z.object({
   compartmentCount: z.coerce.number().int().min(1),
 });
 
-const AddMachine = () => {
+const CreateMachine = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const queryClient = useQueryClient();
@@ -305,4 +305,4 @@ const AddMachine = () => {
   );
 };
 
-export default AddMachine;
+export default CreateMachine;

@@ -8,6 +8,7 @@
  */
 
 import { createServerFn } from '@tanstack/react-start';
+import { getRequest } from '@tanstack/react-start/server';
 import {
   getMachines,
   getMachineTypes,
@@ -21,43 +22,27 @@ import type {
   CreateMachineDto,
 } from './-machines.server';
 
-/**
- * Get all machines with their type, mode, and owner information
- * @returns Array of machines with joined relations
- */
 export const getMachinesFn = createServerFn({ method: 'GET' }).handler(
   async (): Promise<MachineDto[]> => {
-    return getMachines();
+    const request = getRequest();
+    return getMachines(request);
   }
 );
 
-/**
- * Get all machine types
- * @returns Array of machine types
- */
+export const createMachineFn = createServerFn({ method: 'POST' })
+  .inputValidator((data: CreateMachineDto) => data)
+  .handler(async ({ data }): Promise<{ id: number }> => {
+    return createMachine(data);
+  });
+
 export const getMachineTypesFn = createServerFn({ method: 'GET' }).handler(
   async (): Promise<MachineTypeDto[]> => {
     return getMachineTypes();
   }
 );
 
-/**
- * Get all machine modes
- * @returns Array of machine modes
- */
 export const getMachineModesFn = createServerFn({ method: 'GET' }).handler(
   async (): Promise<MachineModeDto[]> => {
     return getMachineModes();
   }
 );
-
-/**
- * Create a new machine
- * @param data Machine creation payload
- * @returns Created machine with id
- */
-export const createMachineFn = createServerFn({ method: 'POST' })
-  .inputValidator((data: CreateMachineDto) => data)
-  .handler(async ({ data }): Promise<{ id: number }> => {
-    return createMachine(data);
-  });

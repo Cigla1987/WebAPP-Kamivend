@@ -1,6 +1,6 @@
 import { createMiddleware } from '@tanstack/react-start';
-import type { User } from '../schemas/auth';
 import { getSession } from '#/lib/auth-isomorphic';
+import type { User } from '#/server/schemas/auth';
 
 export interface AuthContext {
   user: User;
