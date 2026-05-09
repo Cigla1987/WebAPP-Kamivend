@@ -2,7 +2,6 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useSuspenseQueries } from '@tanstack/react-query';
 import MachinesList from './-components/machine-list';
 import { getMachinesFn, getMachineTypesFn } from './-machines.functions';
-import type { MachineDto, MachineTypeDto } from './-machines.server';
 
 export const Route = createFileRoute('/_auth/machines/')({
   loader: async ({ context: { queryClient } }) => {
@@ -27,11 +26,11 @@ function MachinesIndex() {
     queries: [
       {
         queryKey: ['machines'] as const,
-        queryFn: (): Promise<MachineDto[]> => getMachinesFn(),
+        queryFn: () => getMachinesFn(),
       },
       {
         queryKey: ['machineTypes'] as const,
-        queryFn: (): Promise<MachineTypeDto[]> => getMachineTypesFn(),
+        queryFn: () => getMachineTypesFn(),
         staleTime: 1 * 60 * 60,
       },
     ],

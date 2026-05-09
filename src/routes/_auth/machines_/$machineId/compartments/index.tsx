@@ -3,7 +3,6 @@ import { useSuspenseQuery } from '@tanstack/react-query';
 import { getCompartmentsByMachine } from './-compartments.functions';
 import { useColumns } from './-components/columns';
 import CompartmentsList from './-components/compartment-list';
-import type { CompartmentDto } from './-compartments.server';
 
 export const Route = createFileRoute(
   '/_auth/machines_/$machineId/compartments/'
@@ -19,13 +18,13 @@ export const Route = createFileRoute(
     });
     return { machineId };
   },
-  component: IndexComponent,
+  component: CompartmentsIndex,
   pendingComponent: () => (
     <p className="text-9xl text-white">comaparts loading</p>
   ),
 });
 
-function IndexComponent() {
+function CompartmentsIndex() {
   const { machineId } = Route.useLoaderData();
   const { data: compartments } = useSuspenseQuery({
     queryKey: ['compartments', 'byMachine', machineId],
@@ -35,9 +34,6 @@ function IndexComponent() {
   const columns = useColumns();
 
   return (
-    <CompartmentsList
-      compartments={compartments as CompartmentDto[]}
-      tableColumns={columns}
-    />
+    <CompartmentsList compartments={compartments} tableColumns={columns} />
   );
 }
