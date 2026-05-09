@@ -8,7 +8,6 @@
  */
 
 import { createServerFn } from '@tanstack/react-start';
-import { getRequest } from '@tanstack/react-start/server';
 import {
   getMachines,
   getMachineTypes,
@@ -21,28 +20,29 @@ import type {
   MachineModeDto,
   CreateMachineDto,
 } from './-machines.server';
+import { authMiddlewareFn } from '#/lib/middleware/auth';
 
-export const getMachinesFn = createServerFn({ method: 'GET' }).handler(
-  async (): Promise<MachineDto[]> => {
-    const request = getRequest();
-    return getMachines(request);
-  }
-);
+export const getMachinesFn = createServerFn({ method: 'GET' })
+  .middleware([authMiddlewareFn])
+  .handler(async ({ context }): Promise<MachineDto[]> => {
+    return getMachines(context.user);
+  });
 
 export const createMachineFn = createServerFn({ method: 'POST' })
+  .middleware([authMiddlewareFn])
   .inputValidator((data: CreateMachineDto) => data)
   .handler(async ({ data }): Promise<{ id: number }> => {
     return createMachine(data);
   });
 
-export const getMachineTypesFn = createServerFn({ method: 'GET' }).handler(
-  async (): Promise<MachineTypeDto[]> => {
+export const getMachineTypesFn = createServerFn({ method: 'GET' })
+  .middleware([authMiddlewareFn])
+  .handler(async (): Promise<MachineTypeDto[]> => {
     return getMachineTypes();
-  }
-);
+  });
 
-export const getMachineModesFn = createServerFn({ method: 'GET' }).handler(
-  async (): Promise<MachineModeDto[]> => {
+export const getMachineModesFn = createServerFn({ method: 'GET' })
+  .middleware([authMiddlewareFn])
+  .handler(async (): Promise<MachineModeDto[]> => {
     return getMachineModes();
-  }
-);
+  });

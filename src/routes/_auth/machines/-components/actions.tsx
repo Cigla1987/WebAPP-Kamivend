@@ -1,5 +1,4 @@
 import { MoreHorizontal } from 'lucide-react';
-
 import type { MachineDto } from '../-machines.server';
 import {
   DropdownMenu,
@@ -8,15 +7,13 @@ import {
   DropdownMenuTrigger,
 } from '#/client/components/ui/dropdown-menu';
 import { Button } from '#/client/components/ui/button';
-import { getRouteApi, Link } from '@tanstack/react-router';
+import { Link, useRouteContext } from '@tanstack/react-router';
 import { useState } from 'react';
 // import UpdateMachineMode from './update-machine-mode';
 
-const authRouteApi = getRouteApi('/_auth');
-
 const Actions = ({ machine }: { machine: MachineDto }) => {
   const [isUpdateOpen, setIsUpdateOpen] = useState(false);
-  const { user } = authRouteApi.useRouteContext();
+  const { user } = useRouteContext({ from: '/_auth' });
   const userRole = user.role;
 
   const handleUpdate = (e: React.MouseEvent) => {

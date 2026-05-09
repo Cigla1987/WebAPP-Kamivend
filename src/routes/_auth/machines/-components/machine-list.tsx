@@ -3,7 +3,7 @@ import TabbedList from '#/client/components/custom/tabbed-list';
 import { getColumns } from './columns';
 import { capitalizeFirstLetter } from '#/client/lib/utils';
 import type { MachineDto, MachineTypeDto } from '../-machines.server';
-import { getRouteApi } from '@tanstack/react-router';
+import { useRouteContext } from '@tanstack/react-router';
 import CreateMachine from './create-machine';
 
 interface MachinesListProps {
@@ -13,10 +13,8 @@ interface MachinesListProps {
 
 const AssignMachine = () => <button>Assign Machine</button>;
 
-const authRouteApi = getRouteApi('/_auth');
-
 const MachinesList: FC<MachinesListProps> = ({ machines, machineTypes }) => {
-  const { user } = authRouteApi.useRouteContext();
+  const { user } = useRouteContext({ from: '/_auth' });
   const userRole = user.role;
 
   const tabs = [

@@ -17,10 +17,6 @@ const config = defineConfig({
         client: {
           files: ['**/*.server.*', '**/server/**'],
         },
-        // server: {
-        //   // Block browser-only libraries from the server
-        //   specifiers: ['localforage'],
-        // },
       },
     }),
     viteReact({

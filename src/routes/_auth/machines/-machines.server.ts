@@ -14,7 +14,7 @@ import {
 } from '@/server/db/schema';
 import { user } from '@/server/db/schema/auth';
 import { eq } from 'drizzle-orm';
-import { auth } from '@/server/lib/auth';
+import type { User } from '#/server/schemas/auth';
 
 export type MachineDto = {
   id: number;
@@ -47,15 +47,11 @@ export type MachineModeDto = {
   machineModeName: string | null;
 };
 
-export async function getMachines(request: Request): Promise<MachineDto[]> {
-  const session = await auth.api.getSession({ headers: request.headers });
-
-  if (!session?.user) {
-    throw new Error('Unauthorized');
-  }
-
-  const userId = session.user.id;
-  const role = session.user.role;
+export async function getMachines(
+  currentUser: Pick<User, 'id' | 'role'>
+): Promise<MachineDto[]> {
+  const userId = currentUser.id;
+  const role = currentUser.role;
 
   // Base query with inner joins (machines must have mode and type)
   const baseQuery = db

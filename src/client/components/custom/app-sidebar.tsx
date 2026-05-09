@@ -10,7 +10,7 @@ import {
   useSidebar,
 } from '#/client/components/ui/sidebar';
 import { Link, useLocation } from '@tanstack/react-router';
-import { FileImage, Home, Package2, Users, Shapes } from 'lucide-react';
+import { Home } from 'lucide-react';
 import { Icon } from '@iconify/react';
 // import { RoleProtected } from './role-protected';
 
