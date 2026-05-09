@@ -20,7 +20,7 @@ import type {
   MachineModeDto,
   CreateMachineDto,
 } from './-machines.server';
-import { authMiddlewareFn } from '#/lib/middleware/auth';
+import { authMiddlewareFn } from '#/middleware/auth';
 
 export const getMachinesFn = createServerFn({ method: 'GET' })
   .middleware([authMiddlewareFn])

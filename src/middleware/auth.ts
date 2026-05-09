@@ -1,19 +1,9 @@
 import { createMiddleware } from '@tanstack/react-start';
-import { getRequestHeaders } from '@tanstack/react-start/server';
-import { auth } from '#/server/lib/auth';
-import { redirect } from '@tanstack/react-router';
-import { getSessionFn } from '#/routes/-auth.function';
+import { getSessionFn } from '#/utils/session';
 
 export const authMiddlewareFn = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {
     const session = await getSessionFn();
-
-    // const readable = new Date(Date.now()).toLocaleString();
-    // console.log('authMiddleware', session, readable);
-    if (!session) {
-      console.log('authmidFn.redirect to login');
-      throw redirect({ to: '/login' });
-    }
 
     return next({
       context: {

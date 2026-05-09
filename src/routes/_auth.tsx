@@ -1,8 +1,8 @@
 import AppSidebar from '#/client/components/custom/app-sidebar';
 import Header from '#/client/components/custom/header';
 import { SidebarProvider } from '#/client/components/ui/sidebar';
+import { getSessionFn } from '#/utils/session';
 import { createFileRoute, Outlet } from '@tanstack/react-router';
-import { getSessionFn } from './-auth.function';
 
 export const Route = createFileRoute('/_auth')({
   beforeLoad: async () => {
