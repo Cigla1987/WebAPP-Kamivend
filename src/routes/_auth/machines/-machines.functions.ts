@@ -13,12 +13,14 @@ import {
   getMachineTypes,
   getMachineModes,
   createMachine,
+  updateMachineOwner,
 } from './-machines.server';
 import type {
   MachineDto,
   MachineTypeDto,
   MachineModeDto,
   CreateMachineDto,
+  AssignMachineDto,
 } from './-machines.server';
 import { authMiddlewareFn } from '#/middleware/auth';
 
@@ -45,4 +47,11 @@ export const getMachineModesFn = createServerFn({ method: 'GET' })
   .middleware([authMiddlewareFn])
   .handler(async (): Promise<MachineModeDto[]> => {
     return getMachineModes();
+  });
+
+export const assignMachineFn = createServerFn({ method: 'POST' })
+  .middleware([authMiddlewareFn])
+  .inputValidator((data: AssignMachineDto) => data)
+  .handler(async ({ data }): Promise<{ machineName: string }> => {
+    return updateMachineOwner(data);
   });

@@ -18,6 +18,14 @@ export type UserDto = {
 };
 
 /**
+ * Owner with minimal fields
+ */
+export type OwnerDto = {
+  id: string;
+  name: string;
+};
+
+/**
  * Get users by owner ID
  * @returns Array of users that belong to an owner
  */
@@ -29,6 +37,22 @@ export async function fetchUsersByOwner(ownerId: string): Promise<UserDto[]> {
     })
     .from(user)
     .where(eq(user.ownerId, ownerId));
+
+  return results;
+}
+
+/**
+ * Get all users with role 'owner'
+ * @returns Array of all owners
+ */
+export async function fetchAllOwners(): Promise<OwnerDto[]> {
+  const results = await db
+    .select({
+      id: user.id,
+      name: user.name,
+    })
+    .from(user)
+    .where(eq(user.role, 'owner'));
 
   return results;
 }

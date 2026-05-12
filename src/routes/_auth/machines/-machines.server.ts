@@ -37,6 +37,13 @@ export type CreateMachineDto = {
   compartmentCount: number;
 };
 
+export type AssignMachineDto = {
+  serialNumber: string;
+  ownerId: string;
+};
+
+
+
 export type MachineTypeDto = {
   id: number;
   machineTypeName: string;
@@ -173,3 +180,37 @@ export async function createMachine(
 
   return { id: machine.id };
 }
+
+export async function updateMachineOwner(
+  data: AssignMachineDto
+): Promise<{ machineName: string }> {
+  // Find machine by serial number
+  const [machine] = await db
+    .select({
+      id: machines.id,
+      machineName: machines.machineName,
+    })
+    .from(machines)
+    .where(eq(machines.serialNumber, data.serialNumber))
+    .limit(1);
+
+  if (!machine) {
+    throw new Error('Machine not found');
+  }
+
+  // Update machine owner
+  await db
+    .update(machines)
+    .set({ ownerId: data.ownerId })
+    .where(eq(machines.id, machine.id));
+
+  // Update all compartments' managedBy to the new owner
+  await db
+    .update(compartments)
+    .set({ managedBy: data.ownerId })
+    .where(eq(compartments.machineId, machine.id));
+
+  return { machineName: machine.machineName };
+}
+
+

@@ -5,13 +5,12 @@ import { capitalizeFirstLetter } from '#/client/lib/utils';
 import type { MachineDto, MachineTypeDto } from '../-machines.server';
 import { useRouteContext } from '@tanstack/react-router';
 import CreateMachine from './create-machine';
+import AssignMachine from './assign-machine';
 
 interface MachinesListProps {
   machines: MachineDto[];
   machineTypes: MachineTypeDto[];
 }
-
-const AssignMachine = () => <button>Assign Machine</button>;
 
 const MachinesList: FC<MachinesListProps> = ({ machines, machineTypes }) => {
   const { user } = useRouteContext({ from: '/_auth' });
@@ -30,9 +29,10 @@ const MachinesList: FC<MachinesListProps> = ({ machines, machineTypes }) => {
     })),
   ];
 
-  const actions = userRole === 'superadmin' && (
+  const canAssign = userRole === 'superadmin' || userRole === 'owner';
+  const actions = canAssign && (
     <>
-      <CreateMachine />
+      {userRole === 'superadmin' && <CreateMachine />}
       <AssignMachine />
     </>
   );

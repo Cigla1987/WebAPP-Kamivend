@@ -8,10 +8,9 @@
  */
 
 import { createServerFn } from '@tanstack/react-start';
-import { fetchUsersByOwner } from './-users.server';
-import type { UserDto } from './-users.server';
-import { getRequest } from '@tanstack/react-start/server';
-import { auth } from '#/server/lib/auth';
+import { fetchUsersByOwner, fetchAllOwners } from './-users.server';
+import type { UserDto, OwnerDto } from './-users.server';
+import { authMiddlewareFn } from '#/middleware/auth';
 
 /**
  * Get users by owner ID
@@ -20,12 +19,18 @@ import { auth } from '#/server/lib/auth';
 export const getUsersByOwner = createServerFn({
   method: 'GET',
 })
+  .middleware([authMiddlewareFn])
   .inputValidator((data: { ownerId: string }) => data)
   .handler(async ({ data }): Promise<UserDto[]> => {
-    const request = getRequest();
-
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user) throw new Error('Not authenticated');
-
     return fetchUsersByOwner(data.ownerId);
+  });
+
+/**
+ * Get all users with role 'owner'
+ * @returns Array of all owners
+ */
+export const getOwnersFn = createServerFn({ method: 'GET' })
+  .middleware([authMiddlewareFn])
+  .handler(async (): Promise<OwnerDto[]> => {
+    return fetchAllOwners();
   });

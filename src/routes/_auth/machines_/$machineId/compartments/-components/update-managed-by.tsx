@@ -25,9 +25,9 @@ import {
   SelectValue,
 } from '#/client/components/ui/select';
 import { updateManagedBy } from '../-compartments.functions';
-import { getUsersByOwner } from '../-users.functions';
+import { getUsersByOwner } from '#/routes/_auth/machines/-users.functions';
 import type { CompartmentDto } from '../-compartments.server';
-import type { UserDto } from '../-users.server';
+import type { UserDto } from '#/routes/_auth/machines/-users.server';
 
 const authenticatedRoute = getRouteApi('/_auth');
 
