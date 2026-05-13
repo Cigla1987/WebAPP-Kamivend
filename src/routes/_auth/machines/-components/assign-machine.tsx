@@ -34,8 +34,7 @@ import {
   useMutation,
 } from '@tanstack/react-query';
 import { assignMachineFn } from '../-machines.functions';
-import { getOwnersFn } from '../-users.functions';
-import type { OwnerDto } from '../-users.server';
+import { ownersQueryOptions } from '../-users.queries';
 
 const assignMachineSchema = z.object({
   serialNumber: z
@@ -77,11 +76,7 @@ const FormContent = ({
 }) => {
   const queryClient = useQueryClient();
 
-  const { data: owners } = useSuspenseQuery<OwnerDto[]>({
-    queryKey: ['owners'],
-    queryFn: () => getOwnersFn(),
-    staleTime: 5 * 60 * 1000, // 5 minutes
-  });
+  const { data: owners } = useSuspenseQuery(ownersQueryOptions());
 
   const ownerItems = owners.map((owner) => ({
     label: owner.name,
