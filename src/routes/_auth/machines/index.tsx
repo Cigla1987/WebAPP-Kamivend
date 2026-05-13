@@ -1,20 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router';
 import { useSuspenseQueries } from '@tanstack/react-query';
 import MachinesList from './-components/machine-list';
-import { getMachinesFn, getMachineTypesFn } from './-machines.functions';
+import {
+  machinesQueryOptions,
+  machineTypesQueryOptions,
+} from './-machines.queries';
 
 export const Route = createFileRoute('/_auth/machines/')({
   loader: async ({ context: { queryClient } }) => {
     await Promise.all([
-      queryClient.ensureQueryData({
-        queryKey: ['machines'] as const,
-        queryFn: () => getMachinesFn(),
-      }),
-      queryClient.ensureQueryData({
-        queryKey: ['machineTypes'] as const,
-        queryFn: () => getMachineTypesFn(),
-        staleTime: 1 * 60 * 60,
-      }),
+      queryClient.ensureQueryData(machinesQueryOptions()),
+      queryClient.ensureQueryData(machineTypesQueryOptions()),
     ]);
   },
   pendingComponent: () => <p className="text-9xl text-white">loading</p>,
@@ -23,17 +19,7 @@ export const Route = createFileRoute('/_auth/machines/')({
 
 function MachinesIndex() {
   const [machinesQuery, typesQuery] = useSuspenseQueries({
-    queries: [
-      {
-        queryKey: ['machines'] as const,
-        queryFn: () => getMachinesFn(),
-      },
-      {
-        queryKey: ['machineTypes'] as const,
-        queryFn: () => getMachineTypesFn(),
-        staleTime: 1 * 60 * 60,
-      },
-    ],
+    queries: [machinesQueryOptions(), machineTypesQueryOptions()],
   });
 
   const machines = machinesQuery.data;
