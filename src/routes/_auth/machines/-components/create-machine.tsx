@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Suspense, useState } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
@@ -13,6 +13,7 @@ import {
   DialogTrigger,
 } from '#/client/components/ui/dialog';
 import {
+  Field as FieldWrapper,
   FieldGroup,
   FieldLabel,
   FieldError,
@@ -21,53 +22,94 @@ import { Input } from '#/client/components/ui/input';
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '#/client/components/ui/select';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { Skeleton } from '#/client/components/ui/skeleton';
 import {
-  getMachineModesFn,
-  getMachineTypesFn,
-  createMachineFn,
-} from '../-machines.functions';
-import type { MachineModeDto, MachineTypeDto } from '../-machines.server';
+  useSuspenseQuery,
+  useQueryClient,
+  useMutation,
+} from '@tanstack/react-query';
+import { createMachineFn } from '../-machines.functions';
+import {
+  machineModesQueryOptions,
+  machineTypesQueryOptions,
+} from '../-machines.queries';
 
 const createMachineSchema = z.object({
   machineName: z.string().min(1, 'Machine name is required'),
-  serialNumber: z.string().min(1, 'Serial number is required'),
-  productionYear: z.coerce
+  serialNumber: z.string().length(6, 'Serial number must be 6 digits'),
+  productionYear: z
     .number()
     .int()
     .min(1900)
     .max(new Date().getFullYear() + 1),
-  machineModeId: z.coerce.number().int().positive('Machine mode is required'),
-  machineTypeId: z.coerce.number().int().positive('Machine type is required'),
-  compartmentCount: z.coerce.number().int().min(1),
+  machineModeId: z.number().int().positive('Machine mode is required'),
+  machineTypeId: z.number().int().positive('Machine type is required'),
+  compartmentCount: z.number().int().min(1),
 });
 
-const CreateMachine = () => {
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
+const FormSkeletons = () => (
+  <>
+    <DialogHeader className="">
+      <Skeleton className="h-6 w-32" />
+    </DialogHeader>
+    <FieldGroup className="grid w-full items-center gap-4">
+      <div className="flex flex-col gap-1.5">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-9 w-full" />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-9 w-full" />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Skeleton className="h-4 w-28" />
+        <Skeleton className="h-9 w-full" />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Skeleton className="h-4 w-24" />
+        <Skeleton className="h-9 w-full" />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Skeleton className="h-4 w-20" />
+        <Skeleton className="h-9 w-full" />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Skeleton className="h-4 w-32" />
+        <Skeleton className="h-9 w-full" />
+      </div>
+    </FieldGroup>
+    <DialogFooter className=" ">
+      <Skeleton className="h-9 w-16" />
+    </DialogFooter>
+  </>
+);
+
+const FormContent = ({
+  setIsDialogOpen,
+}: {
+  setIsDialogOpen: (v: boolean) => void;
+}) => {
   const queryClient = useQueryClient();
 
-  const { data: modes, isLoading: isModesLoading } = useQuery<MachineModeDto[]>(
-    {
-      queryKey: ['machineModes'],
-      queryFn: () => getMachineModesFn(),
-      enabled: isDialogOpen,
-    }
-  );
+  const { data: modes } = useSuspenseQuery(machineModesQueryOptions());
+  const { data: types } = useSuspenseQuery(machineTypesQueryOptions());
 
-  const { data: types, isLoading: isTypesLoading } = useQuery<MachineTypeDto[]>(
-    {
-      queryKey: ['machineTypes'],
-      queryFn: () => getMachineTypesFn(),
-      enabled: isDialogOpen,
-    }
-  );
+  const modeItems = modes.map((mode) => ({
+    label: mode.machineModeName,
+    value: mode.id.toString(),
+  }));
 
-  const { Field, handleSubmit, state, setFieldValue } = useForm({
+  const typeItems = types.map((type) => ({
+    label: type.machineTypeName,
+    value: type.id.toString(),
+  }));
+
+  const { Field, handleSubmit, state } = useForm({
     defaultValues: {
       machineName: 'Vend01',
       serialNumber: '240001',
@@ -77,48 +119,229 @@ const CreateMachine = () => {
       compartmentCount: 5,
     },
     validators: {
-      onSubmit: ({ value }) => {
-        const result = createMachineSchema.safeParse(value);
-        if (!result.success) {
-          return result.error.issues.map(
-            (issue: { message: string }) => issue.message
-          );
-        }
-        return undefined;
-      },
+      onSubmit: createMachineSchema,
     },
     onSubmit: async ({ value }) => {
-      try {
-        setLoading(true);
-        await createMachineFn({
-          data: {
-            machineName: value.machineName,
-            serialNumber: value.serialNumber,
-            productionYear: value.productionYear,
-            machineModeId: value.machineModeId,
-            machineTypeId: value.machineTypeId,
-            compartmentCount:
-              value.machineTypeId === 1 ? value.compartmentCount : 5,
-          },
-        });
+      mutation.mutate({
+        data: {
+          machineName: value.machineName,
+          serialNumber: value.serialNumber,
+          productionYear: value.productionYear,
+          machineModeId: value.machineModeId,
+          machineTypeId: value.machineTypeId,
+          compartmentCount:
+            value.machineTypeId === 1 ? value.compartmentCount : 5,
+        },
+      });
+    },
+  });
 
-        await queryClient.invalidateQueries({
-          queryKey: ['machines'],
-        });
-
-        setIsDialogOpen(false);
-        toast.success('Machine created successfully');
-      } catch (error) {
-        const message =
-          error instanceof Error ? error.message : 'Failed to create machine';
-        toast.error(message);
-      } finally {
-        setLoading(false);
-      }
+  const mutation = useMutation({
+    mutationFn: createMachineFn,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ['machines'],
+      });
+      setIsDialogOpen(false);
+      toast.success('Machine created successfully');
+    },
+    onError: (error) => {
+      const message =
+        error instanceof Error ? error.message : 'Failed to create machine';
+      toast.error(message);
     },
   });
 
   const machineTypeId = state.values.machineTypeId;
+
+  return (
+    <>
+      <DialogHeader
+        className={`transition-all duration-300 ${mutation.isPending ? 'blur-sm' : ''}`}
+      >
+        <DialogTitle>Add machine</DialogTitle>
+      </DialogHeader>
+      <form
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          handleSubmit();
+        }}
+      >
+        <div className="relative">
+          <div
+            className={`grid w-full items-center gap-4 transition-all duration-300 ${mutation.isPending ? 'blur-sm' : ''}`}
+          >
+            <FieldGroup className="grid w-full items-center gap-4">
+              <Field
+                name="machineName"
+                children={(field) => (
+                  <div className="flex flex-col space-y-1.5">
+                    <FieldLabel htmlFor={field.name}>Machine name</FieldLabel>
+                    <Input
+                      id={field.name}
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      aria-invalid={field.state.meta.errors.length > 0}
+                    />
+                    {field.state.meta.errors.length > 0 && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </div>
+                )}
+              />
+
+              <Field
+                name="serialNumber"
+                children={(field) => (
+                  <div className="flex flex-col space-y-1.5">
+                    <FieldLabel htmlFor={field.name}>Serial number</FieldLabel>
+                    <Input
+                      type="number"
+                      id={field.name}
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      aria-invalid={field.state.meta.errors.length > 0}
+                      required
+                    />
+                    {field.state.meta.errors.length > 0 && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </div>
+                )}
+              />
+
+              <Field
+                name="productionYear"
+                children={(field) => (
+                  <div className="flex flex-col space-y-1.5">
+                    <FieldLabel htmlFor={field.name}>
+                      Production year
+                    </FieldLabel>
+                    <Input
+                      id={field.name}
+                      name={field.name}
+                      type="number"
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) =>
+                        field.handleChange(e.target.valueAsNumber)
+                      }
+                      aria-invalid={field.state.meta.errors.length > 0}
+                    />
+                    {field.state.meta.errors.length > 0 && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </div>
+                )}
+              />
+
+              <Field
+                name="machineModeId"
+                children={(field) => (
+                  <FieldWrapper>
+                    <FieldLabel htmlFor={field.name}>Machine mode</FieldLabel>
+                    <Select
+                      items={modeItems}
+                      value={field.state.value.toString()}
+                      onValueChange={(value) =>
+                        field.handleChange(Number(value))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select machine mode" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {modes.map((mode) => (
+                            <SelectItem key={mode.id} value={mode.id}>
+                              {mode.machineModeName}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </FieldWrapper>
+                )}
+              />
+
+              <Field
+                name="machineTypeId"
+                children={(field) => (
+                  <FieldWrapper>
+                    <FieldLabel htmlFor={field.name}>Machine type</FieldLabel>
+                    <Select
+                      items={typeItems}
+                      value={field.state.value.toString()}
+                      onValueChange={(value) =>
+                        field.handleChange(Number(value))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select machine type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {types.map((type) => (
+                            <SelectItem key={type.id} value={type.id}>
+                              {type.machineTypeName}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </FieldWrapper>
+                )}
+              />
+
+              {machineTypeId !== 2 && (
+                <Field
+                  name="compartmentCount"
+                  children={(field) => (
+                    <div className="flex flex-col space-y-1.5">
+                      <FieldLabel htmlFor={field.name}>
+                        Compartment count
+                      </FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        type="number"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) =>
+                          field.handleChange(e.target.valueAsNumber)
+                        }
+                        aria-invalid={field.state.meta.errors.length > 0}
+                      />
+                      {field.state.meta.errors.length > 0 && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </div>
+                  )}
+                />
+              )}
+            </FieldGroup>
+          </div>
+        </div>
+        <DialogFooter className="mt-4">
+          <Button
+            type="submit"
+            disabled={!state.canSubmit || mutation.isPending}
+          >
+            Save
+          </Button>
+        </DialogFooter>
+      </form>
+    </>
+  );
+};
+
+const CreateMachineSuspense = () => {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
@@ -134,175 +357,14 @@ const CreateMachine = () => {
             </span>
           </Button>
         }
-      ></DialogTrigger>
+      />
       <DialogContent className="sm:max-w-106.25">
-        <DialogHeader
-          className={`transition-all duration-300 ${loading ? 'blur-sm' : ''}`}
-        >
-          <DialogTitle>Add machine</DialogTitle>
-        </DialogHeader>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            handleSubmit();
-          }}
-        >
-          <div className="relative">
-            {loading && (
-              <div className="absolute inset-x-0 top-1/4">Loading..</div>
-            )}
-            <div
-              className={`grid w-full items-center gap-4 transition-all duration-300 ${
-                loading ? 'blur-sm' : ''
-              }`}
-            >
-              <FieldGroup className="grid w-full items-center gap-4">
-                <Field
-                  name="machineName"
-                  children={(field) => (
-                    <div className="flex flex-col space-y-1.5">
-                      <FieldLabel htmlFor={field.name}>Machine name</FieldLabel>
-                      <Input
-                        id={field.name}
-                        name={field.name}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                      />
-                      {field.state.meta.errors.length > 0 && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </div>
-                  )}
-                />
-
-                <Field
-                  name="serialNumber"
-                  children={(field) => (
-                    <div className="flex flex-col space-y-1.5">
-                      <FieldLabel htmlFor={field.name}>
-                        Serial number
-                      </FieldLabel>
-                      <Input
-                        id={field.name}
-                        name={field.name}
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                      />
-                      {field.state.meta.errors.length > 0 && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </div>
-                  )}
-                />
-
-                <Field
-                  name="productionYear"
-                  children={(field) => (
-                    <div className="flex flex-col space-y-1.5">
-                      <FieldLabel htmlFor={field.name}>
-                        Production year
-                      </FieldLabel>
-                      <Input
-                        id={field.name}
-                        name={field.name}
-                        type="number"
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) =>
-                          field.handleChange(e.target.valueAsNumber)
-                        }
-                      />
-                      {field.state.meta.errors.length > 0 && (
-                        <FieldError errors={field.state.meta.errors} />
-                      )}
-                    </div>
-                  )}
-                />
-
-                <div className="flex flex-col space-y-1.5">
-                  <FieldLabel>Machine mode</FieldLabel>
-                  <Select
-                    disabled={isModesLoading}
-                    value={state.values.machineModeId.toString()}
-                    onValueChange={(value) =>
-                      setFieldValue('machineModeId', Number(value))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select machine mode" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {modes?.map((mode) => (
-                        <SelectItem key={mode.id} value={mode.id.toString()}>
-                          {mode.machineModeName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="flex flex-col space-y-1.5">
-                  <FieldLabel>Machine type</FieldLabel>
-                  <Select
-                    disabled={isTypesLoading}
-                    value={state.values.machineTypeId.toString()}
-                    onValueChange={(value) =>
-                      setFieldValue('machineTypeId', Number(value))
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select machine type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {types?.map((type) => (
-                        <SelectItem key={type.id} value={type.id.toString()}>
-                          {type.machineTypeName}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {machineTypeId !== 2 && (
-                  <Field
-                    name="compartmentCount"
-                    children={(field) => (
-                      <div className="flex flex-col space-y-1.5">
-                        <FieldLabel htmlFor={field.name}>
-                          Compartment count
-                        </FieldLabel>
-                        <Input
-                          id={field.name}
-                          name={field.name}
-                          type="number"
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) =>
-                            field.handleChange(e.target.valueAsNumber)
-                          }
-                        />
-                        {field.state.meta.errors.length > 0 && (
-                          <FieldError errors={field.state.meta.errors} />
-                        )}
-                      </div>
-                    )}
-                  />
-                )}
-              </FieldGroup>
-            </div>
-          </div>
-          <DialogFooter className="mt-4">
-            <Button type="submit" disabled={!state.canSubmit || loading}>
-              Save
-            </Button>
-          </DialogFooter>
-        </form>
+        <Suspense fallback={<FormSkeletons />}>
+          <FormContent setIsDialogOpen={setIsDialogOpen} />
+        </Suspense>
       </DialogContent>
     </Dialog>
   );
 };
 
-export default CreateMachine;
+export default CreateMachineSuspense;
