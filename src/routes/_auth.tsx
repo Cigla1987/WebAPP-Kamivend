@@ -5,11 +5,13 @@ import { getSessionFn } from '#/utils/session';
 import { createFileRoute, Outlet } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_auth')({
-  beforeLoad: async () => {
-    const session = await getSessionFn();
-    return {
-      user: session.user,
-    };
+  beforeLoad: async ({ context }) => {
+    const session = await context.queryClient.fetchQuery({
+      queryKey: ['session'],
+      queryFn: getSessionFn,
+      staleTime: 1000 * 60 * 5,
+    });
+    return { user: session.user };
   },
   component: AuthenticatedLayout,
 });

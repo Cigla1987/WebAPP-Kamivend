@@ -28,7 +28,7 @@ const AppSidebar = () => {
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
-                <Link to="/dashboard" preload={false}>
+                <Link to="/dashboard">
                   <SidebarMenuButton
                     className={`hover:cursor-pointer ${
                       pathname === '/dashboard'
@@ -43,7 +43,7 @@ const AppSidebar = () => {
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <Link to="/machines" preload={false}>
+                <Link to="/machines">
                   <SidebarMenuButton
                     className={`hover:cursor-pointer ${
                       pathname === '/machines'
