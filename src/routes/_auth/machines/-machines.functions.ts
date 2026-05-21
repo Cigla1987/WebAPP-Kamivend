@@ -14,44 +14,45 @@ import {
   getMachineModes,
   createMachine,
   updateMachineOwner,
+  assignMachineApiSchema,
+  createMachineApiSchema,
 } from './-machines.server';
 import type {
   MachineDto,
   MachineTypeDto,
   MachineModeDto,
-  CreateMachineDto,
-  AssignMachineDto,
 } from './-machines.server';
 import { authMiddlewareFn } from '#/middleware/auth';
+import { errorMiddlewareFn } from '#/middleware/error';
 
 export const getMachinesFn = createServerFn({ method: 'GET' })
-  .middleware([authMiddlewareFn])
+  .middleware([errorMiddlewareFn, authMiddlewareFn])
   .handler(async ({ context }): Promise<MachineDto[]> => {
     return getMachines(context.user);
   });
 
 export const createMachineFn = createServerFn({ method: 'POST' })
-  .middleware([authMiddlewareFn])
-  .inputValidator((data: CreateMachineDto) => data)
+  .middleware([errorMiddlewareFn, authMiddlewareFn])
+  .inputValidator(createMachineApiSchema)
   .handler(async ({ data }): Promise<{ id: number }> => {
     return createMachine(data);
   });
 
 export const getMachineTypesFn = createServerFn({ method: 'GET' })
-  .middleware([authMiddlewareFn])
+  .middleware([errorMiddlewareFn, authMiddlewareFn])
   .handler(async (): Promise<MachineTypeDto[]> => {
     return getMachineTypes();
   });
 
 export const getMachineModesFn = createServerFn({ method: 'GET' })
-  .middleware([authMiddlewareFn])
+  .middleware([errorMiddlewareFn, authMiddlewareFn])
   .handler(async (): Promise<MachineModeDto[]> => {
     return getMachineModes();
   });
 
 export const assignMachineFn = createServerFn({ method: 'POST' })
-  .middleware([authMiddlewareFn])
-  .inputValidator((data: AssignMachineDto) => data)
+  .middleware([errorMiddlewareFn, authMiddlewareFn])
+  .inputValidator(assignMachineApiSchema)
   .handler(async ({ data }): Promise<{ machineName: string }> => {
     return updateMachineOwner(data);
   });

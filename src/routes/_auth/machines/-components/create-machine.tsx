@@ -43,13 +43,12 @@ const createMachineSchema = z.object({
   machineName: z.string().min(1, 'Machine name is required'),
   serialNumber: z.string().length(6, 'Serial number must be 6 digits'),
   productionYear: z
-    .number()
-    .int()
+    .int('Production year is required.')
     .min(1900)
     .max(new Date().getFullYear() + 1),
-  machineModeId: z.number().int().positive('Machine mode is required'),
-  machineTypeId: z.number().int().positive('Machine type is required'),
-  compartmentCount: z.number().int().min(1),
+  machineModeId: z.int().int().positive('Machine mode is required'),
+  machineTypeId: z.int().int().positive('Machine type is required'),
+  compartmentCount: z.int('Compartment count is required.').int().min(1),
 });
 
 const FormSkeletons = () => (
@@ -109,7 +108,7 @@ const FormContent = ({
     value: type.id.toString(),
   }));
 
-  const { Field, handleSubmit, state } = useForm({
+  const { Field, handleSubmit, state, Subscribe } = useForm({
     defaultValues: {
       machineName: 'Vend01',
       serialNumber: '240001',
@@ -151,8 +150,6 @@ const FormContent = ({
       toast.error(message);
     },
   });
-
-  const machineTypeId = state.values.machineTypeId;
 
   return (
     <>
@@ -231,7 +228,7 @@ const FormContent = ({
                       onChange={(e) =>
                         field.handleChange(e.target.valueAsNumber)
                       }
-                      aria-invalid={field.state.meta.errors.length > 0}
+                      // aria-invalid={field.state.meta.errors.length > 0}
                     />
                     {field.state.meta.errors.length > 0 && (
                       <FieldError errors={field.state.meta.errors} />
@@ -297,33 +294,37 @@ const FormContent = ({
                   </FieldWrapper>
                 )}
               />
-
-              {machineTypeId !== 2 && (
-                <Field
-                  name="compartmentCount"
-                  children={(field) => (
-                    <div className="flex flex-col space-y-1.5">
-                      <FieldLabel htmlFor={field.name}>
-                        Compartment count
-                      </FieldLabel>
-                      <Input
-                        id={field.name}
-                        name={field.name}
-                        type="number"
-                        value={field.state.value}
-                        onBlur={field.handleBlur}
-                        onChange={(e) =>
-                          field.handleChange(e.target.valueAsNumber)
-                        }
-                        aria-invalid={field.state.meta.errors.length > 0}
-                      />
-                      {field.state.meta.errors.length > 0 && (
-                        <FieldError errors={field.state.meta.errors} />
+              <Subscribe
+                selector={(state) => state.values.machineTypeId !== 2}
+                children={(showCompartmentCount) =>
+                  showCompartmentCount && (
+                    <Field
+                      name="compartmentCount"
+                      children={(field) => (
+                        <div className="flex flex-col space-y-1.5">
+                          <FieldLabel htmlFor={field.name}>
+                            Compartment count
+                          </FieldLabel>
+                          <Input
+                            id={field.name}
+                            name={field.name}
+                            type="number"
+                            value={field.state.value}
+                            onBlur={field.handleBlur}
+                            onChange={(e) =>
+                              field.handleChange(e.target.valueAsNumber)
+                            }
+                            aria-invalid={field.state.meta.errors.length > 0}
+                          />
+                          {field.state.meta.errors.length > 0 && (
+                            <FieldError errors={field.state.meta.errors} />
+                          )}
+                        </div>
                       )}
-                    </div>
-                  )}
-                />
-              )}
+                    />
+                  )
+                }
+              />
             </FieldGroup>
           </div>
         </div>

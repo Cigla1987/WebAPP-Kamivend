@@ -42,6 +42,8 @@ const assignMachineSchema = z.object({
     .length(6, { message: 'Serial number must be exactly 6 characters' })
     .trim(),
   ownerId: z.string(),
+
+  // .nonempty('Owner must be selected.'),
 });
 
 const FormSkeletons = () => (
@@ -119,9 +121,7 @@ const FormContent = ({
 
   return (
     <>
-      <DialogHeader
-        className={`transition-all duration-300 ${mutation.isPending ? 'blur-sm' : ''}`}
-      >
+      <DialogHeader>
         <DialogTitle>Assign machine</DialogTitle>
       </DialogHeader>
       <form
@@ -165,7 +165,9 @@ const FormContent = ({
                       value={field.state.value}
                       onValueChange={(value) => field.handleChange(value ?? '')}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger
+                        aria-invalid={field.state.meta.errors.length > 0}
+                      >
                         <SelectValue placeholder="Select an owner" />
                       </SelectTrigger>
                       <SelectContent>
@@ -178,6 +180,9 @@ const FormContent = ({
                         </SelectGroup>
                       </SelectContent>
                     </Select>
+                    {field.state.meta.errors.length > 0 && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </FieldWrapper>
                 )}
               />
@@ -210,7 +215,7 @@ const AssignMachineSuspense = () => {
           >
             <PlusCircle data-icon="inline-start" />
             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              Assign machine suspense
+              Assign machine
             </span>
           </Button>
         }
