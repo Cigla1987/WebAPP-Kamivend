@@ -5,9 +5,5 @@ export const Route = createFileRoute('/_auth/machines')({
 });
 
 function MachineRoute() {
-  return (
-    <div>
-      <Outlet />
-    </div>
-  );
+  return <Outlet />;
 }

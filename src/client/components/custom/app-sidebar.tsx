@@ -10,7 +10,7 @@ import {
   useSidebar,
 } from '#/client/components/ui/sidebar';
 import { Link, useLocation } from '@tanstack/react-router';
-import { Home } from 'lucide-react';
+import { Home, Package2 } from 'lucide-react';
 import { Icon } from '@iconify/react';
 // import { RoleProtected } from './role-protected';
 
@@ -61,21 +61,21 @@ const AppSidebar = () => {
                 </Link>
               </SidebarMenuItem>
               {/**/}
-              {/* <SidebarMenuItem> */}
-              {/*   <Link to="/products"> */}
-              {/*     <SidebarMenuButton */}
-              {/*       className={`hover:cursor-pointer ${ */}
-              {/*         pathname === '/products' */}
-              {/*           ? 'bg-sidebar-accent rounded-md' */}
-              {/*           : '' */}
-              {/*       }`} */}
-              {/*     > */}
-              {/*       <Package2 /> */}
-              {/*       Products */}
-              {/*     </SidebarMenuButton> */}
-              {/*   </Link> */}
-              {/* </SidebarMenuItem> */}
-              {/**/}
+              <SidebarMenuItem>
+                <Link to="/products">
+                  <SidebarMenuButton
+                    className={`hover:cursor-pointer ${
+                      pathname === '/products'
+                        ? 'bg-sidebar-accent rounded-md'
+                        : ''
+                    }`}
+                  >
+                    <Package2 />
+                    Products
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
+
               {/* <SidebarMenuItem> */}
               {/*   <Link to="/pictures"> */}
               {/*     <SidebarMenuButton */}
