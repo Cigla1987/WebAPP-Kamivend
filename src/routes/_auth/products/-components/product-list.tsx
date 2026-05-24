@@ -2,6 +2,7 @@ import { type FC } from 'react';
 import { type ColumnDef } from '@tanstack/react-table';
 import TabbedList from '#/client/components/custom/tabbed-list';
 import type { ProductDto } from '../-products.server';
+import CreateProduct from './create-product';
 
 interface ProductsListProps {
   products: ProductDto[];
@@ -23,6 +24,7 @@ const ProductsList: FC<ProductsListProps> = ({ products, tableColumns }) => {
       data={products}
       tabs={tabs}
       columns={tableColumns}
+      actions={<CreateProduct />}
     />
   );
 };

@@ -33,56 +33,34 @@ import {
   useQueryClient,
   useMutation,
 } from '@tanstack/react-query';
-import { createMachineFn } from '../-machines.functions';
-import {
-  machineModesQueryOptions,
-  machineTypesQueryOptions,
-} from '../-machines.queries';
+import { createProductFn } from '../-products.functions';
+import { unitsQueryOptions } from '../../_units/-units.queries';
+import { currenciesQueryOptions } from '../../_currencies/-currencies.queries';
+import { symbolsQueryOptions } from '../../symbols/-symbols.queries';
 
-const createMachineSchema = z.object({
-  machineName: z.string().min(1, 'Machine name is required'),
-  serialNumber: z.string().length(6, 'Serial number must be 6 digits'),
-  productionYear: z
-    .int('Production year is required.')
-    .min(1900)
-    .max(new Date().getFullYear() + 1),
-  machineModeId: z.int().positive('Machine mode is required'),
-  machineTypeId: z.int().positive('Machine type is required'),
-  compartmentCount: z.int('Compartment count is required.').min(1),
+const createProductSchema = z.object({
+  productName: z.string().min(6, 'Name must contain at least 6 characters'),
+  defaultPrice: z.number().positive('Default price is required'),
+  currencyId: z.int().positive('Currency is required'),
+  defaultQuantity: z.number().positive('Quantity is required'),
+  unitId: z.number().positive('Unit is required'),
+  productSymbolId: z.int(),
 });
 
 const FormSkeletons = () => (
   <>
-    <DialogHeader className="">
+    <DialogHeader>
       <Skeleton className="h-6 w-32" />
     </DialogHeader>
     <FieldGroup className="grid w-full items-center gap-4">
-      <div className="flex flex-col gap-1.5">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-9 w-full" />
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-9 w-full" />
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <Skeleton className="h-4 w-28" />
-        <Skeleton className="h-9 w-full" />
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <Skeleton className="h-4 w-24" />
-        <Skeleton className="h-9 w-full" />
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <Skeleton className="h-4 w-20" />
-        <Skeleton className="h-9 w-full" />
-      </div>
-      <div className="flex flex-col gap-1.5">
-        <Skeleton className="h-4 w-32" />
-        <Skeleton className="h-9 w-full" />
-      </div>
+      {Array.from({ length: 6 }).map((_, i) => (
+        <div key={i} className="flex flex-col gap-1.5">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-9 w-full" />
+        </div>
+      ))}
     </FieldGroup>
-    <DialogFooter className=" ">
+    <DialogFooter>
       <Skeleton className="h-9 w-16" />
     </DialogFooter>
   </>
@@ -95,58 +73,63 @@ const FormContent = ({
 }) => {
   const queryClient = useQueryClient();
 
-  const { data: modes } = useSuspenseQuery(machineModesQueryOptions());
-  const { data: types } = useSuspenseQuery(machineTypesQueryOptions());
+  const { data: units } = useSuspenseQuery(unitsQueryOptions());
+  const { data: currencies } = useSuspenseQuery(currenciesQueryOptions());
+  const { data: symbols } = useSuspenseQuery(symbolsQueryOptions());
 
-  const modeItems = modes.map((mode) => ({
-    label: mode.machineModeName,
-    value: mode.id.toString(),
+  const currencyItems = currencies.map((currency) => ({
+    label: `${currency.currencySymbol} - ${currency.currencyName}`,
+    value: currency.id.toString(),
   }));
 
-  const typeItems = types.map((type) => ({
-    label: type.machineTypeName,
-    value: type.id.toString(),
+  const unitItems = units.map((unit) => ({
+    label: `${unit.unitSymbol} - ${unit.unitName}`,
+    value: unit.id.toString(),
   }));
 
-  const { Field, handleSubmit, state, Subscribe } = useForm({
+  const symbolItems = symbols.map((symbol) => ({
+    label: symbol.symbolName || 'Unnamed Symbol',
+    value: symbol.id.toString(),
+  }));
+
+  const { Field, handleSubmit, state } = useForm({
     defaultValues: {
-      machineName: 'Vend01',
-      serialNumber: '240001',
-      productionYear: new Date().getFullYear(),
-      machineModeId: 1,
-      machineTypeId: 1,
-      compartmentCount: 5,
+      productName: 'Potato',
+      defaultPrice: 1,
+      currencyId: 1,
+      defaultQuantity: 1,
+      unitId: 1,
+      productSymbolId: 1,
     },
     validators: {
-      onSubmit: createMachineSchema,
+      onSubmit: createProductSchema,
     },
     onSubmit: async ({ value }) => {
       mutation.mutate({
         data: {
-          machineName: value.machineName,
-          serialNumber: value.serialNumber,
-          productionYear: value.productionYear,
-          machineModeId: value.machineModeId,
-          machineTypeId: value.machineTypeId,
-          compartmentCount:
-            value.machineTypeId === 1 ? value.compartmentCount : 5,
+          productName: value.productName,
+          defaultPrice: value.defaultPrice,
+          currencyId: value.currencyId,
+          defaultQuantity: value.defaultQuantity,
+          unitId: value.unitId,
+          productSymbolId: value.productSymbolId,
         },
       });
     },
   });
 
   const mutation = useMutation({
-    mutationFn: createMachineFn,
+    mutationFn: createProductFn,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['machines'],
+        queryKey: ['products'],
       });
       setIsDialogOpen(false);
-      toast.success('Machine created successfully');
+      toast.success('Product created successfully');
     },
     onError: (error) => {
       const message =
-        error instanceof Error ? error.message : 'Failed to create machine';
+        error instanceof Error ? error.message : 'Failed to create product';
       toast.error(message);
     },
   });
@@ -156,7 +139,7 @@ const FormContent = ({
       <DialogHeader
         className={`transition-all duration-300 ${mutation.isPending ? 'blur-sm' : ''}`}
       >
-        <DialogTitle>Add machine</DialogTitle>
+        <DialogTitle>Add product</DialogTitle>
       </DialogHeader>
       <form
         onSubmit={(e) => {
@@ -171,10 +154,10 @@ const FormContent = ({
           >
             <FieldGroup className="grid w-full items-center gap-4">
               <Field
-                name="machineName"
+                name="productName"
                 children={(field) => (
                   <div className="flex flex-col space-y-1.5">
-                    <FieldLabel htmlFor={field.name}>Machine name</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Product name</FieldLabel>
                     <Input
                       id={field.name}
                       name={field.name}
@@ -191,19 +174,20 @@ const FormContent = ({
               />
 
               <Field
-                name="serialNumber"
+                name="defaultPrice"
                 children={(field) => (
                   <div className="flex flex-col space-y-1.5">
-                    <FieldLabel htmlFor={field.name}>Serial number</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Default price</FieldLabel>
                     <Input
+                      id={field.name}
+                      name={field.name}
                       type="number"
-                      id={field.name}
-                      name={field.name}
                       value={field.state.value}
                       onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
+                      onChange={(e) =>
+                        field.handleChange(e.target.valueAsNumber)
+                      }
                       aria-invalid={field.state.meta.errors.length > 0}
-                      required
                     />
                     {field.state.meta.errors.length > 0 && (
                       <FieldError errors={field.state.meta.errors} />
@@ -213,11 +197,46 @@ const FormContent = ({
               />
 
               <Field
-                name="productionYear"
+                name="currencyId"
+                children={(field) => (
+                  <FieldWrapper>
+                    <FieldLabel htmlFor={field.name}>
+                      Default currency
+                    </FieldLabel>
+                    <Select
+                      items={currencyItems}
+                      value={field.state.value.toString()}
+                      onValueChange={(value) =>
+                        field.handleChange(Number(value))
+                      }
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select currency" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {currencies.map((currency) => (
+                            <SelectItem
+                              key={currency.id}
+                              value={currency.id.toString()}
+                            >
+                              {currency.currencySymbol} -{' '}
+                              {currency.currencyName}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                  </FieldWrapper>
+                )}
+              />
+
+              <Field
+                name="defaultQuantity"
                 children={(field) => (
                   <div className="flex flex-col space-y-1.5">
                     <FieldLabel htmlFor={field.name}>
-                      Production year
+                      Default quantity
                     </FieldLabel>
                     <Input
                       id={field.name}
@@ -228,7 +247,7 @@ const FormContent = ({
                       onChange={(e) =>
                         field.handleChange(e.target.valueAsNumber)
                       }
-                      // aria-invalid={field.state.meta.errors.length > 0}
+                      aria-invalid={field.state.meta.errors.length > 0}
                     />
                     {field.state.meta.errors.length > 0 && (
                       <FieldError errors={field.state.meta.errors} />
@@ -238,25 +257,28 @@ const FormContent = ({
               />
 
               <Field
-                name="machineModeId"
+                name="unitId"
                 children={(field) => (
                   <FieldWrapper>
-                    <FieldLabel htmlFor={field.name}>Machine mode</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Default unit</FieldLabel>
                     <Select
-                      items={modeItems}
+                      items={unitItems}
                       value={field.state.value.toString()}
                       onValueChange={(value) =>
                         field.handleChange(Number(value))
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select machine mode" />
+                        <SelectValue placeholder="Select unit" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          {modes.map((mode) => (
-                            <SelectItem key={mode.id} value={mode.id}>
-                              {mode.machineModeName}
+                          {units.map((unit) => (
+                            <SelectItem
+                              key={unit.id}
+                              value={unit.id.toString()}
+                            >
+                              {unit.unitSymbol} - {unit.unitName}
                             </SelectItem>
                           ))}
                         </SelectGroup>
@@ -267,25 +289,39 @@ const FormContent = ({
               />
 
               <Field
-                name="machineTypeId"
+                name="productSymbolId"
                 children={(field) => (
                   <FieldWrapper>
-                    <FieldLabel htmlFor={field.name}>Machine type</FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Symbol</FieldLabel>
                     <Select
-                      items={typeItems}
-                      value={field.state.value.toString()}
+                      items={symbolItems}
+                      value={field.state.value?.toString() ?? ''}
                       onValueChange={(value) =>
                         field.handleChange(Number(value))
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select machine type" />
+                        <SelectValue placeholder="Select symbol" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
-                          {types.map((type) => (
-                            <SelectItem key={type.id} value={type.id}>
-                              {type.machineTypeName}
+                          {symbols.map((symbol) => (
+                            <SelectItem
+                              key={symbol.id}
+                              value={symbol.id.toString()}
+                            >
+                              <div className="flex items-center gap-2">
+                                {symbol.symbolPicture && (
+                                  <img
+                                    src={symbol.symbolPicture}
+                                    alt={symbol.symbolName || 'Symbol'}
+                                    className="h-6 w-6 rounded-full object-cover"
+                                  />
+                                )}
+                                <span>
+                                  {symbol.symbolName || 'Unnamed Symbol'}
+                                </span>
+                              </div>
                             </SelectItem>
                           ))}
                         </SelectGroup>
@@ -293,37 +329,6 @@ const FormContent = ({
                     </Select>
                   </FieldWrapper>
                 )}
-              />
-              <Subscribe
-                selector={(state) => state.values.machineTypeId !== 2}
-                children={(showCompartmentCount) =>
-                  showCompartmentCount && (
-                    <Field
-                      name="compartmentCount"
-                      children={(field) => (
-                        <div className="flex flex-col space-y-1.5">
-                          <FieldLabel htmlFor={field.name}>
-                            Compartment count
-                          </FieldLabel>
-                          <Input
-                            id={field.name}
-                            name={field.name}
-                            type="number"
-                            value={field.state.value}
-                            onBlur={field.handleBlur}
-                            onChange={(e) =>
-                              field.handleChange(e.target.valueAsNumber)
-                            }
-                            aria-invalid={field.state.meta.errors.length > 0}
-                          />
-                          {field.state.meta.errors.length > 0 && (
-                            <FieldError errors={field.state.meta.errors} />
-                          )}
-                        </div>
-                      )}
-                    />
-                  )
-                }
               />
             </FieldGroup>
           </div>
@@ -341,7 +346,7 @@ const FormContent = ({
   );
 };
 
-const CreateMachineSuspense = () => {
+const CreateProduct = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   return (
@@ -354,7 +359,7 @@ const CreateMachineSuspense = () => {
           >
             <PlusCircle className="h-3.5 w-3.5" />
             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              Add machine
+              Add product
             </span>
           </Button>
         }
@@ -368,4 +373,4 @@ const CreateMachineSuspense = () => {
   );
 };
 
-export default CreateMachineSuspense;
+export default CreateProduct;
