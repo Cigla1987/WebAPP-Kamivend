@@ -46,9 +46,9 @@ const createProductSchema = z.object({
   currencyId: z.int('Currency is required.'),
   defaultQuantity: z
     .number('Quantity is required.')
-    .positive('Quantity is required.'),
+    .positive('Quantity cannot be less than 0.'),
   unitId: z.number('Unit is required.'),
-  productSymbolId: z.int(),
+  productSymbolId: z.int().optional(),
 });
 
 const FormSkeletons = () => (
@@ -103,10 +103,22 @@ const FormContent = ({
       currencyId: 1,
       defaultQuantity: 1,
       unitId: 1,
-      productSymbolId: 1,
+      productSymbolId: undefined as number | undefined,
     },
     validators: {
-      onSubmit: createProductSchema,
+      onSubmit: ({ value }) => {
+        const parsed = createProductSchema.safeParse(value);
+        if (!parsed.success) {
+          const fieldErrors: Record<string, { message: string }[]> = {};
+          for (const issue of parsed.error.issues) {
+            const path = issue.path.join('.');
+            if (!fieldErrors[path]) fieldErrors[path] = [];
+            fieldErrors[path].push({ message: issue.message });
+          }
+          return { fields: fieldErrors };
+        }
+        return undefined;
+      },
     },
     onSubmit: async ({ value }) => {
       mutation.mutate({

@@ -1,7 +1,2 @@
-[x] - remove shadcn
-[x] - clean styles.css
-[x] - add shadcn
-[x] - setup DB
-[ ] - setup better-auth
-[ ] -
+[ ] - maybe when in the form i get back error from server i can immediately show field which is causing error
 [ ] -
