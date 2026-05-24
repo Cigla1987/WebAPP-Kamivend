@@ -39,11 +39,15 @@ import { currenciesQueryOptions } from '../../_currencies/-currencies.queries';
 import { symbolsQueryOptions } from '../../symbols/-symbols.queries';
 
 const createProductSchema = z.object({
-  productName: z.string().min(6, 'Name must contain at least 6 characters'),
-  defaultPrice: z.number().positive('Default price is required'),
-  currencyId: z.int().positive('Currency is required'),
-  defaultQuantity: z.number().positive('Quantity is required'),
-  unitId: z.number().positive('Unit is required'),
+  productName: z.string().min(6, 'Name must contain at least 6 characters.'),
+  defaultPrice: z
+    .number('Default price is required.')
+    .positive('Default price cannot be less than 0.'),
+  currencyId: z.int('Currency is required.'),
+  defaultQuantity: z
+    .number('Quantity is required.')
+    .positive('Quantity is required.'),
+  unitId: z.number('Unit is required.'),
   productSymbolId: z.int(),
 });
 
@@ -301,7 +305,33 @@ const FormContent = ({
                       }
                     >
                       <SelectTrigger>
-                        <SelectValue placeholder="Select symbol" />
+                        <SelectValue placeholder="Select symbol">
+                          {field.state.value &&
+                            symbols.find((s) => s.id === field.state.value) && (
+                              <div className="flex items-center gap-2">
+                                <img
+                                  src={
+                                    symbols.find(
+                                      (s) => s.id === field.state.value
+                                    )?.symbolPicture
+                                  }
+                                  alt={
+                                    symbols.find(
+                                      (s) => s.id === field.state.value
+                                    )?.symbolName
+                                  }
+                                  className="h-6 w-6 rounded-full object-cover"
+                                />
+                                <span>
+                                  {
+                                    symbols.find(
+                                      (s) => s.id === field.state.value
+                                    )?.symbolName
+                                  }
+                                </span>
+                              </div>
+                            )}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>

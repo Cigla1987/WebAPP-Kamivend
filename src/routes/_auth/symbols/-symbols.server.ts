@@ -12,8 +12,8 @@ import type { User } from '#/server/schemas/auth';
 
 export type SymbolDto = {
   id: number;
-  symbolName: string | null;
-  symbolPicture: string | null;
+  symbolName: string;
+  symbolPicture: string;
   ownerId: string | null;
 };
 

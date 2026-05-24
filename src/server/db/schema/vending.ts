@@ -14,8 +14,8 @@ import { user } from './auth';
 
 export const symbols = pgTable('symbols', {
   id: serial('id').primaryKey(),
-  symbolName: varchar('symbol_name', { length: 50 }),
-  symbolPicture: text('symbol_picture'),
+  symbolName: varchar('symbol_name', { length: 50 }).notNull(),
+  symbolPicture: text('symbol_picture').notNull(),
   ownerId: text('owner_id').references(() => user.id, {
     onDelete: 'restrict',
   }),
