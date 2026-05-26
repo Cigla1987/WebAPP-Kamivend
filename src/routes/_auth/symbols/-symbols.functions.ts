@@ -6,7 +6,11 @@
  */
 
 import { createServerFn } from '@tanstack/react-start';
-import { getSymbols } from './-symbols.server';
+import {
+  getSymbols,
+  createSymbol,
+  createSymbolApiSchema,
+} from './-symbols.server';
 import type { SymbolDto } from './-symbols.server';
 import { authMiddlewareFn } from '#/middleware/auth';
 import { errorMiddlewareFn } from '#/middleware/error';
@@ -16,3 +20,12 @@ export const getSymbolsFn = createServerFn({ method: 'GET' })
   .handler(async ({ context }): Promise<SymbolDto[]> => {
     return getSymbols(context.user);
   });
+
+export const createSymbolFn = createServerFn({ method: 'POST' })
+  .middleware([errorMiddlewareFn, authMiddlewareFn])
+  .inputValidator(createSymbolApiSchema)
+  .handler(
+    async ({ data, context }): Promise<{ id: number }> => {
+      return createSymbol(data, context.user);
+    }
+  );

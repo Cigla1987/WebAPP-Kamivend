@@ -10,7 +10,7 @@ import {
   useSidebar,
 } from '#/client/components/ui/sidebar';
 import { Link, useLocation } from '@tanstack/react-router';
-import { Home, Package2 } from 'lucide-react';
+import { Home, Package2, Shapes } from 'lucide-react';
 import { Icon } from '@iconify/react';
 // import { RoleProtected } from './role-protected';
 
@@ -91,21 +91,21 @@ const AppSidebar = () => {
               {/*   </Link> */}
               {/* </SidebarMenuItem> */}
               {/**/}
-              {/* <SidebarMenuItem> */}
-              {/*   <Link to="/symbols"> */}
-              {/*     <SidebarMenuButton */}
-              {/*       className={`hover:cursor-pointer ${ */}
-              {/*         pathname === '/symbols' */}
-              {/*           ? 'bg-sidebar-accent rounded-md' */}
-              {/*           : '' */}
-              {/*       }`} */}
-              {/*     > */}
-              {/*       <Shapes /> */}
-              {/*       Symbols */}
-              {/*     </SidebarMenuButton> */}
-              {/*   </Link> */}
-              {/* </SidebarMenuItem> */}
-              {/**/}
+              <SidebarMenuItem>
+                <Link to="/symbols">
+                  <SidebarMenuButton
+                    className={`hover:cursor-pointer ${
+                      pathname === '/symbols'
+                        ? 'bg-sidebar-accent rounded-md'
+                        : ''
+                    }`}
+                  >
+                    <Shapes />
+                    Symbols
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
+
               {/* <RoleProtected allowedRoles={['owner']}> */}
               {/*   <SidebarMenuItem> */}
               {/*     <Link to="/members"> */}

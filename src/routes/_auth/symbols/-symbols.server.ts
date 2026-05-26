@@ -9,6 +9,7 @@ import { db } from '@/server/db';
 import { symbols } from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
 import type { User } from '#/server/schemas/auth';
+import z from 'zod';
 
 export type SymbolDto = {
   id: number;
@@ -16,6 +17,16 @@ export type SymbolDto = {
   symbolPicture: string;
   ownerId: string | null;
 };
+
+export const createSymbolApiSchema = z.object({
+  symbolName: z
+    .string()
+    .min(1, 'Symbol name is required')
+    .max(50, 'Symbol name must be 50 characters or less'),
+  symbolPicture: z.string().min(1, 'Symbol picture is required'),
+});
+
+type CreateSymbol = z.infer<typeof createSymbolApiSchema>;
 
 export async function getSymbols(
   currentUser: Pick<User, 'id' | 'role'>
@@ -41,4 +52,23 @@ export async function getSymbols(
   }
 
   return results;
+}
+
+export async function createSymbol(
+  data: CreateSymbol,
+  currentUser: Pick<User, 'id' | 'role'>
+): Promise<{ id: number }> {
+  const userId = currentUser.id;
+  const role = currentUser.role;
+
+  const [createdSymbol] = await db
+    .insert(symbols)
+    .values({
+      symbolName: data.symbolName,
+      symbolPicture: data.symbolPicture,
+      ownerId: role === 'superadmin' ? null : userId,
+    })
+    .returning();
+
+  return { id: createdSymbol.id };
 }
