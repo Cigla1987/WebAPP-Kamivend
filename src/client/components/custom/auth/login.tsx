@@ -7,6 +7,7 @@ import { AlertCircleIcon } from 'lucide-react';
 import LoadingSpinner from '../loading-spinner';
 import authClient from '#/client/lib/auth-client';
 import { useNavigate } from '@tanstack/react-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { FormInput } from '#/client/components/ui/form-fields';
 import { z } from 'zod';
 
@@ -20,6 +21,7 @@ const loginSchema = z.object({
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -44,6 +46,7 @@ const Login: React.FC = () => {
         if (result.error) {
           setError(result.error.message || 'Login failed');
         } else {
+          queryClient.invalidateQueries({ queryKey: ['session'] });
           navigate({ to: '/dashboard' });
         }
       } catch (err) {
