@@ -15,9 +15,11 @@ import { Route as AuthDashboardRouteImport } from './routes/_auth/dashboard'
 import { Route as publicLoginRouteImport } from './routes/(public)/login'
 import { Route as AuthSymbolsRouteRouteImport } from './routes/_auth/symbols/route'
 import { Route as AuthProductsRouteRouteImport } from './routes/_auth/products/route'
+import { Route as AuthPicturesRouteRouteImport } from './routes/_auth/pictures/route'
 import { Route as AuthMachinesRouteRouteImport } from './routes/_auth/machines/route'
 import { Route as AuthSymbolsIndexRouteImport } from './routes/_auth/symbols/index'
 import { Route as AuthProductsIndexRouteImport } from './routes/_auth/products/index'
+import { Route as AuthPicturesIndexRouteImport } from './routes/_auth/pictures/index'
 import { Route as AuthMachinesIndexRouteImport } from './routes/_auth/machines/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 import { Route as AuthMachinesMachineIdCompartmentsRouteRouteImport } from './routes/_auth/machines_/$machineId/compartments/route'
@@ -52,6 +54,11 @@ const AuthProductsRouteRoute = AuthProductsRouteRouteImport.update({
   path: '/products',
   getParentRoute: () => AuthRoute,
 } as any)
+const AuthPicturesRouteRoute = AuthPicturesRouteRouteImport.update({
+  id: '/pictures',
+  path: '/pictures',
+  getParentRoute: () => AuthRoute,
+} as any)
 const AuthMachinesRouteRoute = AuthMachinesRouteRouteImport.update({
   id: '/machines',
   path: '/machines',
@@ -66,6 +73,11 @@ const AuthProductsIndexRoute = AuthProductsIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AuthProductsRouteRoute,
+} as any)
+const AuthPicturesIndexRoute = AuthPicturesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AuthPicturesRouteRoute,
 } as any)
 const AuthMachinesIndexRoute = AuthMachinesIndexRouteImport.update({
   id: '/',
@@ -93,12 +105,14 @@ const AuthMachinesMachineIdCompartmentsIndexRoute =
 export interface FileRoutesByFullPath {
   '/': typeof publicIndexRoute
   '/machines': typeof AuthMachinesRouteRouteWithChildren
+  '/pictures': typeof AuthPicturesRouteRouteWithChildren
   '/products': typeof AuthProductsRouteRouteWithChildren
   '/symbols': typeof AuthSymbolsRouteRouteWithChildren
   '/login': typeof publicLoginRoute
   '/dashboard': typeof AuthDashboardRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/machines/': typeof AuthMachinesIndexRoute
+  '/pictures/': typeof AuthPicturesIndexRoute
   '/products/': typeof AuthProductsIndexRoute
   '/symbols/': typeof AuthSymbolsIndexRoute
   '/machines/$machineId/compartments': typeof AuthMachinesMachineIdCompartmentsRouteRouteWithChildren
@@ -110,6 +124,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthDashboardRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/machines': typeof AuthMachinesIndexRoute
+  '/pictures': typeof AuthPicturesIndexRoute
   '/products': typeof AuthProductsIndexRoute
   '/symbols': typeof AuthSymbolsIndexRoute
   '/machines/$machineId/compartments': typeof AuthMachinesMachineIdCompartmentsIndexRoute
@@ -118,6 +133,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_auth': typeof AuthRouteWithChildren
   '/_auth/machines': typeof AuthMachinesRouteRouteWithChildren
+  '/_auth/pictures': typeof AuthPicturesRouteRouteWithChildren
   '/_auth/products': typeof AuthProductsRouteRouteWithChildren
   '/_auth/symbols': typeof AuthSymbolsRouteRouteWithChildren
   '/(public)/login': typeof publicLoginRoute
@@ -125,6 +141,7 @@ export interface FileRoutesById {
   '/(public)/': typeof publicIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_auth/machines/': typeof AuthMachinesIndexRoute
+  '/_auth/pictures/': typeof AuthPicturesIndexRoute
   '/_auth/products/': typeof AuthProductsIndexRoute
   '/_auth/symbols/': typeof AuthSymbolsIndexRoute
   '/_auth/machines_/$machineId/compartments': typeof AuthMachinesMachineIdCompartmentsRouteRouteWithChildren
@@ -135,12 +152,14 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/machines'
+    | '/pictures'
     | '/products'
     | '/symbols'
     | '/login'
     | '/dashboard'
     | '/api/auth/$'
     | '/machines/'
+    | '/pictures/'
     | '/products/'
     | '/symbols/'
     | '/machines/$machineId/compartments'
@@ -152,6 +171,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/api/auth/$'
     | '/machines'
+    | '/pictures'
     | '/products'
     | '/symbols'
     | '/machines/$machineId/compartments'
@@ -159,6 +179,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/_auth'
     | '/_auth/machines'
+    | '/_auth/pictures'
     | '/_auth/products'
     | '/_auth/symbols'
     | '/(public)/login'
@@ -166,6 +187,7 @@ export interface FileRouteTypes {
     | '/(public)/'
     | '/api/auth/$'
     | '/_auth/machines/'
+    | '/_auth/pictures/'
     | '/_auth/products/'
     | '/_auth/symbols/'
     | '/_auth/machines_/$machineId/compartments'
@@ -223,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthProductsRouteRouteImport
       parentRoute: typeof AuthRoute
     }
+    '/_auth/pictures': {
+      id: '/_auth/pictures'
+      path: '/pictures'
+      fullPath: '/pictures'
+      preLoaderRoute: typeof AuthPicturesRouteRouteImport
+      parentRoute: typeof AuthRoute
+    }
     '/_auth/machines': {
       id: '/_auth/machines'
       path: '/machines'
@@ -243,6 +272,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/products/'
       preLoaderRoute: typeof AuthProductsIndexRouteImport
       parentRoute: typeof AuthProductsRouteRoute
+    }
+    '/_auth/pictures/': {
+      id: '/_auth/pictures/'
+      path: '/'
+      fullPath: '/pictures/'
+      preLoaderRoute: typeof AuthPicturesIndexRouteImport
+      parentRoute: typeof AuthPicturesRouteRoute
     }
     '/_auth/machines/': {
       id: '/_auth/machines/'
@@ -286,6 +322,17 @@ const AuthMachinesRouteRouteChildren: AuthMachinesRouteRouteChildren = {
 const AuthMachinesRouteRouteWithChildren =
   AuthMachinesRouteRoute._addFileChildren(AuthMachinesRouteRouteChildren)
 
+interface AuthPicturesRouteRouteChildren {
+  AuthPicturesIndexRoute: typeof AuthPicturesIndexRoute
+}
+
+const AuthPicturesRouteRouteChildren: AuthPicturesRouteRouteChildren = {
+  AuthPicturesIndexRoute: AuthPicturesIndexRoute,
+}
+
+const AuthPicturesRouteRouteWithChildren =
+  AuthPicturesRouteRoute._addFileChildren(AuthPicturesRouteRouteChildren)
+
 interface AuthProductsRouteRouteChildren {
   AuthProductsIndexRoute: typeof AuthProductsIndexRoute
 }
@@ -325,6 +372,7 @@ const AuthMachinesMachineIdCompartmentsRouteRouteWithChildren =
 
 interface AuthRouteChildren {
   AuthMachinesRouteRoute: typeof AuthMachinesRouteRouteWithChildren
+  AuthPicturesRouteRoute: typeof AuthPicturesRouteRouteWithChildren
   AuthProductsRouteRoute: typeof AuthProductsRouteRouteWithChildren
   AuthSymbolsRouteRoute: typeof AuthSymbolsRouteRouteWithChildren
   AuthDashboardRoute: typeof AuthDashboardRoute
@@ -333,6 +381,7 @@ interface AuthRouteChildren {
 
 const AuthRouteChildren: AuthRouteChildren = {
   AuthMachinesRouteRoute: AuthMachinesRouteRouteWithChildren,
+  AuthPicturesRouteRoute: AuthPicturesRouteRouteWithChildren,
   AuthProductsRouteRoute: AuthProductsRouteRouteWithChildren,
   AuthSymbolsRouteRoute: AuthSymbolsRouteRouteWithChildren,
   AuthDashboardRoute: AuthDashboardRoute,

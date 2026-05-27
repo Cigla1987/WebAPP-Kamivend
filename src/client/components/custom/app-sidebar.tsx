@@ -10,7 +10,7 @@ import {
   useSidebar,
 } from '#/client/components/ui/sidebar';
 import { Link, useLocation } from '@tanstack/react-router';
-import { Home, Package2, Shapes } from 'lucide-react';
+import { FileImage, Home, Package2, Shapes } from 'lucide-react';
 import { Icon } from '@iconify/react';
 // import { RoleProtected } from './role-protected';
 
@@ -76,21 +76,21 @@ const AppSidebar = () => {
                 </Link>
               </SidebarMenuItem>
 
-              {/* <SidebarMenuItem> */}
-              {/*   <Link to="/pictures"> */}
-              {/*     <SidebarMenuButton */}
-              {/*       className={`hover:cursor-pointer ${ */}
-              {/*         pathname === '/pictures' */}
-              {/*           ? 'bg-sidebar-accent rounded-md' */}
-              {/*           : '' */}
-              {/*       }`} */}
-              {/*     > */}
-              {/*       <FileImage /> */}
-              {/*       Pictures */}
-              {/*     </SidebarMenuButton> */}
-              {/*   </Link> */}
-              {/* </SidebarMenuItem> */}
-              {/**/}
+              <SidebarMenuItem>
+                <Link to="/pictures">
+                  <SidebarMenuButton
+                    className={`hover:cursor-pointer ${
+                      pathname === '/pictures'
+                        ? 'bg-sidebar-accent rounded-md'
+                        : ''
+                    }`}
+                  >
+                    <FileImage />
+                    Pictures
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
+
               <SidebarMenuItem>
                 <Link to="/symbols">
                   <SidebarMenuButton
