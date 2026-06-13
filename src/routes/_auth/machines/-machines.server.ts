@@ -103,6 +103,7 @@ export async function getMachines(
         machines.machineName,
         machines.serialNumber,
         machines.productionYear,
+        machineModes.id,
         machineModes.machineModeName,
         machineTypes.machineTypeName,
         machines.compartmentCount,
