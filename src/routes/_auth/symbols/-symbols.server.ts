@@ -8,7 +8,8 @@
 import { db } from '@/server/db';
 import { UserRole } from '#/shared/enums';
 import { symbols } from '@/server/db/schema';
-import { eq } from 'drizzle-orm';
+import { user } from '@/server/db/schema/auth';
+import { eq, isNull, or } from 'drizzle-orm';
 import type { User } from '#/server/schemas/auth';
 import z from 'zod';
 
@@ -48,8 +49,28 @@ export async function getSymbols(
 
   if (role === UserRole.Superadmin) {
     results = await baseQuery;
+  } else if (role === UserRole.Owner) {
+    results = await baseQuery.where(
+      or(eq(symbols.ownerId, userId), isNull(symbols.ownerId))
+    );
+  } else if (role === UserRole.Employee) {
+    const [employee] = await db
+      .select({ ownerId: user.ownerId })
+      .from(user)
+      .where(eq(user.id, userId))
+      .limit(1);
+
+    const ownerId = employee?.ownerId;
+
+    if (ownerId) {
+      results = await baseQuery.where(
+        or(eq(symbols.ownerId, ownerId), isNull(symbols.ownerId))
+      );
+    } else {
+      results = await baseQuery.where(isNull(symbols.ownerId));
+    }
   } else {
-    results = await baseQuery.where(eq(symbols.ownerId, userId));
+    throw new Error('Unauthorized');
   }
 
   return results;

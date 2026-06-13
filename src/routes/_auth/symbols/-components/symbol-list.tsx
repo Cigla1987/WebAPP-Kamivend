@@ -24,7 +24,7 @@ const SymbolsList: FC<SymbolsListProps> = ({ symbols, tableColumns }) => {
     },
   ];
 
-  const actions = userRole === UserRole.Superadmin && (
+  const actions = (userRole === UserRole.Superadmin || userRole === UserRole.Owner) && (
     <>
       <CreateSymbol />
     </>
