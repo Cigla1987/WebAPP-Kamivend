@@ -146,7 +146,7 @@ const seedDb = createServerOnlyFn(async (): Promise<boolean> => {
     }
 
     if (existingSuperAdmin.length === 0) {
-      const superAdminUser = await auth.api.signUpEmail({
+      const superAdminUser = await auth.api.createUser({
         body: {
           name: adminName,
           email: adminEmail,

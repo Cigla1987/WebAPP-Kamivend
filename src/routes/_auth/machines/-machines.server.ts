@@ -88,13 +88,10 @@ export async function getMachines(
   let results: MachineDto[];
 
   if (role === 'superadmin') {
-    // Superadmin sees all machines
     results = await baseQuery;
   } else if (role === 'owner') {
-    // Owner sees only their machines
     results = await baseQuery.where(eq(machines.ownerId, userId));
   } else if (role === 'member') {
-    // Member sees machines where they manage compartments
     results = await baseQuery
       .innerJoin(compartments, eq(machines.id, compartments.machineId))
       .where(eq(compartments.managedBy, userId))

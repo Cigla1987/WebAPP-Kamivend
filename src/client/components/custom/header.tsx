@@ -10,7 +10,7 @@ const Header = () => {
 
   const handleLogout = async () => {
     await authClient.signOut();
-    queryClient.invalidateQueries({ queryKey: ['session'] });
+    queryClient.clear();
     router.navigate({ to: '/login' });
   };
 
