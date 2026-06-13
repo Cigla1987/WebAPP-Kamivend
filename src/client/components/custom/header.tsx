@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { useMatches, Link, useRouter } from '@tanstack/react-router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { machinesQueryOptions } from '#/routes/_auth/machines/-machines.queries';
@@ -84,7 +85,7 @@ const Header = () => {
               // For the machine route, render the machine name dropdown + compartments
               if (isMachineMatch && compartmentMachines) {
                 return (
-                  <>
+                  <Fragment key={match.id}>
                     <BreadcrumbItem>
                       {hasMultipleMachines ? (
                         <DropdownMenu>
@@ -124,13 +125,13 @@ const Header = () => {
                         {match.staticData.title}
                       </BreadcrumbPage>
                     </BreadcrumbItem>
-                  </>
+                  </Fragment>
                 );
               }
 
               // For other routes, render link or page
               return (
-                <>
+                <Fragment key={match.id}>
                   <BreadcrumbItem>
                     {isLast ? (
                       <BreadcrumbPage>
@@ -147,8 +148,8 @@ const Header = () => {
                     )}
                   </BreadcrumbItem>
                   {!isLast && <BreadcrumbSeparator />}
-                </>
-              );
+                  </Fragment>
+                );
             })}
           </BreadcrumbList>
         </Breadcrumb>

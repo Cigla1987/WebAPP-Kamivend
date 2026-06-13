@@ -25,6 +25,7 @@ export type MachineDto = {
   productionYear: number;
   compartmentCount: number;
   machineDateCreated: Date | null;
+  machineModeId: string | null;
   machineModeName: string | null;
   machineTypeName: string | null;
   ownerName: string | null;
@@ -77,6 +78,7 @@ export async function getMachines(
       productionYear: machines.productionYear,
       compartmentCount: machines.compartmentCount,
       machineDateCreated: machines.machineDateCreated,
+      machineModeId: machineModes.id,
       machineModeName: machineModes.machineModeName,
       machineTypeName: machineTypes.machineTypeName,
       ownerName: user.name,
@@ -210,6 +212,37 @@ export async function updateMachineOwner(
     .update(compartments)
     .set({ managedBy: owner.id })
     .where(eq(compartments.machineId, existingMachine.id));
+
+  return { machineName: existingMachine.machineName };
+}
+
+export const updateMachineModeApiSchema = z.object({
+  machineId: z.uuid('Machine ID is required'),
+  machineModeId: z.uuid('Machine mode is required'),
+});
+
+type UpdateMachineMode = z.infer<typeof updateMachineModeApiSchema>;
+
+export async function updateMachineMode(
+  data: UpdateMachineMode
+): Promise<{ machineName: string }> {
+  const [existingMachine] = await db
+    .select({
+      id: machines.id,
+      machineName: machines.machineName,
+    })
+    .from(machines)
+    .where(eq(machines.id, data.machineId))
+    .limit(1);
+
+  if (!existingMachine) {
+    throw new Error('Machine not found.');
+  }
+
+  await db
+    .update(machines)
+    .set({ machineModeId: data.machineModeId })
+    .where(eq(machines.id, data.machineId));
 
   return { machineName: existingMachine.machineName };
 }

@@ -29,10 +29,9 @@ const MachinesList: FC<MachinesListProps> = ({ machines, machineTypes }) => {
     })),
   ];
 
-  const canAssign = userRole === 'superadmin' || userRole === 'owner';
-  const actions = canAssign && (
+  const actions = userRole === 'superadmin' && (
     <>
-      {userRole === 'superadmin' && <CreateMachine />}
+      <CreateMachine />
       <AssignMachine />
     </>
   );

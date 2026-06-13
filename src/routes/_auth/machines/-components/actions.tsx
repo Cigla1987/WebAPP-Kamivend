@@ -10,7 +10,7 @@ import {
 import { Button } from '#/client/components/ui/button';
 import { Link, useRouteContext } from '@tanstack/react-router';
 import { useState } from 'react';
-// import UpdateMachineMode from './update-machine-mode';
+import UpdateMachineMode from './update-machine-mode';
 
 const Actions = ({ machine }: { machine: MachineDto }) => {
   const [isUpdateOpen, setIsUpdateOpen] = useState(false);
@@ -23,41 +23,42 @@ const Actions = ({ machine }: { machine: MachineDto }) => {
   };
 
   return (
-    <DropdownMenu modal={false}>
-      {machine.machineTypeName === MachineType.Lockbox && (
-        <DropdownMenuTrigger
-          render={
-            <Button variant="ghost" className="h-8 w-8 p-0">
-              <span className="sr-only">Open menu</span>
-              <MoreHorizontal className="h-4 w-4" />
-            </Button>
-          }
-        ></DropdownMenuTrigger>
-      )}
-      <DropdownMenuContent align="end">
-        {/* Available to all authenticated users */}
-        <Link
-          to="/machines/$machineId/compartments"
-          params={{ machineId: machine.id.toString() }}
-        >
-          <DropdownMenuItem>View compartments</DropdownMenuItem>
-        </Link>
+    <>
+      <DropdownMenu modal={false}>
+        {machine.machineTypeName === MachineType.Lockbox && (
+          <DropdownMenuTrigger
+            render={
+              <Button variant="ghost" className="h-8 w-8 p-0">
+                <span className="sr-only">Open menu</span>
+                <MoreHorizontal className="h-4 w-4" />
+              </Button>
+            }
+          ></DropdownMenuTrigger>
+        )}
+        <DropdownMenuContent align="end">
+          {/* Available to all authenticated users */}
+          <Link
+            to="/machines/$machineId/compartments"
+            params={{ machineId: machine.id.toString() }}
+          >
+            <DropdownMenuItem>View compartments</DropdownMenuItem>
+          </Link>
 
-        {/* Owner-only actions */}
-        {userRole === 'owner' && (
-          <>
+          {/* Owner-only actions */}
+          {userRole === 'owner' && (
             <DropdownMenuItem onClick={handleUpdate}>
               Update machine mode
             </DropdownMenuItem>
-            {/* <UpdateMachineMode */}
-            {/*   isOpen={isUpdateOpen} */}
-            {/*   onOpenChange={setIsUpdateOpen} */}
-            {/*   machineId={machine.id} */}
-            {/* /> */}
-          </>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <UpdateMachineMode
+        isOpen={isUpdateOpen}
+        onOpenChange={setIsUpdateOpen}
+        machine={machine}
+      />
+    </>
   );
 };
 

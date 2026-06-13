@@ -27,7 +27,7 @@ export const createProductApiSchema = z.object({
   currencyId: z.uuid('Currency ID must be a valid UUID'),
   defaultQuantity: z.number().positive('Quantity must be a positive number'),
   unitId: z.uuid('Unit ID must be a valid UUID'),
-  productSymbolId: z.uuid().optional(), // TODO check frontend-backend optional
+  productSymbolId: z.uuid().nullish(),
 });
 
 export const updateProductDiscountApiSchema = z.object({

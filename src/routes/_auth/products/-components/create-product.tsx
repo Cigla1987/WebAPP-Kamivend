@@ -48,7 +48,7 @@ const createProductSchema = z.object({
     .number('Quantity is required.')
     .positive('Quantity cannot be less than 0.'),
   unitId: z.uuid('Unit is required.'),
-  productSymbolId: z.uuid().optional(),
+  productSymbolId: z.uuid().nullish(),
 });
 
 const FormSkeletons = () => (
@@ -103,7 +103,7 @@ const FormContent = ({
       currencyId: '',
       defaultQuantity: 1,
       unitId: '',
-      productSymbolId: '',
+      productSymbolId: null,
     },
     validators: {
       onSubmit: ({ value }) => {

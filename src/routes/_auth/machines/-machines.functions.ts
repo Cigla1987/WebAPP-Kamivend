@@ -14,8 +14,10 @@ import {
   getMachineModes,
   createMachine,
   updateMachineOwner,
+  updateMachineMode,
   assignMachineApiSchema,
   createMachineApiSchema,
+  updateMachineModeApiSchema,
 } from './-machines.server';
 import type {
   MachineDto,
@@ -55,4 +57,11 @@ export const assignMachineFn = createServerFn({ method: 'POST' })
   .inputValidator(assignMachineApiSchema)
   .handler(async ({ data }): Promise<{ machineName: string }> => {
     return updateMachineOwner(data);
+  });
+
+export const updateMachineModeFn = createServerFn({ method: 'POST' })
+  .middleware([errorMiddlewareFn, authMiddlewareFn])
+  .inputValidator(updateMachineModeApiSchema)
+  .handler(async ({ data }): Promise<{ machineName: string }> => {
+    return updateMachineMode(data);
   });
