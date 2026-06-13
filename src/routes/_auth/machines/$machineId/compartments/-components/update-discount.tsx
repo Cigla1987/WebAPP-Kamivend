@@ -54,7 +54,7 @@ const UpdateDiscount: React.FC<UpdateDiscountProps> = ({
   const [loading, setLoading] = useState(false);
   const [isDatePopoverOpen, setIsDatePopoverOpen] = useState(false);
   const { machineId } = useParams({
-    from: '/_auth/machines_/$machineId/compartments/',
+    from: '/_auth/machines/$machineId/compartments/',
   });
   const queryClient = useQueryClient();
 

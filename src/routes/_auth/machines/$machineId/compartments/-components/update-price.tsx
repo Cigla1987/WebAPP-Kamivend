@@ -15,71 +15,55 @@ import {
   FieldLabel,
   FieldError,
 } from '#/client/components/ui/field';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useParams, getRouteApi } from '@tanstack/react-router';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '#/client/components/ui/select';
-import { updateManagedBy } from '../-compartments.functions';
-import { getUsersByOwner } from '#/routes/_auth/machines/-users.functions';
+import { useQueryClient } from '@tanstack/react-query';
+import { useParams } from '@tanstack/react-router';
+import { Input } from '#/client/components/ui/input';
+import { Checkbox } from '#/client/components/ui/checkbox';
+import { updatePrice } from '../-compartments.functions';
 import type { CompartmentDto } from '../-compartments.server';
-import type { UserDto } from '#/routes/_auth/machines/-users.server';
 
-const authenticatedRoute = getRouteApi('/_auth');
-
-const updateManagedBySchema = z.object({
-  managedBy: z.string().nullable(),
+const updatePriceSchema = z.object({
+  newPrice: z.coerce
+    .number<number>('New price needs to be a number!')
+    .positive("New price can't be less than 0."),
+  updateAll: z.boolean(),
 });
 
-type UpdateManagedByProps = {
+type UpdatePriceProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   compartment: CompartmentDto;
 };
 
-const UpdateManagedBy: React.FC<UpdateManagedByProps> = ({
+const UpdatePrice: React.FC<UpdatePriceProps> = ({
   isOpen,
   onOpenChange,
   compartment,
 }) => {
-  const { user } = authenticatedRoute.useRouteContext();
-  const userId = user.id;
   const [loading, setLoading] = useState(false);
-
   const { machineId } = useParams({
-    from: '/_auth/machines_/$machineId/compartments/',
+    from: '/_auth/machines/$machineId/compartments/',
   });
-
-  const {
-    data: ownerMembers,
-    isLoading: isOwnerMembersLoading,
-    isError: isOwnerMembersError,
-  } = useQuery({
-    queryKey: ['users', 'byOwner', userId],
-    queryFn: () => getUsersByOwner({ data: { ownerId: userId!.toString() } }),
-    enabled: !!userId,
-  });
-
   const queryClient = useQueryClient();
 
   const { Field, handleSubmit, state } = useForm({
     defaultValues: {
-      managedBy: compartment.managedBy,
+      newPrice: compartment.currentPrice
+        ? parseFloat(compartment.currentPrice)
+        : 0,
+      updateAll: false,
     },
     validators: {
-      onSubmit: updateManagedBySchema,
+      onSubmit: updatePriceSchema,
     },
     onSubmit: async ({ value }) => {
       try {
         setLoading(true);
-        await updateManagedBy({
+        await updatePrice({
           data: {
             id: compartment.id,
-            managedBy: value.managedBy,
+            newPrice: value.newPrice,
+            updateAll: value.updateAll,
           },
         });
 
@@ -90,7 +74,7 @@ const UpdateManagedBy: React.FC<UpdateManagedByProps> = ({
 
         onOpenChange(false);
       } catch (error) {
-        toast.error('Failed to update managed by!');
+        toast.error('Failed to update price!');
       } finally {
         setLoading(false);
       }
@@ -103,7 +87,7 @@ const UpdateManagedBy: React.FC<UpdateManagedByProps> = ({
         <DialogHeader
           className={`transition-all duration-300 ${loading ? 'blur-sm' : ''}`}
         >
-          <DialogTitle>Update managed by</DialogTitle>
+          <DialogTitle>Update price</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={(e) => {
@@ -123,33 +107,37 @@ const UpdateManagedBy: React.FC<UpdateManagedByProps> = ({
             >
               <FieldGroup className="grid w-full items-center gap-4">
                 <Field
-                  name="managedBy"
+                  name="newPrice"
                   children={(field) => (
                     <div className="flex flex-col space-y-1.5">
-                      <FieldLabel>Select member</FieldLabel>
-                      <Select
-                        value={field.state.value || 'null'}
-                        onValueChange={(value) =>
-                          field.handleChange(value === 'null' ? null : value)
+                      <FieldLabel htmlFor={field.name}>New price</FieldLabel>
+                      <Input
+                        id={field.name}
+                        name={field.name}
+                        type="number"
+                        value={field.state.value}
+                        onBlur={field.handleBlur}
+                        onChange={(e) =>
+                          field.handleChange(e.target.valueAsNumber)
                         }
-                      >
-                        <SelectTrigger className="w-full">
-                          <SelectValue placeholder="Select user" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="null">No user</SelectItem>
-                          {!isOwnerMembersLoading &&
-                            !isOwnerMembersError &&
-                            ownerMembers?.map((member: UserDto) => (
-                              <SelectItem key={member.id} value={member.id}>
-                                {member.username}
-                              </SelectItem>
-                            ))}
-                        </SelectContent>
-                      </Select>
+                      />
                       {field.state.meta.errors.length > 0 && (
                         <FieldError errors={field.state.meta.errors} />
                       )}
+                    </div>
+                  )}
+                />
+                <Field
+                  name="updateAll"
+                  children={(field) => (
+                    <div className="flex flex-row items-start space-y-0 space-x-3">
+                      <Checkbox
+                        checked={field.state.value}
+                        onCheckedChange={(checked) =>
+                          field.handleChange(checked as boolean)
+                        }
+                      />
+                      <FieldLabel>Update all</FieldLabel>
                     </div>
                   )}
                 />
@@ -166,4 +154,4 @@ const UpdateManagedBy: React.FC<UpdateManagedByProps> = ({
     </Dialog>
   );
 };
-export default UpdateManagedBy;
+export default UpdatePrice;

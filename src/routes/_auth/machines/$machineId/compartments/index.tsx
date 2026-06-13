@@ -5,7 +5,7 @@ import { useColumns } from './-components/columns';
 import CompartmentsList from './-components/compartment-list';
 
 export const Route = createFileRoute(
-  '/_auth/machines_/$machineId/compartments/'
+  '/_auth/machines/$machineId/compartments/'
 )({
   loader: async ({ params, context: { queryClient } }) => {
     const { machineId } = params;

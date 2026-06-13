@@ -24,8 +24,8 @@ import { Route as AuthPicturesIndexRouteImport } from './routes/_auth/pictures/i
 import { Route as AuthMembersIndexRouteImport } from './routes/_auth/members/index'
 import { Route as AuthMachinesIndexRouteImport } from './routes/_auth/machines/index'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
-import { Route as AuthMachinesMachineIdCompartmentsRouteRouteImport } from './routes/_auth/machines_/$machineId/compartments/route'
-import { Route as AuthMachinesMachineIdCompartmentsIndexRouteImport } from './routes/_auth/machines_/$machineId/compartments/index'
+import { Route as AuthMachinesMachineIdCompartmentsRouteRouteImport } from './routes/_auth/machines/$machineId/compartments/route'
+import { Route as AuthMachinesMachineIdCompartmentsIndexRouteImport } from './routes/_auth/machines/$machineId/compartments/index'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
@@ -103,9 +103,9 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 } as any)
 const AuthMachinesMachineIdCompartmentsRouteRoute =
   AuthMachinesMachineIdCompartmentsRouteRouteImport.update({
-    id: '/machines_/$machineId/compartments',
-    path: '/machines/$machineId/compartments',
-    getParentRoute: () => AuthRoute,
+    id: '/$machineId/compartments',
+    path: '/$machineId/compartments',
+    getParentRoute: () => AuthMachinesRouteRoute,
   } as any)
 const AuthMachinesMachineIdCompartmentsIndexRoute =
   AuthMachinesMachineIdCompartmentsIndexRouteImport.update({
@@ -161,8 +161,8 @@ export interface FileRoutesById {
   '/_auth/pictures/': typeof AuthPicturesIndexRoute
   '/_auth/products/': typeof AuthProductsIndexRoute
   '/_auth/symbols/': typeof AuthSymbolsIndexRoute
-  '/_auth/machines_/$machineId/compartments': typeof AuthMachinesMachineIdCompartmentsRouteRouteWithChildren
-  '/_auth/machines_/$machineId/compartments/': typeof AuthMachinesMachineIdCompartmentsIndexRoute
+  '/_auth/machines/$machineId/compartments': typeof AuthMachinesMachineIdCompartmentsRouteRouteWithChildren
+  '/_auth/machines/$machineId/compartments/': typeof AuthMachinesMachineIdCompartmentsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -212,8 +212,8 @@ export interface FileRouteTypes {
     | '/_auth/pictures/'
     | '/_auth/products/'
     | '/_auth/symbols/'
-    | '/_auth/machines_/$machineId/compartments'
-    | '/_auth/machines_/$machineId/compartments/'
+    | '/_auth/machines/$machineId/compartments'
+    | '/_auth/machines/$machineId/compartments/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -330,15 +330,15 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_auth/machines_/$machineId/compartments': {
-      id: '/_auth/machines_/$machineId/compartments'
-      path: '/machines/$machineId/compartments'
+    '/_auth/machines/$machineId/compartments': {
+      id: '/_auth/machines/$machineId/compartments'
+      path: '/$machineId/compartments'
       fullPath: '/machines/$machineId/compartments'
       preLoaderRoute: typeof AuthMachinesMachineIdCompartmentsRouteRouteImport
-      parentRoute: typeof AuthRoute
+      parentRoute: typeof AuthMachinesRouteRoute
     }
-    '/_auth/machines_/$machineId/compartments/': {
-      id: '/_auth/machines_/$machineId/compartments/'
+    '/_auth/machines/$machineId/compartments/': {
+      id: '/_auth/machines/$machineId/compartments/'
       path: '/'
       fullPath: '/machines/$machineId/compartments/'
       preLoaderRoute: typeof AuthMachinesMachineIdCompartmentsIndexRouteImport
@@ -347,12 +347,30 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthMachinesMachineIdCompartmentsRouteRouteChildren {
+  AuthMachinesMachineIdCompartmentsIndexRoute: typeof AuthMachinesMachineIdCompartmentsIndexRoute
+}
+
+const AuthMachinesMachineIdCompartmentsRouteRouteChildren: AuthMachinesMachineIdCompartmentsRouteRouteChildren =
+  {
+    AuthMachinesMachineIdCompartmentsIndexRoute:
+      AuthMachinesMachineIdCompartmentsIndexRoute,
+  }
+
+const AuthMachinesMachineIdCompartmentsRouteRouteWithChildren =
+  AuthMachinesMachineIdCompartmentsRouteRoute._addFileChildren(
+    AuthMachinesMachineIdCompartmentsRouteRouteChildren,
+  )
+
 interface AuthMachinesRouteRouteChildren {
   AuthMachinesIndexRoute: typeof AuthMachinesIndexRoute
+  AuthMachinesMachineIdCompartmentsRouteRoute: typeof AuthMachinesMachineIdCompartmentsRouteRouteWithChildren
 }
 
 const AuthMachinesRouteRouteChildren: AuthMachinesRouteRouteChildren = {
   AuthMachinesIndexRoute: AuthMachinesIndexRoute,
+  AuthMachinesMachineIdCompartmentsRouteRoute:
+    AuthMachinesMachineIdCompartmentsRouteRouteWithChildren,
 }
 
 const AuthMachinesRouteRouteWithChildren =
@@ -402,21 +420,6 @@ const AuthSymbolsRouteRouteChildren: AuthSymbolsRouteRouteChildren = {
 const AuthSymbolsRouteRouteWithChildren =
   AuthSymbolsRouteRoute._addFileChildren(AuthSymbolsRouteRouteChildren)
 
-interface AuthMachinesMachineIdCompartmentsRouteRouteChildren {
-  AuthMachinesMachineIdCompartmentsIndexRoute: typeof AuthMachinesMachineIdCompartmentsIndexRoute
-}
-
-const AuthMachinesMachineIdCompartmentsRouteRouteChildren: AuthMachinesMachineIdCompartmentsRouteRouteChildren =
-  {
-    AuthMachinesMachineIdCompartmentsIndexRoute:
-      AuthMachinesMachineIdCompartmentsIndexRoute,
-  }
-
-const AuthMachinesMachineIdCompartmentsRouteRouteWithChildren =
-  AuthMachinesMachineIdCompartmentsRouteRoute._addFileChildren(
-    AuthMachinesMachineIdCompartmentsRouteRouteChildren,
-  )
-
 interface AuthRouteChildren {
   AuthMachinesRouteRoute: typeof AuthMachinesRouteRouteWithChildren
   AuthMembersRouteRoute: typeof AuthMembersRouteRouteWithChildren
@@ -424,7 +427,6 @@ interface AuthRouteChildren {
   AuthProductsRouteRoute: typeof AuthProductsRouteRouteWithChildren
   AuthSymbolsRouteRoute: typeof AuthSymbolsRouteRouteWithChildren
   AuthDashboardRoute: typeof AuthDashboardRoute
-  AuthMachinesMachineIdCompartmentsRouteRoute: typeof AuthMachinesMachineIdCompartmentsRouteRouteWithChildren
 }
 
 const AuthRouteChildren: AuthRouteChildren = {
@@ -434,8 +436,6 @@ const AuthRouteChildren: AuthRouteChildren = {
   AuthProductsRouteRoute: AuthProductsRouteRouteWithChildren,
   AuthSymbolsRouteRoute: AuthSymbolsRouteRouteWithChildren,
   AuthDashboardRoute: AuthDashboardRoute,
-  AuthMachinesMachineIdCompartmentsRouteRoute:
-    AuthMachinesMachineIdCompartmentsRouteRouteWithChildren,
 }
 
 const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
