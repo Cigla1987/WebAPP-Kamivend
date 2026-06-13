@@ -12,7 +12,7 @@ import type { User } from '#/server/schemas/auth';
 import z from 'zod';
 
 export type PictureDto = {
-  id: number;
+  id: string;
   pictureName: string;
   pictureContent: string | null;
   pictureDateCreated: Date | null;
@@ -28,7 +28,7 @@ export const createPictureApiSchema = z.object({
 });
 
 export const deletePictureApiSchema = z.object({
-  pictureId: z.int().positive('Picture ID must be a positive number'),
+  pictureId: z.uuid('Picture ID must be a valid UUID'),
 });
 
 type CreatePicture = z.infer<typeof createPictureApiSchema>;
@@ -95,7 +95,7 @@ export async function deletePicture(
 
   const baseQuery = db.select({ id: pictures.id }).from(pictures);
 
-  let existing: { id: number }[];
+  let existing: { id: string }[];
 
   if (role === 'superadmin') {
     existing = await baseQuery.where(eq(pictures.id, data.pictureId));

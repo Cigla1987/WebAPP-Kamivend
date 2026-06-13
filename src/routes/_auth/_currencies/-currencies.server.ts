@@ -9,7 +9,7 @@ import { db } from '@/server/db';
 import { currencies } from '@/server/db/schema';
 
 export type CurrencyDto = {
-  id: number;
+  id: string;
   currencyName: string;
   currencySymbol: string;
 };

@@ -13,7 +13,7 @@ const Actions = ({
   pictureId,
   pictureName,
 }: {
-  pictureId: number;
+  pictureId: string;
   pictureName: string;
 }) => {
   const [isDeletePictureOpen, setIsDeletePictureOpen] = useState(false);

@@ -14,7 +14,7 @@ export const Route = createFileRoute(
     await queryClient.ensureQueryData({
       queryKey: ['compartments', 'byMachine', machineId],
       queryFn: () =>
-        getCompartmentsByMachine({ data: { machineId: Number(machineId) } }),
+        getCompartmentsByMachine({ data: { machineId } }),
     });
     return { machineId };
   },
@@ -29,7 +29,7 @@ function CompartmentsIndex() {
   const { data: compartments } = useSuspenseQuery({
     queryKey: ['compartments', 'byMachine', machineId],
     queryFn: () =>
-      getCompartmentsByMachine({ data: { machineId: Number(machineId) } }),
+      getCompartmentsByMachine({ data: { machineId } }),
   });
   const columns = useColumns();
 

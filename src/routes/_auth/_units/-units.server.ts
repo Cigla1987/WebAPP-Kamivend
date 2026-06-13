@@ -9,7 +9,7 @@ import { db } from '@/server/db';
 import { units } from '@/server/db/schema';
 
 export type UnitDto = {
-  id: number;
+  id: string;
   unitName: string;
   unitSymbol: string;
 };

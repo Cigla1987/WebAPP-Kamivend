@@ -25,7 +25,7 @@ import { auth } from '#/server/lib/auth';
 export const getCompartmentsByMachine = createServerFn({
   method: 'GET',
 })
-  .inputValidator((data: { machineId: number }) => data)
+  .inputValidator((data: { machineId: string }) => data)
   .handler(async ({ data }): Promise<CompartmentDto[]> => {
     const request = getRequest();
 
@@ -44,7 +44,7 @@ export const getCompartmentsByMachine = createServerFn({
  */
 export const updatePrice = createServerFn({ method: 'POST' })
   .inputValidator(
-    (data: { id: number; newPrice: number; updateAll: boolean }) => data
+    (data: { id: string; newPrice: number; updateAll: boolean }) => data
   )
   .handler(async ({ data }): Promise<void> => {
     const request = getRequest();
@@ -64,7 +64,7 @@ export const updatePrice = createServerFn({ method: 'POST' })
  * Update compartment managed by
  */
 export const updateManagedBy = createServerFn({ method: 'POST' })
-  .inputValidator((data: { id: number; managedBy: string | null }) => data)
+  .inputValidator((data: { id: string; managedBy: string | null }) => data)
   .handler(async ({ data }): Promise<void> => {
     const request = getRequest();
 
@@ -80,7 +80,7 @@ export const updateManagedBy = createServerFn({ method: 'POST' })
 export const updateDiscount = createServerFn({ method: 'POST' })
   .inputValidator(
     (data: {
-      id: number;
+      id: string;
       discountValue: number;
       discountDay: number;
       expirationDate: string;

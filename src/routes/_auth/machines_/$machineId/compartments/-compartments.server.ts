@@ -21,24 +21,24 @@ import { eq, and, asc } from 'drizzle-orm';
  * Matches the actual query result from fetchCompartmentsByMachine()
  */
 export type CompartmentDto = {
-  id: number;
-  machineId: number;
+  id: string;
+  machineId: string;
   machineName: string;
   compartmentNumber: number;
   managedBy: string | null;
   managedByUsername: string | null;
-  productId: number | null;
+  productId: string | null;
   productName: string;
   currentPrice: string;
   currencySymbol: string;
   currentQuantity: number;
   unitName: string;
-  expirationDate: Date;
+  expirationDate: Date | null;
   discountValue: number | null;
   discountDay: number | null;
   pictureContent: string | null;
   machineModeName: string;
-  lastUpdated: Date;
+  lastUpdated: Date | null;
 };
 
 /**
@@ -46,9 +46,9 @@ export type CompartmentDto = {
  * @returns Array of compartments with relations
  */
 export async function fetchCompartmentsByMachine(
-  machineId: number,
-  userId: string | null,
-  role: string | null
+  machineId: string,
+  userId: string,
+  role: string
 ): Promise<CompartmentDto[]> {
   const baseQuery = db
     .select({
@@ -108,6 +108,7 @@ export async function fetchCompartmentsByMachine(
     currentQuantity: row.currentQuantity
       ? parseFloat(row.currentQuantity.toString())
       : 0,
+    expirationDate: row.expirationDate ? new Date(row.expirationDate) : null,
   })) as CompartmentDto[];
 }
 
@@ -115,7 +116,7 @@ export async function fetchCompartmentsByMachine(
  * Update compartment price
  */
 export async function updateCompartmentPrice(
-  id: number,
+  id: string,
   newPrice: number,
   updateAll: boolean,
   userId: string
@@ -162,7 +163,7 @@ export async function updateCompartmentPrice(
  * Update compartment managed by
  */
 export async function updateCompartmentManagedBy(
-  id: number,
+  id: string,
   managedBy: string | null
 ): Promise<void> {
   await db
@@ -175,7 +176,7 @@ export async function updateCompartmentManagedBy(
  * Update compartment discount
  */
 export async function updateCompartmentDiscount(
-  id: number,
+  id: string,
   discountValue: number,
   discountDay: number,
   expirationDate: string

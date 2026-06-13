@@ -19,7 +19,7 @@ import z from 'zod';
 import { MachineType } from '#/shared/enums';
 
 export type MachineDto = {
-  id: number;
+  id: string;
   machineName: string;
   serialNumber: string;
   productionYear: number;
@@ -37,8 +37,8 @@ export const createMachineApiSchema = z.object({
     .int('Production year is required')
     .min(1900)
     .max(new Date().getFullYear() + 1),
-  machineModeId: z.int('Machine mode is required').positive(),
-  machineTypeId: z.int('Machine type is required').positive(),
+  machineModeId: z.uuid('Machine mode is required'),
+  machineTypeId: z.uuid('Machine type is required'),
   compartmentCount: z.int('Compartment count is required').min(1),
 });
 
@@ -53,12 +53,12 @@ export const assignMachineApiSchema = z.object({
 type AssignMachine = z.infer<typeof assignMachineApiSchema>;
 
 export type MachineTypeDto = {
-  id: number;
+  id: string;
   machineTypeName: string;
 };
 
 export type MachineModeDto = {
-  id: number;
+  id: string;
   machineModeName: string | null;
 };
 
@@ -126,7 +126,7 @@ export async function getMachineModes(): Promise<MachineModeDto[]> {
 
 export async function createMachine(
   data: CreateMachine
-): Promise<{ id: number }> {
+): Promise<{ id: string }> {
   const existingMachine = await getMachineBySerialNumber(data.serialNumber);
   if (existingMachine) {
     throw new Error('Machine with this serial number already exists.');
@@ -162,7 +162,10 @@ export async function createMachine(
     .returning();
 
   // Create compartments for lockbox machines
-  if (machineType.machineTypeName === MachineType.Lockbox && data.compartmentCount > 0) {
+  if (
+    machineType.machineTypeName === MachineType.Lockbox &&
+    data.compartmentCount > 0
+  ) {
     const compartmentsToInsert = Array.from(
       { length: data.compartmentCount },
       (_, index) => ({
@@ -213,7 +216,7 @@ export async function updateMachineOwner(
 
 export async function getMachineBySerialNumber(
   serialNumber: string
-): Promise<{ id: number; machineName: string } | null> {
+): Promise<{ id: string; machineName: string } | null> {
   const [machine] = await db
     .select({
       id: machines.id,

@@ -25,7 +25,7 @@ export const getColumns = (): ColumnDef<SymbolDto>[] => {
         );
       },
       cell: ({ row }) => {
-        const id: number = row.getValue('id');
+        const id: string = row.getValue('id');
         return <div className="text-center font-medium">{id}</div>;
       },
     },

@@ -34,7 +34,7 @@ export const getMachinesFn = createServerFn({ method: 'GET' })
 export const createMachineFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, authMiddlewareFn])
   .inputValidator(createMachineApiSchema)
-  .handler(async ({ data }): Promise<{ id: number }> => {
+  .handler(async ({ data }): Promise<{ id: string }> => {
     return createMachine(data);
   });
 

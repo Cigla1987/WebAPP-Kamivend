@@ -7,7 +7,7 @@ import {
 } from '#/client/components/ui/dropdown-menu';
 import { Button } from '#/client/components/ui/button';
 
-const Actions = ({ productId: _productId }: { productId: number }) => {
+const Actions = ({ productId: _productId }: { productId: string }) => {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger

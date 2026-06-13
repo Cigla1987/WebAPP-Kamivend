@@ -38,7 +38,7 @@ const resetDatabase = createServerOnlyFn(async (): Promise<boolean> => {
         machine_modes,
         machine_types,
         symbols
-        RESTART IDENTITY CASCADE
+        CASCADE
     `);
     logger.info('Database tables truncated and sequences reset');
     return true;

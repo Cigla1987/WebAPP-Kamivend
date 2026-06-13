@@ -43,12 +43,12 @@ const createProductSchema = z.object({
   defaultPrice: z
     .number('Default price is required.')
     .positive('Default price cannot be less than 0.'),
-  currencyId: z.int('Currency is required.'),
+  currencyId: z.uuid('Currency is required.'),
   defaultQuantity: z
     .number('Quantity is required.')
     .positive('Quantity cannot be less than 0.'),
-  unitId: z.number('Unit is required.'),
-  productSymbolId: z.int().optional(),
+  unitId: z.uuid('Unit is required.'),
+  productSymbolId: z.uuid().optional(),
 });
 
 const FormSkeletons = () => (
@@ -100,10 +100,10 @@ const FormContent = ({
     defaultValues: {
       productName: 'Potato',
       defaultPrice: 1,
-      currencyId: 1,
+      currencyId: '',
       defaultQuantity: 1,
-      unitId: 1,
-      productSymbolId: undefined as number | undefined,
+      unitId: '',
+      productSymbolId: '',
     },
     validators: {
       onSubmit: ({ value }) => {
@@ -221,9 +221,9 @@ const FormContent = ({
                     </FieldLabel>
                     <Select
                       items={currencyItems}
-                      value={field.state.value.toString()}
+                      value={field.state.value}
                       onValueChange={(value) =>
-                        field.handleChange(Number(value))
+                        value && field.handleChange(value)
                       }
                     >
                       <SelectTrigger>
@@ -232,10 +232,7 @@ const FormContent = ({
                       <SelectContent>
                         <SelectGroup>
                           {currencies.map((currency) => (
-                            <SelectItem
-                              key={currency.id}
-                              value={currency.id.toString()}
-                            >
+                            <SelectItem key={currency.id} value={currency.id}>
                               {currency.currencySymbol} -{' '}
                               {currency.currencyName}
                             </SelectItem>
@@ -279,9 +276,9 @@ const FormContent = ({
                     <FieldLabel htmlFor={field.name}>Default unit</FieldLabel>
                     <Select
                       items={unitItems}
-                      value={field.state.value.toString()}
+                      value={field.state.value}
                       onValueChange={(value) =>
-                        field.handleChange(Number(value))
+                        value && field.handleChange(value)
                       }
                     >
                       <SelectTrigger>
@@ -290,10 +287,7 @@ const FormContent = ({
                       <SelectContent>
                         <SelectGroup>
                           {units.map((unit) => (
-                            <SelectItem
-                              key={unit.id}
-                              value={unit.id.toString()}
-                            >
+                            <SelectItem key={unit.id} value={unit.id}>
                               {unit.unitSymbol} - {unit.unitName}
                             </SelectItem>
                           ))}
@@ -311,9 +305,9 @@ const FormContent = ({
                     <FieldLabel htmlFor={field.name}>Symbol</FieldLabel>
                     <Select
                       items={symbolItems}
-                      value={field.state.value?.toString() ?? ''}
+                      value={field.state.value ?? ''}
                       onValueChange={(value) =>
-                        field.handleChange(Number(value))
+                        value && field.handleChange(value)
                       }
                     >
                       <SelectTrigger>
@@ -348,10 +342,7 @@ const FormContent = ({
                       <SelectContent>
                         <SelectGroup>
                           {symbols.map((symbol) => (
-                            <SelectItem
-                              key={symbol.id}
-                              value={symbol.id.toString()}
-                            >
+                            <SelectItem key={symbol.id} value={symbol.id}>
                               <div className="flex items-center gap-2">
                                 {symbol.symbolPicture && (
                                   <img

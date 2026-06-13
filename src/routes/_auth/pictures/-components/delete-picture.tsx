@@ -15,7 +15,7 @@ import { deletePictureFn } from '../-pictures.functions';
 type DeletePictureProps = {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  pictureId: number;
+  pictureId: string;
   pictureName: string;
 };
 

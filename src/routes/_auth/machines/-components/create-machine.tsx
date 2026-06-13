@@ -38,6 +38,7 @@ import {
   machineModesQueryOptions,
   machineTypesQueryOptions,
 } from '../-machines.queries';
+import { MachineType } from '#/shared/enums';
 
 const createMachineSchema = z.object({
   machineName: z.string().min(1, 'Machine name is required'),
@@ -46,8 +47,8 @@ const createMachineSchema = z.object({
     .int('Production year is required.')
     .min(1900)
     .max(new Date().getFullYear() + 1),
-  machineModeId: z.int('Machine mode is required'),
-  machineTypeId: z.int('Machine type is required'),
+  machineModeId: z.uuid('Machine mode is required'),
+  machineTypeId: z.uuid('Machine type is required'),
   compartmentCount: z.int('Compartment count is required.').min(1),
 });
 
@@ -113,14 +114,15 @@ const FormContent = ({
       machineName: 'Vend01',
       serialNumber: '240001',
       productionYear: new Date().getFullYear(),
-      machineModeId: undefined as unknown as number,
-      machineTypeId: undefined as unknown as number,
+      machineModeId: '',
+      machineTypeId: '',
       compartmentCount: 5,
     },
     validators: {
       onSubmit: createMachineSchema,
     },
     onSubmit: async ({ value }) => {
+      const selectedType = types.find((t) => t.id === value.machineTypeId);
       mutation.mutate({
         data: {
           machineName: value.machineName,
@@ -129,7 +131,9 @@ const FormContent = ({
           machineModeId: value.machineModeId,
           machineTypeId: value.machineTypeId,
           compartmentCount:
-            value.machineTypeId === 1 ? value.compartmentCount : 5,
+            selectedType?.machineTypeName === MachineType.Lockbox
+              ? value.compartmentCount
+              : 5,
         },
       });
     },
@@ -244,9 +248,9 @@ const FormContent = ({
                     <FieldLabel htmlFor={field.name}>Machine mode</FieldLabel>
                     <Select
                       items={modeItems}
-                      value={field.state.value?.toString() ?? ''}
+                      value={field.state.value ?? ''}
                       onValueChange={(value) =>
-                        field.handleChange(Number(value))
+                        value && field.handleChange(value)
                       }
                     >
                       <SelectTrigger
@@ -257,10 +261,7 @@ const FormContent = ({
                       <SelectContent>
                         <SelectGroup>
                           {modes.map((mode) => (
-                            <SelectItem
-                              key={mode.id}
-                              value={mode.id.toString()}
-                            >
+                            <SelectItem key={mode.id} value={mode.id}>
                               {mode.machineModeName}
                             </SelectItem>
                           ))}
@@ -281,9 +282,9 @@ const FormContent = ({
                     <FieldLabel htmlFor={field.name}>Machine type</FieldLabel>
                     <Select
                       items={typeItems}
-                      value={field.state.value?.toString() ?? ''}
+                      value={field.state.value ?? ''}
                       onValueChange={(value) =>
-                        field.handleChange(Number(value))
+                        value && field.handleChange(value)
                       }
                     >
                       <SelectTrigger
@@ -294,10 +295,7 @@ const FormContent = ({
                       <SelectContent>
                         <SelectGroup>
                           {types.map((type) => (
-                            <SelectItem
-                              key={type.id}
-                              value={type.id.toString()}
-                            >
+                            <SelectItem key={type.id} value={type.id}>
                               {type.machineTypeName}
                             </SelectItem>
                           ))}
@@ -311,7 +309,12 @@ const FormContent = ({
                 )}
               />
               <Subscribe
-                selector={(state) => state.values.machineTypeId !== 2}
+                selector={(state) => {
+                  const selectedType = types.find(
+                    (t) => t.id === state.values.machineTypeId
+                  );
+                  return selectedType?.machineTypeName === MachineType.Lockbox;
+                }}
                 children={(showCompartmentCount) =>
                   showCompartmentCount && (
                     <Field

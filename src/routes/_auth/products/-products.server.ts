@@ -24,16 +24,16 @@ export const createProductApiSchema = z.object({
     .max(100)
     .trim(),
   defaultPrice: z.number().positive('Default price must be a positive number'),
-  currencyId: z.int().positive('Currency ID must be a positive number'),
+  currencyId: z.uuid('Currency ID must be a valid UUID'),
   defaultQuantity: z.number().positive('Quantity must be a positive number'),
-  unitId: z.int().positive('Unit ID must be a positive number'),
-  productSymbolId: z.int().optional(), // TODO check frontend-backend optional
+  unitId: z.uuid('Unit ID must be a valid UUID'),
+  productSymbolId: z.uuid().optional(), // TODO check frontend-backend optional
 });
 
 type CreateProduct = z.infer<typeof createProductApiSchema>;
 
 export type ProductDto = {
-  id: number;
+  id: string;
   productName: string;
   defaultPrice: string;
   currencySymbol: string | null;

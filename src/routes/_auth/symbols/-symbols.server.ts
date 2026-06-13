@@ -12,7 +12,7 @@ import type { User } from '#/server/schemas/auth';
 import z from 'zod';
 
 export type SymbolDto = {
-  id: number;
+  id: string;
   symbolName: string;
   symbolPicture: string;
   ownerId: string | null;
@@ -57,7 +57,7 @@ export async function getSymbols(
 export async function createSymbol(
   data: CreateSymbol,
   currentUser: Pick<User, 'id' | 'role'>
-): Promise<{ id: number }> {
+): Promise<{ id: string }> {
   const userId = currentUser.id;
   const role = currentUser.role;
 

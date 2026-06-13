@@ -25,7 +25,7 @@ export const createSymbolFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, authMiddlewareFn])
   .inputValidator(createSymbolApiSchema)
   .handler(
-    async ({ data, context }): Promise<{ id: number }> => {
+    async ({ data, context }): Promise<{ id: string }> => {
       return createSymbol(data, context.user);
     }
   );
