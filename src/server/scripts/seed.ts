@@ -1,10 +1,20 @@
 #!/usr/bin/env node
-import seedDb, { seedProdDb } from '../utils/seed.server';
+import seedDb, { seedProdDb, resetDatabase } from '../utils/seed.server';
 
 async function main() {
   const isProduction = process.env.NODE_ENV === 'production';
+  const forceReseed = process.env.FORCE_RESEED === 'true';
 
   console.log(`Running ${isProduction ? 'production' : 'development'} seed...`);
+
+  if (forceReseed && !isProduction) {
+    console.log('FORCE_RESEED is set, resetting database...');
+    const resetResult = await resetDatabase();
+    if (!resetResult) {
+      console.error('Database reset failed!');
+      process.exit(1);
+    }
+  }
 
   try {
     const result = isProduction ? await seedProdDb() : await seedDb();

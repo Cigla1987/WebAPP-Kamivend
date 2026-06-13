@@ -1,4 +1,5 @@
 import { MoreHorizontal } from 'lucide-react';
+import { MachineMode } from '#/shared/enums';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +15,7 @@ import UpdatePrice from './update-price';
 import type { CompartmentDto } from '../-compartments.server';
 
 const Actions = ({ compartment }: { compartment: CompartmentDto }) => {
-  const isMulti = compartment.machineModeName === 'multi';
+  const isMulti = compartment.machineModeName === MachineMode.Multi;
   const hasProduct = compartment.productId !== null;
   const [isUpdateDiscountOpen, setIsUpdateDiscountOpen] = useState(false);
   const [isUpdatePriceOpen, setIsUpdatePriceOpen] = useState(false);

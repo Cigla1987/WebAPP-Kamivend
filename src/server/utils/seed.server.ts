@@ -18,8 +18,35 @@ import { db } from '../db';
 import { serverEnv } from '#/config/env';
 import { auth } from '../lib/auth';
 import { createServerOnlyFn } from '@tanstack/react-start';
+import { MachineType, MachineMode } from '#/shared/enums';
 
 const env = serverEnv();
+
+const resetDatabase = createServerOnlyFn(async (): Promise<boolean> => {
+  logger.info('Resetting database tables...');
+
+  try {
+    await db.execute(sql`
+      TRUNCATE TABLE 
+        smartfridges,
+        compartments,
+        products,
+        pictures,
+        machines,
+        currencies,
+        units,
+        machine_modes,
+        machine_types,
+        symbols
+        RESTART IDENTITY CASCADE
+    `);
+    logger.info('Database tables truncated and sequences reset');
+    return true;
+  } catch (error) {
+    logger.error(error, 'Error resetting database:');
+    return false;
+  }
+});
 
 const seedDb = createServerOnlyFn(async (): Promise<boolean> => {
   logger.info('Checking if tables exist and seeding is needed...');
@@ -57,9 +84,9 @@ const seedDb = createServerOnlyFn(async (): Promise<boolean> => {
       return false;
     }
 
-    // Check if already seeded
-    const existingUsers = await db.select().from(user).limit(1);
-    if (existingUsers.length > 0) {
+    // Check if already seeded (check machineTypes since user table is not truncated)
+    const existingMachineTypes = await db.select().from(machineTypes).limit(1);
+    if (existingMachineTypes.length > 0) {
       logger.info('Database already seeded, skipping...');
       return true;
     }
@@ -79,8 +106,8 @@ const seedDb = createServerOnlyFn(async (): Promise<boolean> => {
     const insertedMachineTypes = await db
       .insert(machineTypes)
       .values([
-        { machineTypeName: 'lockbox' },
-        { machineTypeName: 'smartfridge' },
+        { machineTypeName: MachineType.Lockbox },
+        { machineTypeName: MachineType.Smartfridge },
       ])
       .returning({ id: machineTypes.id });
 
@@ -90,7 +117,7 @@ const seedDb = createServerOnlyFn(async (): Promise<boolean> => {
     // Insert machine modes
     const insertedMachineModes = await db
       .insert(machineModes)
-      .values([{ machineModeName: 'single' }, { machineModeName: 'multi' }])
+      .values([{ machineModeName: MachineMode.Single }, { machineModeName: MachineMode.Multi }])
       .returning({ id: machineModes.id });
 
     const singleModeId = insertedMachineModes[0].id;
@@ -540,8 +567,8 @@ const seedProdDb = createServerOnlyFn(async (): Promise<boolean> => {
       await db
         .insert(machineTypes)
         .values([
-          { machineTypeName: 'lockbox' },
-          { machineTypeName: 'smartfridge' },
+          { machineTypeName: MachineType.Lockbox },
+          { machineTypeName: MachineType.Smartfridge },
         ]);
     } else {
       logger.info('Production: Machine types already exist');
@@ -554,7 +581,7 @@ const seedProdDb = createServerOnlyFn(async (): Promise<boolean> => {
       logger.info('Production: Seeding machine modes...');
       await db
         .insert(machineModes)
-        .values([{ machineModeName: 'single' }, { machineModeName: 'multi' }]);
+        .values([{ machineModeName: MachineMode.Single }, { machineModeName: MachineMode.Multi }]);
     } else {
       logger.info('Production: Machine modes already exist');
     }
@@ -732,8 +759,6 @@ const seedProdDb = createServerOnlyFn(async (): Promise<boolean> => {
   }
 });
 
-export { seedProdDb };
-
 /**
  * Convert an image file buffer to a data URL with detected MIME type
  * @param filePath - Path to the image file
@@ -745,3 +770,5 @@ async function convertFileToDataUrl(filePath: string): Promise<string> {
   const mimeType = fileType?.mime || 'image/png'; // fallback to png
   return `data:${mimeType};base64,${imageBuffer.toString('base64')}`;
 }
+
+export { seedProdDb, resetDatabase };

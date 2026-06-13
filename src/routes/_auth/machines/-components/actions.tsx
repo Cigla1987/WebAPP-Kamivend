@@ -1,4 +1,5 @@
 import { MoreHorizontal } from 'lucide-react';
+import { MachineType } from '#/shared/enums';
 import type { MachineDto } from '../-machines.server';
 import {
   DropdownMenu,
@@ -23,7 +24,7 @@ const Actions = ({ machine }: { machine: MachineDto }) => {
 
   return (
     <DropdownMenu modal={false}>
-      {machine.machineTypeName === 'lockbox' && (
+      {machine.machineTypeName === MachineType.Lockbox && (
         <DropdownMenuTrigger
           render={
             <Button variant="ghost" className="h-8 w-8 p-0">

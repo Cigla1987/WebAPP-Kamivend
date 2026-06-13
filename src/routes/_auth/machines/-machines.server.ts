@@ -16,6 +16,7 @@ import { user } from '@/server/db/schema/auth';
 import { eq } from 'drizzle-orm';
 import type { User } from '#/server/schemas/auth';
 import z from 'zod';
+import { MachineType } from '#/shared/enums';
 
 export type MachineDto = {
   id: number;
@@ -127,7 +128,6 @@ export async function createMachine(
   data: CreateMachine
 ): Promise<{ id: number }> {
   const existingMachine = await getMachineBySerialNumber(data.serialNumber);
-
   if (existingMachine) {
     throw new Error('Machine with this serial number already exists.');
   }
@@ -143,7 +143,7 @@ export async function createMachine(
   }
 
   // Validate compartment count for lockbox machines
-  if (machineType.machineTypeName === 'lockbox') {
+  if (machineType.machineTypeName === MachineType.Lockbox) {
     if (!data.compartmentCount || data.compartmentCount <= 0) {
       throw new Error('Compartment count is required for lockbox machines');
     }
@@ -162,7 +162,7 @@ export async function createMachine(
     .returning();
 
   // Create compartments for lockbox machines
-  if (machineType.machineTypeName === 'lockbox' && data.compartmentCount > 0) {
+  if (machineType.machineTypeName === MachineType.Lockbox && data.compartmentCount > 0) {
     const compartmentsToInsert = Array.from(
       { length: data.compartmentCount },
       (_, index) => ({
@@ -180,7 +180,11 @@ export async function createMachine(
 export async function updateMachineOwner(
   data: AssignMachine
 ): Promise<{ machineName: string }> {
-  const machine = await getMachineBySerialNumber(data.serialNumber);
+  const existingMachine = await getMachineBySerialNumber(data.serialNumber);
+
+  if (!existingMachine) {
+    throw new Error('Machine not found.');
+  }
 
   const [owner] = await db
     .select({
@@ -197,19 +201,19 @@ export async function updateMachineOwner(
   await db
     .update(machines)
     .set({ ownerId: owner.id })
-    .where(eq(machines.id, machine.id));
+    .where(eq(machines.id, existingMachine.id));
 
   await db
     .update(compartments)
     .set({ managedBy: owner.id })
-    .where(eq(compartments.machineId, machine.id));
+    .where(eq(compartments.machineId, existingMachine.id));
 
-  return { machineName: machine.machineName };
+  return { machineName: existingMachine.machineName };
 }
 
 export async function getMachineBySerialNumber(
   serialNumber: string
-): Promise<{ id: number; machineName: string }> {
+): Promise<{ id: number; machineName: string } | null> {
   const [machine] = await db
     .select({
       id: machines.id,
@@ -219,9 +223,6 @@ export async function getMachineBySerialNumber(
     .where(eq(machines.serialNumber, serialNumber))
     .limit(1);
 
-  if (!machine) {
-    throw new Error('Machine not found');
-  }
-
-  return { id: machine.id, machineName: machine.machineName };
+  if (machine) return { id: machine.id, machineName: machine.machineName };
+  else return null;
 }

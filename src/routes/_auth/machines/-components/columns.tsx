@@ -1,4 +1,5 @@
 import { type ColumnDef } from '@tanstack/react-table';
+import { MachineType } from '#/shared/enums';
 import { Button } from '#/client/components/ui/button';
 import { ArrowUpDown } from 'lucide-react';
 import Actions from './actions';
@@ -10,7 +11,7 @@ export const getColumns = (
 ): ColumnDef<MachineDto>[] => {
   // Check if there are any lockbox machines in the data
   const hasLockboxMachines = machines.some(
-    (machine) => machine.machineTypeName === 'lockbox'
+    (machine) => machine.machineTypeName === MachineType.Lockbox
   );
   const columns: ColumnDef<MachineDto>[] = [
     {

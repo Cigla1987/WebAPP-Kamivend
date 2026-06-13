@@ -46,8 +46,8 @@ const createMachineSchema = z.object({
     .int('Production year is required.')
     .min(1900)
     .max(new Date().getFullYear() + 1),
-  machineModeId: z.int().positive('Machine mode is required'),
-  machineTypeId: z.int().positive('Machine type is required'),
+  machineModeId: z.int('Machine mode is required'),
+  machineTypeId: z.int('Machine type is required'),
   compartmentCount: z.int('Compartment count is required.').min(1),
 });
 
@@ -113,8 +113,8 @@ const FormContent = ({
       machineName: 'Vend01',
       serialNumber: '240001',
       productionYear: new Date().getFullYear(),
-      machineModeId: 1,
-      machineTypeId: 1,
+      machineModeId: undefined as unknown as number,
+      machineTypeId: undefined as unknown as number,
       compartmentCount: 5,
     },
     validators: {
@@ -156,7 +156,7 @@ const FormContent = ({
       <DialogHeader
         className={`transition-all duration-300 ${mutation.isPending ? 'blur-sm' : ''}`}
       >
-        <DialogTitle>Add machine</DialogTitle>
+        <DialogTitle>Create machine</DialogTitle>
       </DialogHeader>
       <form
         onSubmit={(e) => {
@@ -228,7 +228,7 @@ const FormContent = ({
                       onChange={(e) =>
                         field.handleChange(e.target.valueAsNumber)
                       }
-                      // aria-invalid={field.state.meta.errors.length > 0}
+                      aria-invalid={field.state.meta.errors.length > 0}
                     />
                     {field.state.meta.errors.length > 0 && (
                       <FieldError errors={field.state.meta.errors} />
@@ -244,24 +244,32 @@ const FormContent = ({
                     <FieldLabel htmlFor={field.name}>Machine mode</FieldLabel>
                     <Select
                       items={modeItems}
-                      value={field.state.value.toString()}
+                      value={field.state.value?.toString() ?? ''}
                       onValueChange={(value) =>
                         field.handleChange(Number(value))
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger
+                        aria-invalid={field.state.meta.errors.length > 0}
+                      >
                         <SelectValue placeholder="Select machine mode" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
                           {modes.map((mode) => (
-                            <SelectItem key={mode.id} value={mode.id}>
+                            <SelectItem
+                              key={mode.id}
+                              value={mode.id.toString()}
+                            >
                               {mode.machineModeName}
                             </SelectItem>
                           ))}
                         </SelectGroup>
                       </SelectContent>
                     </Select>
+                    {field.state.meta.errors.length > 0 && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </FieldWrapper>
                 )}
               />
@@ -273,24 +281,32 @@ const FormContent = ({
                     <FieldLabel htmlFor={field.name}>Machine type</FieldLabel>
                     <Select
                       items={typeItems}
-                      value={field.state.value.toString()}
+                      value={field.state.value?.toString() ?? ''}
                       onValueChange={(value) =>
                         field.handleChange(Number(value))
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger
+                        aria-invalid={field.state.meta.errors.length > 0}
+                      >
                         <SelectValue placeholder="Select machine type" />
                       </SelectTrigger>
                       <SelectContent>
                         <SelectGroup>
                           {types.map((type) => (
-                            <SelectItem key={type.id} value={type.id}>
+                            <SelectItem
+                              key={type.id}
+                              value={type.id.toString()}
+                            >
                               {type.machineTypeName}
                             </SelectItem>
                           ))}
                         </SelectGroup>
                       </SelectContent>
                     </Select>
+                    {field.state.meta.errors.length > 0 && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </FieldWrapper>
                 )}
               />
