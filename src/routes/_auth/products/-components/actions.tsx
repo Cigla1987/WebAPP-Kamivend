@@ -9,10 +9,12 @@ import {
 import { Button } from '#/client/components/ui/button';
 import authClient from '#/client/lib/auth-client';
 import UpdateProductDiscount from './update-product-discount';
+import AssignProductPicture from './assign-product-picture';
 import type { ProductDto } from '../-products.server';
 
 const Actions = ({ product }: { product: ProductDto }) => {
   const [isUpdateDiscountOpen, setIsUpdateDiscountOpen] = useState(false);
+  const [isAssignPictureOpen, setIsAssignPictureOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const role = authClient.useSession().data?.user.role;
 
@@ -20,6 +22,12 @@ const Actions = ({ product }: { product: ProductDto }) => {
     e.preventDefault();
     setIsDropdownOpen(false);
     setIsUpdateDiscountOpen(true);
+  };
+
+  const handleAssignPicture = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDropdownOpen(false);
+    setIsAssignPictureOpen(true);
   };
 
   return (
@@ -39,7 +47,9 @@ const Actions = ({ product }: { product: ProductDto }) => {
               Update discount
             </DropdownMenuItem>
           )}
-          <DropdownMenuItem>Add picture</DropdownMenuItem>
+          <DropdownMenuItem closeOnClick={false} onClick={handleAssignPicture}>
+            Assign picture
+          </DropdownMenuItem>
           <DropdownMenuItem>Assign symbol</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
@@ -50,6 +60,11 @@ const Actions = ({ product }: { product: ProductDto }) => {
           product={product}
         />
       )}
+      <AssignProductPicture
+        isOpen={isAssignPictureOpen}
+        onOpenChange={setIsAssignPictureOpen}
+        product={product}
+      />
     </>
   );
 };

@@ -10,7 +10,7 @@ export const getColumns = (): ColumnDef<ProductDto>[] => {
       cell: ({ row }) => {
         const productPicture: string | null = row.getValue('productPicture');
         return (
-          <div className="flex justify-center text-center">
+          <div className="flex min-w-24 justify-center text-center">
             {productPicture ? (
               <img
                 src={productPicture}
@@ -39,7 +39,7 @@ export const getColumns = (): ColumnDef<ProductDto>[] => {
           'productSymbolPicture'
         );
         return (
-          <div className="flex justify-center text-center">
+          <div className="flex min-w-24 justify-center text-center">
             {productSymbolPicture ? (
               <img
                 src={productSymbolPicture}
@@ -73,9 +73,7 @@ export const getColumns = (): ColumnDef<ProductDto>[] => {
       header: () => <div className="text-center">Default quantity</div>,
       cell: ({ row }) => {
         const defaultQuantity: string = row.getValue('defaultQuantity');
-        return (
-          <div className="text-center font-medium">{defaultQuantity}</div>
-        );
+        return <div className="text-center font-medium">{defaultQuantity}</div>;
       },
     },
     {

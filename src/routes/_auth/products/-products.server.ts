@@ -37,8 +37,14 @@ export const updateProductDiscountApiSchema = z.object({
   discountDay: z.number().min(0, 'Discount day must be at least 0'),
 });
 
+export const updateProductPictureApiSchema = z.object({
+  id: z.uuid('Product ID must be a valid UUID'),
+  productPictureId: z.uuid('Picture ID must be a valid UUID'),
+});
+
 type CreateProduct = z.infer<typeof createProductApiSchema>;
 type UpdateProductDiscount = z.infer<typeof updateProductDiscountApiSchema>;
+type UpdateProductPicture = z.infer<typeof updateProductPictureApiSchema>;
 
 export type ProductDto = {
   id: string;
@@ -161,12 +167,11 @@ export async function updateProductDiscount(
     .where(eq(products.id, data.id))
     .limit(1);
 
-  if (!existingProduct) {
-    throw new Error('Product not found');
-  }
-
   if (role !== 'superadmin' && existingProduct.ownerId !== userId) {
-    throw new Error('Unauthorized');
+    throw new Error('Unauthorized.');
+  }
+  if (!existingProduct) {
+    throw new Error('Product not found.');
   }
 
   await db
@@ -175,6 +180,34 @@ export async function updateProductDiscount(
       defaultPrice: data.defaultPrice.toString(),
       discountValue: data.discountValue,
       discountDay: data.discountDay,
+    })
+    .where(eq(products.id, data.id));
+}
+
+export async function updateProductPicture(
+  data: UpdateProductPicture,
+  currentUser: Pick<User, 'id' | 'role'>
+): Promise<void> {
+  const userId = currentUser.id;
+  const role = currentUser.role;
+
+  const [existingProduct] = await db
+    .select({ id: products.id, ownerId: products.ownerId })
+    .from(products)
+    .where(eq(products.id, data.id))
+    .limit(1);
+
+  if (role !== 'superadmin' && existingProduct.ownerId !== userId) {
+    throw new Error('Unauthorized.');
+  }
+  if (!existingProduct) {
+    throw new Error('Product not found.');
+  }
+
+  await db
+    .update(products)
+    .set({
+      productPictureId: data.productPictureId,
     })
     .where(eq(products.id, data.id));
 }
