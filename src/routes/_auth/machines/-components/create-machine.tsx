@@ -133,7 +133,7 @@ const FormContent = ({
           compartmentCount:
             selectedType?.machineTypeName === MachineType.Lockbox
               ? value.compartmentCount
-              : 5,
+              : 0,
         },
       });
     },

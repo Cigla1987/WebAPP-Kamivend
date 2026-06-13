@@ -234,7 +234,7 @@ const seedDb = createServerOnlyFn(async (): Promise<boolean> => {
           machineName: 'SmartFridge Pro',
           serialNumber: '240002',
           productionYear: 2023,
-          compartmentCount: 10,
+          compartmentCount: 0,
           latitude: '37.7749',
           longitude: '-122.4194',
           machineModeId: multiModeId,
@@ -245,7 +245,6 @@ const seedDb = createServerOnlyFn(async (): Promise<boolean> => {
       .returning({ id: machines.id });
 
     const lockboxMachineId = insertedMachines[0].id;
-    const smartfridgeMachineId = insertedMachines[1].id;
 
     // Insert products
     const insertedProducts = await db
@@ -418,91 +417,6 @@ const seedDb = createServerOnlyFn(async (): Promise<boolean> => {
         discountDay: null,
         expirationDate: null,
       },
-    ]);
-
-    // Insert compartments for SmartFridge Pro (10 compartments)
-    await db.insert(compartments).values([
-      {
-        machineId: smartfridgeMachineId,
-        compartmentNumber: 1,
-        width: 200,
-        height: 400,
-        managedBy: user1Id,
-        productId: insertedProducts[2].id, // Water Bottle
-        productName: 'Water Bottle',
-        currentPrice: '1.00',
-        currencySymbol: '$',
-        currentQuantity: '15',
-        unitName: 'pcs',
-        discountValue: null,
-        discountDay: null,
-        expirationDate: '2026-01-31',
-      },
-      {
-        machineId: smartfridgeMachineId,
-        compartmentNumber: 2,
-        width: 200,
-        height: 400,
-        managedBy: user1Id,
-        productId: insertedProducts[3].id, // Potato Chips
-        productName: 'Potato Chips',
-        currentPrice: '2.00',
-        currencySymbol: '$',
-        currentQuantity: '10',
-        unitName: 'pcs',
-        discountValue: 15,
-        discountDay: 5,
-        expirationDate: '2025-08-20',
-      },
-      {
-        machineId: smartfridgeMachineId,
-        compartmentNumber: 3,
-        width: 200,
-        height: 400,
-        managedBy: user1Id,
-        productId: insertedProducts[5].id, // Chocolate Cookie
-        productName: 'Chocolate Cookie',
-        currentPrice: '1.25',
-        currencySymbol: '€',
-        currentQuantity: '20',
-        unitName: 'pcs',
-        discountValue: 20,
-        discountDay: 3,
-        expirationDate: '2025-07-10',
-      },
-      {
-        machineId: smartfridgeMachineId,
-        compartmentNumber: 4,
-        width: 200,
-        height: 400,
-        managedBy: user1Id,
-        productId: insertedProducts[0].id, // Coca Cola
-        productName: 'Coca Cola',
-        currentPrice: '2.50',
-        currencySymbol: '$',
-        currentQuantity: '18',
-        unitName: 'pcs',
-        discountValue: null,
-        discountDay: null,
-        expirationDate: '2025-12-31',
-      },
-      // Compartments 5-10 empty
-      ...Array.from({ length: 6 }, (_, i) => ({
-        machineId: smartfridgeMachineId,
-        compartmentNumber: i + 5,
-        width: 200,
-        height: 400,
-        managedBy: user1Id,
-        productId: null,
-        productName: null,
-        currentPrice: null,
-        currencySymbol: null,
-        currentQuantity: null,
-        unitName: null,
-        discountValue: null,
-        discountDay: null,
-        expirationDate: null,
-      })),
     ]);
 
     // Add other seeds as needed...

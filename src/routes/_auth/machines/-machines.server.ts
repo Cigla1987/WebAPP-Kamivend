@@ -39,7 +39,7 @@ export const createMachineApiSchema = z.object({
     .max(new Date().getFullYear() + 1),
   machineModeId: z.uuid('Machine mode is required'),
   machineTypeId: z.uuid('Machine type is required'),
-  compartmentCount: z.int('Compartment count is required').min(1),
+  compartmentCount: z.int('Compartment count is required').min(0),
 });
 
 type CreateMachine = z.infer<typeof createMachineApiSchema>;
