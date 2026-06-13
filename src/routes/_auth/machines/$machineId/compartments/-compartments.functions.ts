@@ -15,8 +15,8 @@ import {
   updateCompartmentDiscount,
 } from './-compartments.server';
 import type { CompartmentDto } from './-compartments.server';
-import { getRequest } from '@tanstack/react-start/server';
-import { auth } from '#/server/lib/auth';
+import { authMiddlewareFn } from '#/middleware/auth';
+import { errorMiddlewareFn } from '#/middleware/error';
 
 /**
  * Get all compartments by machine ID
@@ -25,17 +25,13 @@ import { auth } from '#/server/lib/auth';
 export const getCompartmentsByMachine = createServerFn({
   method: 'GET',
 })
+  .middleware([errorMiddlewareFn, authMiddlewareFn])
   .inputValidator((data: { machineId: string }) => data)
-  .handler(async ({ data }): Promise<CompartmentDto[]> => {
-    const request = getRequest();
-
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user) throw new Error('Not authenticated');
-
+  .handler(async ({ context, data }): Promise<CompartmentDto[]> => {
     return fetchCompartmentsByMachine(
       data.machineId,
-      session.user.id,
-      session.user.role
+      context.user.id,
+      context.user.role
     );
   });
 
@@ -43,20 +39,16 @@ export const getCompartmentsByMachine = createServerFn({
  * Update compartment price
  */
 export const updatePrice = createServerFn({ method: 'POST' })
+  .middleware([errorMiddlewareFn, authMiddlewareFn])
   .inputValidator(
     (data: { id: string; newPrice: number; updateAll: boolean }) => data
   )
-  .handler(async ({ data }): Promise<void> => {
-    const request = getRequest();
-
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user) throw new Error('Not authenticated');
-
+  .handler(async ({ context, data }): Promise<void> => {
     await updateCompartmentPrice(
       data.id,
       data.newPrice,
       data.updateAll,
-      session.user.id
+      context.user.id
     );
   });
 
@@ -64,13 +56,9 @@ export const updatePrice = createServerFn({ method: 'POST' })
  * Update compartment managed by
  */
 export const updateManagedBy = createServerFn({ method: 'POST' })
+  .middleware([errorMiddlewareFn, authMiddlewareFn])
   .inputValidator((data: { id: string; managedBy: string | null }) => data)
   .handler(async ({ data }): Promise<void> => {
-    const request = getRequest();
-
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user) throw new Error('Not authenticated');
-
     await updateCompartmentManagedBy(data.id, data.managedBy);
   });
 
@@ -78,6 +66,7 @@ export const updateManagedBy = createServerFn({ method: 'POST' })
  * Update compartment discount
  */
 export const updateDiscount = createServerFn({ method: 'POST' })
+  .middleware([errorMiddlewareFn, authMiddlewareFn])
   .inputValidator(
     (data: {
       id: string;
@@ -87,11 +76,6 @@ export const updateDiscount = createServerFn({ method: 'POST' })
     }) => data
   )
   .handler(async ({ data }): Promise<void> => {
-    const request = getRequest();
-
-    const session = await auth.api.getSession({ headers: request.headers });
-    if (!session?.user) throw new Error('Not authenticated');
-
     await updateCompartmentDiscount(
       data.id,
       data.discountValue,

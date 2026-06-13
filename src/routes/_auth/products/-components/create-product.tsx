@@ -103,7 +103,7 @@ const FormContent = ({
       currencyId: '',
       defaultQuantity: 1,
       unitId: '',
-      productSymbolId: null,
+      productSymbolId: null as string | null,
     },
     validators: {
       onSubmit: ({ value }) => {

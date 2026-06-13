@@ -45,68 +45,65 @@ const Actions = ({ compartment }: { compartment: CompartmentDto }) => {
   };
 
   return (
-    <DropdownMenu modal={false}>
-      <DropdownMenuTrigger
-        render={
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Open menu</span>
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        }
-      ></DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        {!hasActions() && (
-          <DropdownMenuItem disabled className="text-muted-foreground">
-            No actions
-          </DropdownMenuItem>
-        )}
+    <>
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger
+          render={
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          }
+        ></DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {!hasActions() && (
+            <DropdownMenuItem disabled className="text-muted-foreground">
+              No actions
+            </DropdownMenuItem>
+          )}
 
-        {/* Admin actions */}
-        {role === 'superadmin' && (
-          <DropdownMenuItem disabled className="text-muted-foreground">
-            No actions
-          </DropdownMenuItem>
-        )}
+          {/* Admin actions */}
+          {role === 'superadmin' && (
+            <DropdownMenuItem disabled className="text-muted-foreground">
+              No actions
+            </DropdownMenuItem>
+          )}
 
-        {/* Owner actions */}
-        {hasProduct && role === 'owner' && (
-          <>
+          {/* Owner actions */}
+          {hasProduct && role === 'owner' && (
             <DropdownMenuItem onClick={handleUpdateDiscount}>
               Update discount
             </DropdownMenuItem>
-            <UpdateDiscount
-              isOpen={isUpdateDiscountOpen}
-              onOpenChange={setIsUpdateDiscountOpen}
-              compartment={compartment}
-            />
-          </>
-        )}
-        {hasProduct && (role === 'owner' || role === 'employee') && (
-          <>
+          )}
+          {hasProduct && (role === 'owner' || role === 'employee') && (
             <DropdownMenuItem onClick={handleUpdatePrice}>
               Update price
             </DropdownMenuItem>
-            <UpdatePrice
-              isOpen={isUpdatePriceOpen}
-              onOpenChange={setIsUpdatePriceOpen}
-              compartment={compartment}
-            />
-          </>
-        )}
-        {isMulti && role === 'owner' && (
-          <>
+          )}
+          {isMulti && role === 'owner' && (
             <DropdownMenuItem onClick={handleUpdateManagedBy}>
               Update managed by
             </DropdownMenuItem>
-            <UpdateManagedBy
-              isOpen={isUpdateManagedByOpen}
-              onOpenChange={setIsUpdateManagedByOpen}
-              compartment={compartment}
-            />
-          </>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <UpdateDiscount
+        isOpen={isUpdateDiscountOpen}
+        onOpenChange={setIsUpdateDiscountOpen}
+        compartment={compartment}
+      />
+      <UpdatePrice
+        isOpen={isUpdatePriceOpen}
+        onOpenChange={setIsUpdatePriceOpen}
+        compartment={compartment}
+      />
+      <UpdateManagedBy
+        isOpen={isUpdateManagedByOpen}
+        onOpenChange={setIsUpdateManagedByOpen}
+        compartment={compartment}
+      />
+    </>
   );
 };
 export default Actions;

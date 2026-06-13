@@ -94,7 +94,7 @@ export async function getMachines(
     results = await baseQuery;
   } else if (role === 'owner') {
     results = await baseQuery.where(eq(machines.ownerId, userId));
-  } else if (role === 'member') {
+  } else if (role === 'employee') {
     results = await baseQuery
       .innerJoin(compartments, eq(machines.id, compartments.machineId))
       .where(eq(compartments.managedBy, userId))

@@ -15,7 +15,7 @@ import {
   FieldLabel,
   FieldError,
 } from '#/client/components/ui/field';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useSuspenseQuery, useQueryClient } from '@tanstack/react-query';
 import { useParams, getRouteApi } from '@tanstack/react-router';
 import {
   Select,
@@ -54,21 +54,24 @@ const UpdateManagedBy: React.FC<UpdateManagedByProps> = ({
     from: '/_auth/machines/$machineId/compartments/',
   });
 
-  const {
-    data: ownerMembers,
-    isLoading: isOwnerMembersLoading,
-    isError: isOwnerMembersError,
-  } = useQuery({
+  const { data: ownerMembers } = useSuspenseQuery({
     queryKey: ['users', 'byOwner', userId],
     queryFn: () => getUsersByOwner({ data: { ownerId: userId!.toString() } }),
-    enabled: !!userId,
   });
+
+  const memberItems = [
+    { label: 'No user', value: 'null' },
+    ...(ownerMembers?.map((member: UserDto) => ({
+      label: member.username,
+      value: member.id,
+    })) ?? []),
+  ];
 
   const queryClient = useQueryClient();
 
   const { Field, handleSubmit, state } = useForm({
     defaultValues: {
-      managedBy: compartment.managedBy,
+      managedBy: null as string | null,
     },
     validators: {
       onSubmit: updateManagedBySchema,
@@ -90,7 +93,11 @@ const UpdateManagedBy: React.FC<UpdateManagedByProps> = ({
 
         onOpenChange(false);
       } catch (error) {
-        toast.error('Failed to update managed by!');
+        const message =
+          error instanceof Error
+            ? error.message
+            : 'Failed to update managed by';
+        toast.error(message);
       } finally {
         setLoading(false);
       }
@@ -128,6 +135,7 @@ const UpdateManagedBy: React.FC<UpdateManagedByProps> = ({
                     <div className="flex flex-col space-y-1.5">
                       <FieldLabel>Select member</FieldLabel>
                       <Select
+                        items={memberItems}
                         value={field.state.value || 'null'}
                         onValueChange={(value) =>
                           field.handleChange(value === 'null' ? null : value)
@@ -138,13 +146,11 @@ const UpdateManagedBy: React.FC<UpdateManagedByProps> = ({
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="null">No user</SelectItem>
-                          {!isOwnerMembersLoading &&
-                            !isOwnerMembersError &&
-                            ownerMembers?.map((member: UserDto) => (
-                              <SelectItem key={member.id} value={member.id}>
-                                {member.username}
-                              </SelectItem>
-                            ))}
+                          {ownerMembers?.map((member: UserDto) => (
+                            <SelectItem key={member.id} value={member.id}>
+                              {member.username}
+                            </SelectItem>
+                          ))}
                         </SelectContent>
                       </Select>
                       {field.state.meta.errors.length > 0 && (
