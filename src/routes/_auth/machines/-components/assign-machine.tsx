@@ -18,7 +18,6 @@ import {
   FieldLabel,
   FieldError,
 } from '#/client/components/ui/field';
-import { Input } from '#/client/components/ui/input';
 import {
   Select,
   SelectContent,
@@ -35,11 +34,12 @@ import {
 } from '@tanstack/react-query';
 import { assignMachineFn } from '../-machines.functions';
 import { ownersQueryOptions } from '../-users.queries';
+import { machinesQueryOptions } from '../-machines.queries';
 
 const assignMachineSchema = z.object({
   serialNumber: z
     .string()
-    .length(6, { message: 'Serial number must be exactly 6 characters' })
+    .length(6, { message: 'Machine must be selected' })
     .trim(),
   ownerId: z.string(),
 
@@ -79,15 +79,21 @@ const FormContent = ({
   const queryClient = useQueryClient();
 
   const { data: owners } = useSuspenseQuery(ownersQueryOptions());
+  const { data: machines } = useSuspenseQuery(machinesQueryOptions());
 
   const ownerItems = owners.map((owner) => ({
     label: owner.name,
     value: owner.id,
   }));
 
+  const machineItems = machines.map((machine) => ({
+    label: `${machine.machineName} (${machine.serialNumber})`,
+    value: machine.serialNumber,
+  }));
+
   const { Field, handleSubmit, state } = useForm({
     defaultValues: {
-      serialNumber: '240003',
+      serialNumber: '',
       ownerId: '',
     },
     validators: {
@@ -139,20 +145,35 @@ const FormContent = ({
               <Field
                 name="serialNumber"
                 children={(field) => (
-                  <div className="flex flex-col gap-1.5">
-                    <FieldLabel htmlFor={field.name}>Serial number</FieldLabel>
-                    <Input
-                      id={field.name}
-                      name={field.name}
+                  <FieldWrapper>
+                    <FieldLabel htmlFor={field.name}>Machine</FieldLabel>
+                    <Select
+                      items={machineItems}
                       value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={field.state.meta.errors.length > 0}
-                    />
+                      onValueChange={(value) => field.handleChange(value ?? '')}
+                    >
+                      <SelectTrigger
+                        aria-invalid={field.state.meta.errors.length > 0}
+                      >
+                        <SelectValue placeholder="Select a machine" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {machines.map((machine) => (
+                            <SelectItem
+                              key={machine.serialNumber}
+                              value={machine.serialNumber}
+                            >
+                              {machine.machineName} ({machine.serialNumber})
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
                     {field.state.meta.errors.length > 0 && (
                       <FieldError errors={field.state.meta.errors} />
                     )}
-                  </div>
+                  </FieldWrapper>
                 )}
               />
               <Field
