@@ -1,35 +1,9 @@
 import { type ColumnDef } from '@tanstack/react-table';
-import { Button } from '#/client/components/ui/button';
-import { ArrowUpDown } from 'lucide-react';
 import Actions from './actions';
 import type { PictureDto } from '../-pictures.server';
 
 export const getColumns = (): ColumnDef<PictureDto>[] => {
   return [
-    {
-      accessorKey: 'id',
-      sortingFn: 'basic',
-      header: ({ column }) => {
-        return (
-          <div className="flex justify-center">
-            <Button
-              variant="ghost"
-              className="hover:cursor-pointer"
-              onClick={() =>
-                column.toggleSorting(column.getIsSorted() === 'asc')
-              }
-            >
-              ID
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        const id: string = row.getValue('id');
-        return <div className="text-center font-medium">{id}</div>;
-      },
-    },
     {
       accessorKey: 'pictureContent',
       header: () => <div className="text-center">Content</div>,

@@ -1,7 +1,5 @@
 import { type ColumnDef } from '@tanstack/react-table';
 import { MachineType } from '#/shared/enums';
-import { Button } from '#/client/components/ui/button';
-import { ArrowUpDown } from 'lucide-react';
 import Actions from './actions';
 import type { MachineDto } from '../-machines.server';
 
@@ -14,29 +12,6 @@ export const getColumns = (
     (machine) => machine.machineTypeName === MachineType.Lockbox
   );
   const columns: ColumnDef<MachineDto>[] = [
-    {
-      accessorKey: 'id',
-      sortingFn: 'basic',
-      header: ({ column }) => {
-        return (
-          <div className="flex justify-center">
-            <Button
-              variant="ghost"
-              onClick={() =>
-                column.toggleSorting(column.getIsSorted() === 'asc')
-              }
-            >
-              ID
-              <ArrowUpDown className="ml-2 h-4 w-4" />
-            </Button>
-          </div>
-        );
-      },
-      cell: ({ row }) => {
-        const id: string = row.getValue('id');
-        return <div className="text-center font-medium">{id}</div>;
-      },
-    },
     {
       accessorKey: 'machineName',
       header: () => <div className="text-center">Name</div>,
