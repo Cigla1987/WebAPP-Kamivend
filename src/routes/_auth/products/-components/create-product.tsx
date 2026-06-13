@@ -103,7 +103,7 @@ const FormContent = ({
       currencyId: '',
       defaultQuantity: 1,
       unitId: '',
-      productSymbolId: '',
+      productSymbolId: undefined,
     },
     validators: {
       onSubmit: ({ value }) => {
@@ -226,7 +226,9 @@ const FormContent = ({
                         value && field.handleChange(value)
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger
+                        aria-invalid={field.state.meta.errors.length > 0}
+                      >
                         <SelectValue placeholder="Select currency" />
                       </SelectTrigger>
                       <SelectContent>
@@ -240,6 +242,9 @@ const FormContent = ({
                         </SelectGroup>
                       </SelectContent>
                     </Select>
+                    {field.state.meta.errors.length > 0 && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </FieldWrapper>
                 )}
               />
@@ -281,7 +286,9 @@ const FormContent = ({
                         value && field.handleChange(value)
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger
+                        aria-invalid={field.state.meta.errors.length > 0}
+                      >
                         <SelectValue placeholder="Select unit" />
                       </SelectTrigger>
                       <SelectContent>
@@ -294,6 +301,9 @@ const FormContent = ({
                         </SelectGroup>
                       </SelectContent>
                     </Select>
+                    {field.state.meta.errors.length > 0 && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </FieldWrapper>
                 )}
               />
@@ -307,10 +317,12 @@ const FormContent = ({
                       items={symbolItems}
                       value={field.state.value ?? ''}
                       onValueChange={(value) =>
-                        value && field.handleChange(value)
+                        field.handleChange(value || undefined)
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger
+                        aria-invalid={field.state.meta.errors.length > 0}
+                      >
                         <SelectValue placeholder="Select symbol">
                           {field.state.value &&
                             symbols.find((s) => s.id === field.state.value) && (
@@ -360,6 +372,9 @@ const FormContent = ({
                         </SelectGroup>
                       </SelectContent>
                     </Select>
+                    {field.state.meta.errors.length > 0 && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </FieldWrapper>
                 )}
               />

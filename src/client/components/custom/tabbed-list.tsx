@@ -39,7 +39,7 @@ function TabbedList<T>({
 }: TabbedListProps<T>) {
   return (
     <div className="container mx-auto pb-10">
-      <main className="py-4 pr-6 pl-4 sm:py-0">
+      <main className="px-6 py-4 sm:py-0">
         <Tabs defaultValue={defaultTab}>
           <div className="flex items-center">
             <TabsList>
