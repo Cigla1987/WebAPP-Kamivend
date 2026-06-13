@@ -103,7 +103,7 @@ const FormContent = ({
       currencyId: '',
       defaultQuantity: 1,
       unitId: '',
-      productSymbolId: undefined,
+      productSymbolId: '',
     },
     validators: {
       onSubmit: ({ value }) => {
@@ -317,7 +317,7 @@ const FormContent = ({
                       items={symbolItems}
                       value={field.state.value ?? ''}
                       onValueChange={(value) =>
-                        field.handleChange(value || undefined)
+                        value && field.handleChange(value)
                       }
                     >
                       <SelectTrigger

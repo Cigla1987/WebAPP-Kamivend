@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { MoreHorizontal } from 'lucide-react';
 import {
   DropdownMenu,
@@ -6,24 +7,50 @@ import {
   DropdownMenuTrigger,
 } from '#/client/components/ui/dropdown-menu';
 import { Button } from '#/client/components/ui/button';
+import authClient from '#/client/lib/auth-client';
+import UpdateProductDiscount from './update-product-discount';
+import type { ProductDto } from '../-products.server';
 
-const Actions = ({ productId: _productId }: { productId: string }) => {
+const Actions = ({ product }: { product: ProductDto }) => {
+  const [isUpdateDiscountOpen, setIsUpdateDiscountOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const role = authClient.useSession().data?.user.role;
+
+  const handleUpdateDiscount = (e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsDropdownOpen(false);
+    setIsUpdateDiscountOpen(true);
+  };
+
   return (
-    <DropdownMenu modal={false}>
-      <DropdownMenuTrigger
-        render={
-          <Button variant="ghost" className="h-8 w-8 p-0">
-            <span className="sr-only">Open menu</span>
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
-        }
-      ></DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem>Update discount</DropdownMenuItem>
-        <DropdownMenuItem>Add picture</DropdownMenuItem>
-        <DropdownMenuItem>Assign symbol</DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+    <>
+      <DropdownMenu open={isDropdownOpen} onOpenChange={setIsDropdownOpen} modal={false}>
+        <DropdownMenuTrigger
+          render={
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          }
+        ></DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+          {(role === 'superadmin' || role === 'owner') && (
+            <DropdownMenuItem closeOnClick={false} onClick={handleUpdateDiscount}>
+              Update discount
+            </DropdownMenuItem>
+          )}
+          <DropdownMenuItem>Add picture</DropdownMenuItem>
+          <DropdownMenuItem>Assign symbol</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+      {(role === 'superadmin' || role === 'owner') && (
+        <UpdateProductDiscount
+          isOpen={isUpdateDiscountOpen}
+          onOpenChange={setIsUpdateDiscountOpen}
+          product={product}
+        />
+      )}
+    </>
   );
 };
 

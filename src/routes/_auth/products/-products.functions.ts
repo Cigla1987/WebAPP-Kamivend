@@ -12,6 +12,8 @@ import {
   getProducts,
   createProduct,
   createProductApiSchema,
+  updateProductDiscount,
+  updateProductDiscountApiSchema,
 } from './-products.server';
 import type { ProductDto } from './-products.server';
 import { authMiddlewareFn } from '#/middleware/auth';
@@ -28,4 +30,11 @@ export const createProductFn = createServerFn({ method: 'POST' })
   .inputValidator(createProductApiSchema)
   .handler(async ({ data, context }): Promise<ProductDto> => {
     return createProduct(data, context.user);
+  });
+
+export const updateProductDiscountFn = createServerFn({ method: 'POST' })
+  .middleware([errorMiddlewareFn, authMiddlewareFn])
+  .inputValidator(updateProductDiscountApiSchema)
+  .handler(async ({ data, context }): Promise<void> => {
+    return updateProductDiscount(data, context.user);
   });

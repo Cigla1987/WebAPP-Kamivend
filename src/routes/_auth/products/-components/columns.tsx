@@ -115,7 +115,7 @@ export const getColumns = (): ColumnDef<ProductDto>[] => {
     },
     {
       id: 'actions',
-      cell: ({ row }) => <Actions productId={row.original.id} />,
+      cell: ({ row }) => <Actions product={row.original} />,
     },
   ];
 };
