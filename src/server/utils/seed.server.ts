@@ -16,6 +16,7 @@ import { fileTypeFromBuffer } from 'file-type';
 import logger from './logger.server';
 import { db } from '../db';
 import { serverEnv } from '#/config/env';
+import { UserRole } from '#/shared/enums';
 import { auth } from '../lib/auth';
 import { createServerOnlyFn } from '@tanstack/react-start';
 import { MachineType, MachineMode } from '#/shared/enums';
@@ -155,7 +156,7 @@ const seedDb = createServerOnlyFn(async (): Promise<boolean> => {
     const existingSuperAdmin = await db
       .select()
       .from(user)
-      .where(eq(user.role, 'superadmin'))
+      .where(eq(user.role, UserRole.Superadmin))
       .limit(1);
 
     let user1Id: string;
@@ -184,7 +185,7 @@ const seedDb = createServerOnlyFn(async (): Promise<boolean> => {
       // Update role since Better Auth doesn't set custom roles on signup
       await db
         .update(user)
-        .set({ role: 'superadmin' })
+        .set({ role: UserRole.Superadmin })
         .where(eq(user.id, superAdminUser.user.id));
 
       user1Id = superAdminUser.user.id;
@@ -532,7 +533,7 @@ const seedProdDb = createServerOnlyFn(async (): Promise<boolean> => {
     const existingAdminUsers = await db
       .select()
       .from(user)
-      .where(eq(user.role, 'superadmin'));
+      .where(eq(user.role, UserRole.Superadmin));
 
     if (existingAdminUsers.length === 0) {
       logger.info('Production: Seeding superadmin user...');
@@ -563,7 +564,7 @@ const seedProdDb = createServerOnlyFn(async (): Promise<boolean> => {
         // Update role to superadmin
         await db
           .update(user)
-          .set({ role: 'superadmin' })
+          .set({ role: UserRole.Superadmin })
           .where(eq(user.id, superAdminUser.user.id));
 
         const adminId = superAdminUser.user.id;

@@ -6,6 +6,7 @@
  */
 
 import { db } from '@/server/db';
+import { UserRole } from '#/shared/enums';
 import {
   products,
   pictures,
@@ -88,7 +89,7 @@ export async function getProducts(
 
   let results: ProductDto[];
 
-  if (role === 'superadmin') {
+  if (role === UserRole.Superadmin) {
     results = await baseQuery;
   } else {
     results = await baseQuery.where(eq(products.ownerId, userId));
@@ -167,7 +168,7 @@ export async function updateProductDiscount(
     .where(eq(products.id, data.id))
     .limit(1);
 
-  if (role !== 'superadmin' && existingProduct.ownerId !== userId) {
+  if (role !== UserRole.Superadmin && existingProduct.ownerId !== userId) {
     throw new Error('Unauthorized.');
   }
   if (!existingProduct) {
@@ -197,7 +198,7 @@ export async function updateProductPicture(
     .where(eq(products.id, data.id))
     .limit(1);
 
-  if (role !== 'superadmin' && existingProduct.ownerId !== userId) {
+  if (role !== UserRole.Superadmin && existingProduct.ownerId !== userId) {
     throw new Error('Unauthorized.');
   }
   if (!existingProduct) {

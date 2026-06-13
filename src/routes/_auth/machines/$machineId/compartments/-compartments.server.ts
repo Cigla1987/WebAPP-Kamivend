@@ -6,6 +6,7 @@
  */
 
 import { db } from '@/server/db';
+import { UserRole } from '#/shared/enums';
 import {
   compartments,
   machines,
@@ -80,17 +81,17 @@ export async function fetchCompartmentsByMachine(
 
   let results;
 
-  if (role === 'superadmin') {
+  if (role === UserRole.Superadmin) {
     results = await baseQuery
       .where(eq(compartments.machineId, machineId))
       .orderBy(asc(compartments.compartmentNumber));
-  } else if (role === 'owner') {
+  } else if (role === UserRole.Owner) {
     results = await baseQuery
       .where(
         and(eq(compartments.machineId, machineId), eq(machines.ownerId, userId))
       )
       .orderBy(asc(compartments.compartmentNumber));
-  } else if (role === 'employee') {
+  } else if (role === UserRole.Employee) {
     results = await baseQuery
       .where(
         and(

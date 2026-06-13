@@ -6,6 +6,7 @@
  */
 
 import { db } from '@/server/db';
+import { UserRole } from '#/shared/enums';
 import { symbols } from '@/server/db/schema';
 import { eq } from 'drizzle-orm';
 import type { User } from '#/server/schemas/auth';
@@ -45,7 +46,7 @@ export async function getSymbols(
 
   let results: SymbolDto[];
 
-  if (role === 'superadmin') {
+  if (role === UserRole.Superadmin) {
     results = await baseQuery;
   } else {
     results = await baseQuery.where(eq(symbols.ownerId, userId));
@@ -66,7 +67,7 @@ export async function createSymbol(
     .values({
       symbolName: data.symbolName,
       symbolPicture: data.symbolPicture,
-      ownerId: role === 'superadmin' ? null : userId,
+      ownerId: role === UserRole.Superadmin ? null : userId,
     })
     .returning();
 

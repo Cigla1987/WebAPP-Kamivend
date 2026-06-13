@@ -1,5 +1,5 @@
 import { type ColumnDef } from '@tanstack/react-table';
-import { MachineType } from '#/shared/enums';
+import { MachineType, UserRole } from '#/shared/enums';
 import Actions from './actions';
 import type { MachineDto } from '../-machines.server';
 
@@ -85,7 +85,7 @@ export const getColumns = (
     },
   });
   // Only add ownerName column for admin users
-  if (userRole === 'superadmin') {
+  if (userRole === UserRole.Superadmin) {
     columns.push({
       accessorKey: 'ownerName',
       header: () => <div className="text-center">Owner</div>,

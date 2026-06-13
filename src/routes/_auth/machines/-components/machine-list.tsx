@@ -2,6 +2,7 @@ import { type FC } from 'react';
 import TabbedList from '#/client/components/custom/tabbed-list';
 import { getColumns } from './columns';
 import { capitalizeFirstLetter } from '#/client/lib/utils';
+import { UserRole } from '#/shared/enums';
 import type { MachineDto, MachineTypeDto } from '../-machines.server';
 import { useRouteContext } from '@tanstack/react-router';
 import CreateMachine from './create-machine';
@@ -29,7 +30,7 @@ const MachinesList: FC<MachinesListProps> = ({ machines, machineTypes }) => {
     })),
   ];
 
-  const actions = userRole === 'superadmin' && (
+  const actions = userRole === UserRole.Superadmin && (
     <>
       <CreateMachine />
       <AssignMachine />

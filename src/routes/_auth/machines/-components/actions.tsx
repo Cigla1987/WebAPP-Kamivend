@@ -1,5 +1,5 @@
 import { MoreHorizontal } from 'lucide-react';
-import { MachineType } from '#/shared/enums';
+import { MachineType, UserRole } from '#/shared/enums';
 import type { MachineDto } from '../-machines.server';
 import {
   DropdownMenu,
@@ -45,7 +45,7 @@ const Actions = ({ machine }: { machine: MachineDto }) => {
           </Link>
 
           {/* Owner-only actions */}
-          {userRole === 'owner' && (
+          {userRole === UserRole.Owner && (
             <DropdownMenuItem onClick={handleUpdate}>
               Update machine mode
             </DropdownMenuItem>

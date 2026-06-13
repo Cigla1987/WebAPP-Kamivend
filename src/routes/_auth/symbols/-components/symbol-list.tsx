@@ -4,6 +4,7 @@ import { useRouteContext } from '@tanstack/react-router';
 import type { SymbolDto } from '../-symbols.server';
 import CreateSymbol from './create-symbol';
 import { type ColumnDef } from '@tanstack/react-table';
+import { UserRole } from '#/shared/enums';
 
 interface SymbolsListProps {
   symbols: SymbolDto[];
@@ -23,7 +24,7 @@ const SymbolsList: FC<SymbolsListProps> = ({ symbols, tableColumns }) => {
     },
   ];
 
-  const actions = userRole === 'superadmin' && (
+  const actions = userRole === UserRole.Superadmin && (
     <>
       <CreateSymbol />
     </>

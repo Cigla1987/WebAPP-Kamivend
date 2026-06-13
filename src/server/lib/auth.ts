@@ -5,6 +5,7 @@ import { db } from '../db';
 import { serverEnv } from '#/config/env.ts';
 import { admin, customSession } from 'better-auth/plugins';
 import { ac, employee, owner, superadmin } from '../utils/permissions';
+import { UserRole } from '#/shared/enums';
 
 const env = serverEnv();
 
@@ -32,7 +33,7 @@ const options = {
       role: {
         type: 'string',
         required: true,
-        defaultValue: 'employee',
+        defaultValue: UserRole.Employee,
         input: false,
       },
       ownerId: {
@@ -53,8 +54,8 @@ const options = {
   plugins: [
     admin({
       ac,
-      defaultRole: 'owner',
-      adminRoles: ['superadmin'],
+      defaultRole: UserRole.Owner,
+      adminRoles: [UserRole.Superadmin],
       roles: { owner, superadmin, employee },
     }),
     tanstackStartCookies(),

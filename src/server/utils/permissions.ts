@@ -1,9 +1,10 @@
+import { UserRole } from '#/shared/enums';
 import { createAccessControl } from 'better-auth/plugins/access';
 import { defaultStatements, adminAc } from 'better-auth/plugins/admin/access';
 
 export const statement = {
   ...defaultStatements,
-  system: ['superadmin'],
+  system: [UserRole.Superadmin],
   machine: [
     'create',
     'read',
@@ -22,7 +23,7 @@ export const ac = createAccessControl(statement);
 
 export const superadmin = ac.newRole({
   ...adminAc.statements,
-  system: ['superadmin'],
+  system: [UserRole.Superadmin],
   machine: [
     'create',
     'read',

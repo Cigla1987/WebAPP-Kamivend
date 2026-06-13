@@ -16,7 +16,7 @@ import { user } from '@/server/db/schema/auth';
 import { eq } from 'drizzle-orm';
 import type { User } from '#/server/schemas/auth';
 import z from 'zod';
-import { MachineType } from '#/shared/enums';
+import { MachineType, UserRole } from '#/shared/enums';
 
 export type MachineDto = {
   id: string;
@@ -90,11 +90,11 @@ export async function getMachines(
 
   let results: MachineDto[];
 
-  if (role === 'superadmin') {
+  if (role === UserRole.Superadmin) {
     results = await baseQuery;
-  } else if (role === 'owner') {
+  } else if (role === UserRole.Owner) {
     results = await baseQuery.where(eq(machines.ownerId, userId));
-  } else if (role === 'employee') {
+  } else if (role === UserRole.Employee) {
     results = await baseQuery
       .innerJoin(compartments, eq(machines.id, compartments.machineId))
       .where(eq(compartments.managedBy, userId))

@@ -6,6 +6,7 @@
  */
 
 import { db } from '@/server/db';
+import { UserRole } from '#/shared/enums';
 import { pictures } from '@/server/db/schema';
 import { and, eq } from 'drizzle-orm';
 import type { User } from '#/server/schemas/auth';
@@ -52,7 +53,7 @@ export async function getPictures(
 
   let results: PictureDto[];
 
-  if (role === 'superadmin') {
+  if (role === UserRole.Superadmin) {
     results = await baseQuery;
   } else {
     results = await baseQuery.where(eq(pictures.pictureOwnerId, userId));
@@ -73,7 +74,7 @@ export async function createPicture(
     .values({
       pictureName: data.pictureName,
       pictureContent: data.pictureContent,
-      pictureOwnerId: role === 'superadmin' ? null : userId,
+      pictureOwnerId: role === UserRole.Superadmin ? null : userId,
     })
     .returning({
       id: pictures.id,
@@ -97,7 +98,7 @@ export async function deletePicture(
 
   let existing: { id: string }[];
 
-  if (role === 'superadmin') {
+  if (role === UserRole.Superadmin) {
     existing = await baseQuery.where(eq(pictures.id, data.pictureId));
   } else {
     existing = await baseQuery.where(

@@ -1,5 +1,5 @@
 import { MoreHorizontal } from 'lucide-react';
-import { MachineMode } from '#/shared/enums';
+import { MachineMode, UserRole } from '#/shared/enums';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,9 +23,9 @@ const Actions = ({ compartment }: { compartment: CompartmentDto }) => {
   const role = authClient.useSession().data?.user.role;
 
   const hasActions = () => {
-    if (role === 'superadmin') return true;
-    if (role === 'owner') return hasProduct || isMulti;
-    if (role === 'employee') return hasProduct;
+    if (role === UserRole.Superadmin) return true;
+    if (role === UserRole.Owner) return hasProduct || isMulti;
+    if (role === UserRole.Employee) return hasProduct;
     return false;
   };
 
@@ -63,24 +63,24 @@ const Actions = ({ compartment }: { compartment: CompartmentDto }) => {
           )}
 
           {/* Admin actions */}
-          {role === 'superadmin' && (
-            <DropdownMenuItem disabled className="text-muted-foreground">
-              No actions
-            </DropdownMenuItem>
-          )}
+        {role === UserRole.Superadmin && (
+          <DropdownMenuItem disabled className="text-muted-foreground">
+            No actions
+          </DropdownMenuItem>
+        )}
 
-          {/* Owner actions */}
-          {hasProduct && role === 'owner' && (
+        {/* Owner actions */}
+        {hasProduct && role === UserRole.Owner && (
             <DropdownMenuItem onClick={handleUpdateDiscount}>
               Update discount
             </DropdownMenuItem>
           )}
-          {hasProduct && (role === 'owner' || role === 'employee') && (
+        {hasProduct && (role === UserRole.Owner || role === UserRole.Employee) && (
             <DropdownMenuItem onClick={handleUpdatePrice}>
               Update price
             </DropdownMenuItem>
           )}
-          {isMulti && role === 'owner' && (
+        {isMulti && role === UserRole.Owner && (
             <DropdownMenuItem onClick={handleUpdateManagedBy}>
               Update managed by
             </DropdownMenuItem>

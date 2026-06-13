@@ -6,6 +6,7 @@
  */
 
 import { db } from '@/server/db';
+import { UserRole } from '#/shared/enums';
 import { user } from '#/server/db/schema/auth';
 import { eq } from 'drizzle-orm';
 import { auth } from '#/server/lib/auth';
@@ -63,9 +64,9 @@ export async function getMembers(
   let results: MemberDto[];
 
   // TODO: Revert to owner-only when multi-tenancy is clarified
-  if (role === 'superadmin') {
+  if (role === UserRole.Superadmin) {
     results = await baseQuery;
-  } else if (role === 'owner') {
+  } else if (role === UserRole.Owner) {
     results = await baseQuery.where(eq(user.ownerId, userId));
   } else {
     throw new Error('Unauthorized');
@@ -79,7 +80,7 @@ export async function createMember(
   currentUser: Pick<User, 'id' | 'role'>
 ): Promise<MemberDto> {
   // TODO: Revert to owner-only when multi-tenancy is clarified
-  if (currentUser.role !== 'owner' && currentUser.role !== 'superadmin') {
+  if (currentUser.role !== UserRole.Owner && currentUser.role !== UserRole.Superadmin) {
     throw new Error('Unauthorized');
   }
 
@@ -88,7 +89,7 @@ export async function createMember(
       email: data.email,
       password: data.password,
       name: data.name,
-      role: 'employee',
+      role: UserRole.Employee,
       data: {
         ownerId: currentUser.id,
       },

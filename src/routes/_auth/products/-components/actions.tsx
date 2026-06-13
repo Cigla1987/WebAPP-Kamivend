@@ -8,6 +8,7 @@ import {
 } from '#/client/components/ui/dropdown-menu';
 import { Button } from '#/client/components/ui/button';
 import authClient from '#/client/lib/auth-client';
+import { UserRole } from '#/shared/enums';
 import UpdateProductDiscount from './update-product-discount';
 import AssignProductPicture from './assign-product-picture';
 import type { ProductDto } from '../-products.server';
@@ -42,7 +43,7 @@ const Actions = ({ product }: { product: ProductDto }) => {
           }
         ></DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {(role === 'superadmin' || role === 'owner') && (
+          {(role === UserRole.Superadmin || role === UserRole.Owner) && (
             <DropdownMenuItem closeOnClick={false} onClick={handleUpdateDiscount}>
               Update discount
             </DropdownMenuItem>
@@ -53,7 +54,7 @@ const Actions = ({ product }: { product: ProductDto }) => {
           <DropdownMenuItem>Assign symbol</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      {(role === 'superadmin' || role === 'owner') && (
+      {(role === UserRole.Superadmin || role === UserRole.Owner) && (
         <UpdateProductDiscount
           isOpen={isUpdateDiscountOpen}
           onOpenChange={setIsUpdateDiscountOpen}
