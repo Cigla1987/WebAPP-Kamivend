@@ -97,14 +97,14 @@ const AppSidebar = () => {
               </SidebarMenuItem>
 
               <SidebarMenuItem>
-                <Link to="/members">
+                <Link to="/employees">
                   <SidebarMenuButton
                     className={`hover:cursor-pointer ${
-                      pathname === '/members' ? 'bg-sidebar-accent' : ''
+                      pathname === '/employees' ? 'bg-sidebar-accent' : ''
                     }`}
                   >
                     <Users />
-                    Members
+                    Employees
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>

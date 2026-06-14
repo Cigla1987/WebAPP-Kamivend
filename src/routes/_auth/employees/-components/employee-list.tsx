@@ -3,24 +3,24 @@ import { type ColumnDef } from '@tanstack/react-table';
 import { getRouteApi } from '@tanstack/react-router';
 import { UserRole } from '#/shared/enums';
 import TabbedList from '#/client/components/custom/tabbed-list';
-import type { MemberDto } from '../-members.server';
-import AddMember from './add-member';
+import type { EmployeeDto } from '../-employees.server';
+import AddEmployee from './add-employee';
 
 const authenticatedRoute = getRouteApi('/_auth');
 
-interface MembersListProps {
-  members: MemberDto[];
-  tableColumns: ColumnDef<MemberDto>[];
+interface EmployeesListProps {
+  employees: EmployeeDto[];
+  tableColumns: ColumnDef<EmployeeDto>[];
 }
 
-const MembersList: FC<MembersListProps> = ({ members, tableColumns }) => {
+const EmployeesList: FC<EmployeesListProps> = ({ employees, tableColumns }) => {
   const { user } = authenticatedRoute.useRouteContext();
 
   // TODO: Revert to owner-only when multi-tenancy is clarified
   const actions = (user.role === UserRole.Owner ||
-    user.role === UserRole.Superadmin) && <AddMember />;
+    user.role === UserRole.Superadmin) && <AddEmployee />;
 
-  return <TabbedList data={members} columns={tableColumns} actions={actions} />;
+  return <TabbedList data={employees} columns={tableColumns} actions={actions} />;
 };
 
-export default MembersList;
+export default EmployeesList;

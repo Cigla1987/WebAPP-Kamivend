@@ -13,7 +13,7 @@ import { auth } from '#/server/lib/auth';
 import type { User } from '#/server/schemas/auth';
 import z from 'zod';
 
-export type MemberDto = {
+export type EmployeeDto = {
   id: string;
   name: string;
   email: string;
@@ -22,7 +22,7 @@ export type MemberDto = {
   createdAt: Date | null;
 };
 
-export const createMemberApiSchema = z
+export const createEmployeeApiSchema = z
   .object({
     name: z.string().min(1, 'Name is required').trim(),
     email: z.email('Invalid email address'),
@@ -39,14 +39,14 @@ export const createMemberApiSchema = z
     path: ['confirmPassword'],
   });
 
-type CreateMember = Omit<
-  z.infer<typeof createMemberApiSchema>,
+type CreateEmployee = Omit<
+  z.infer<typeof createEmployeeApiSchema>,
   'confirmPassword'
 >;
 
-export async function getMembers(
+export async function getEmployees(
   currentUser: Pick<User, 'id' | 'role'>
-): Promise<MemberDto[]> {
+): Promise<EmployeeDto[]> {
   const userId = currentUser.id;
   const role = currentUser.role;
 
@@ -61,7 +61,7 @@ export async function getMembers(
     })
     .from(user);
 
-  let results: MemberDto[];
+  let results: EmployeeDto[];
 
   // TODO: Revert to owner-only when multi-tenancy is clarified
   if (role === UserRole.Superadmin) {
@@ -75,10 +75,10 @@ export async function getMembers(
   return results;
 }
 
-export async function createMember(
-  data: CreateMember,
+export async function createEmployee(
+  data: CreateEmployee,
   currentUser: Pick<User, 'id' | 'role'>
-): Promise<MemberDto> {
+): Promise<EmployeeDto> {
   // TODO: Revert to owner-only when multi-tenancy is clarified
   if (currentUser.role !== UserRole.Owner && currentUser.role !== UserRole.Superadmin) {
     throw new Error('Unauthorized');
@@ -97,10 +97,10 @@ export async function createMember(
   });
 
   if (!result.user) {
-    throw new Error('Failed to create member');
+    throw new Error('Failed to create employee');
   }
 
-  const [member] = await db
+  const [employee] = await db
     .select({
       id: user.id,
       name: user.name,
@@ -112,5 +112,5 @@ export async function createMember(
     .from(user)
     .where(eq(user.id, result.user.id));
 
-  return member;
+  return employee;
 }

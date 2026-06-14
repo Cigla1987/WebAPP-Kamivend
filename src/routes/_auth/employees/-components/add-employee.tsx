@@ -20,9 +20,9 @@ import {
 } from '#/client/components/ui/field';
 import { Input } from '#/client/components/ui/input';
 import { useQueryClient, useMutation } from '@tanstack/react-query';
-import { createMemberFn } from '../-members.functions';
+import { createEmployeeFn } from '../-employees.functions';
 
-const createMemberSchema = z.object({
+const createEmployeeSchema = z.object({
   name: z.string().min(1, 'Name is required.').trim(),
   email: z.email('Invalid email address.'),
   password: z
@@ -34,7 +34,7 @@ const createMemberSchema = z.object({
   confirmPassword: z.string().min(1, 'Please confirm password.'),
 });
 
-const AddMember = () => {
+const AddEmployee = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -42,17 +42,17 @@ const AddMember = () => {
   const queryClient = useQueryClient();
 
   const mutation = useMutation({
-    mutationFn: createMemberFn,
+    mutationFn: createEmployeeFn,
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: ['members'],
+        queryKey: ['employees'],
       });
       setIsDialogOpen(false);
-      toast.success('Member created successfully');
+      toast.success('Employee created successfully');
     },
     onError: (error) => {
       const message =
-        error instanceof Error ? error.message : 'Failed to create member';
+        error instanceof Error ? error.message : 'Failed to create employee';
       toast.error(message);
     },
   });
@@ -66,7 +66,7 @@ const AddMember = () => {
     },
     validators: {
       onSubmit: ({ value }) => {
-        const parsed = createMemberSchema.safeParse(value);
+        const parsed = createEmployeeSchema.safeParse(value);
         if (!parsed.success) {
           const fieldErrors: Record<string, { message: string }[]> = {};
           for (const issue of parsed.error.issues) {
@@ -110,7 +110,7 @@ const AddMember = () => {
           >
             <PlusCircle className="h-3.5 w-3.5" />
             <span className="sr-only sm:not-sr-only sm:whitespace-nowrap">
-              Add member
+              Add employee
             </span>
           </Button>
         }
@@ -119,7 +119,7 @@ const AddMember = () => {
         <DialogHeader
           className={`transition-all duration-300 ${mutation.isPending ? 'blur-sm' : ''}`}
         >
-          <DialogTitle>Add member</DialogTitle>
+          <DialogTitle>Add employee</DialogTitle>
         </DialogHeader>
         <form
           onSubmit={(e) => {
@@ -131,7 +131,7 @@ const AddMember = () => {
           <div className="relative">
             {mutation.isPending && (
               <div className="absolute inset-x-0 top-1/4 text-center">
-                Creating member...
+                Creating employee...
               </div>
             )}
             <div
@@ -287,4 +287,4 @@ const AddMember = () => {
   );
 };
 
-export default AddMember;
+export default AddEmployee;

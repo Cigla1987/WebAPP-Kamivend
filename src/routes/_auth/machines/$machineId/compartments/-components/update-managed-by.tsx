@@ -54,16 +54,16 @@ const UpdateManagedBy: React.FC<UpdateManagedByProps> = ({
     from: '/_auth/machines/$machineId/compartments/',
   });
 
-  const { data: ownerMembers } = useSuspenseQuery({
+  const { data: ownerEmployees } = useSuspenseQuery({
     queryKey: ['users', 'byOwner', userId],
     queryFn: () => getUsersByOwner({ data: { ownerId: userId!.toString() } }),
   });
 
-  const memberItems = [
+  const employeeItems = [
     { label: 'No user', value: 'null' },
-    ...(ownerMembers?.map((member: UserDto) => ({
-      label: member.username,
-      value: member.id,
+    ...(ownerEmployees?.map((employee: UserDto) => ({
+      label: employee.username,
+      value: employee.id,
     })) ?? []),
   ];
 
@@ -133,9 +133,9 @@ const UpdateManagedBy: React.FC<UpdateManagedByProps> = ({
                   name="managedBy"
                   children={(field) => (
                     <div className="flex flex-col space-y-1.5">
-                      <FieldLabel>Select member</FieldLabel>
+                      <FieldLabel>Select employee</FieldLabel>
                       <Select
-                        items={memberItems}
+                        items={employeeItems}
                         value={field.state.value || 'null'}
                         onValueChange={(value) =>
                           field.handleChange(value === 'null' ? null : value)
@@ -146,9 +146,9 @@ const UpdateManagedBy: React.FC<UpdateManagedByProps> = ({
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="null">No user</SelectItem>
-                          {ownerMembers?.map((member: UserDto) => (
-                            <SelectItem key={member.id} value={member.id}>
-                              {member.username}
+                          {ownerEmployees?.map((employee: UserDto) => (
+                            <SelectItem key={employee.id} value={employee.id}>
+                              {employee.username}
                             </SelectItem>
                           ))}
                         </SelectContent>

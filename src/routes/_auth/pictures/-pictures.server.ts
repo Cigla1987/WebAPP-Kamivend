@@ -63,21 +63,23 @@ export async function getPictures(
       .where(eq(user.id, userId));
 
     if (currentUserRecord.ownerId === null) {
-      const members = await db
+      // Current user is an owner - show their pictures + all their employees' pictures + null owner pictures
+      const employees = await db
         .select({ id: user.id })
         .from(user)
         .where(eq(user.ownerId, userId));
 
-      const memberIds = members.map((m) => m.id);
+      const employeeIds = employees.map((m) => m.id);
 
       results = await baseQuery.where(
         or(
           eq(pictures.pictureOwnerId, userId),
-          ...memberIds.map((memberId) => eq(pictures.pictureOwnerId, memberId)),
+          ...employeeIds.map((employeeId) => eq(pictures.pictureOwnerId, employeeId)),
           isNull(pictures.pictureOwnerId)
         )
       );
     } else {
+      // Current user is an employee - show their pictures + their owner's pictures + null owner pictures
       results = await baseQuery.where(
         or(
           eq(pictures.pictureOwnerId, userId),
