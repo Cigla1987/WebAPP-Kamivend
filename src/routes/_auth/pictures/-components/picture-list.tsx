@@ -10,19 +10,9 @@ interface PicturesListProps {
 }
 
 const PicturesList: FC<PicturesListProps> = ({ pictures, tableColumns }) => {
-  const tabs = [
-    {
-      label: 'All',
-      value: 'all',
-      title: 'All pictures',
-      description: 'Manage all your pictures and view their sales performance.',
-    },
-  ];
-
   return (
     <TabbedList
       data={pictures}
-      tabs={tabs}
       columns={tableColumns}
       actions={<CreatePicture />}
     />

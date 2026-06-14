@@ -16,27 +16,11 @@ interface MembersListProps {
 const MembersList: FC<MembersListProps> = ({ members, tableColumns }) => {
   const { user } = authenticatedRoute.useRouteContext();
 
-  const tabs = [
-    {
-      label: 'All',
-      value: 'all',
-      title: 'Members',
-      description: 'View and manage members in your organization.',
-    },
-  ];
-
   // TODO: Revert to owner-only when multi-tenancy is clarified
-  const actions =
-    (user.role === UserRole.Owner || user.role === UserRole.Superadmin) && <AddMember />;
+  const actions = (user.role === UserRole.Owner ||
+    user.role === UserRole.Superadmin) && <AddMember />;
 
-  return (
-    <TabbedList
-      data={members}
-      tabs={tabs}
-      columns={tableColumns}
-      actions={actions}
-    />
-  );
+  return <TabbedList data={members} columns={tableColumns} actions={actions} />;
 };
 
 export default MembersList;

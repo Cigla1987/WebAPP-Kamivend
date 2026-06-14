@@ -10,19 +10,9 @@ interface ProductsListProps {
 }
 
 const ProductsList: FC<ProductsListProps> = ({ products, tableColumns }) => {
-  const tabs = [
-    {
-      label: 'All',
-      value: 'all',
-      title: 'All products',
-      description: 'Manage all your products and view their sales performance.',
-    },
-  ];
-
   return (
     <TabbedList
       data={products}
-      tabs={tabs}
       columns={tableColumns}
       actions={<CreateProduct />}
     />
