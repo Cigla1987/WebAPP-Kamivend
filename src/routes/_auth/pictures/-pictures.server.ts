@@ -7,8 +7,8 @@
 
 import { db } from '@/server/db';
 import { UserRole } from '#/shared/enums';
-import { pictures } from '@/server/db/schema';
-import { and, eq } from 'drizzle-orm';
+import { pictures, user } from '@/server/db/schema';
+import { and, eq, or, isNull } from 'drizzle-orm';
 import type { User } from '#/server/schemas/auth';
 import z from 'zod';
 
@@ -17,7 +17,7 @@ export type PictureDto = {
   pictureName: string;
   pictureContent: string | null;
   pictureDateCreated: Date | null;
-  pictureOwnerId: string | null;
+  pictureOwner: string | null;
 };
 
 export const createPictureApiSchema = z.object({
@@ -47,16 +47,45 @@ export async function getPictures(
       pictureName: pictures.pictureName,
       pictureContent: pictures.pictureContent,
       pictureDateCreated: pictures.pictureDateCreated,
-      pictureOwnerId: pictures.pictureOwnerId,
+      pictureOwner: user.name,
     })
-    .from(pictures);
+    .from(pictures)
+    .leftJoin(user, eq(pictures.pictureOwnerId, user.id));
 
   let results: PictureDto[];
 
   if (role === UserRole.Superadmin) {
     results = await baseQuery;
   } else {
-    results = await baseQuery.where(eq(pictures.pictureOwnerId, userId));
+    const [currentUserRecord] = await db
+      .select({ ownerId: user.ownerId })
+      .from(user)
+      .where(eq(user.id, userId));
+
+    if (currentUserRecord.ownerId === null) {
+      const members = await db
+        .select({ id: user.id })
+        .from(user)
+        .where(eq(user.ownerId, userId));
+
+      const memberIds = members.map((m) => m.id);
+
+      results = await baseQuery.where(
+        or(
+          eq(pictures.pictureOwnerId, userId),
+          ...memberIds.map((memberId) => eq(pictures.pictureOwnerId, memberId)),
+          isNull(pictures.pictureOwnerId)
+        )
+      );
+    } else {
+      results = await baseQuery.where(
+        or(
+          eq(pictures.pictureOwnerId, userId),
+          eq(pictures.pictureOwnerId, currentUserRecord.ownerId),
+          isNull(pictures.pictureOwnerId)
+        )
+      );
+    }
   }
 
   return results;
@@ -64,7 +93,7 @@ export async function getPictures(
 
 export async function createPicture(
   data: CreatePicture,
-  currentUser: Pick<User, 'id' | 'role'>
+  currentUser: Pick<User, 'id' | 'role' | 'name'>
 ): Promise<PictureDto> {
   const userId = currentUser.id;
   const role = currentUser.role;
@@ -81,10 +110,12 @@ export async function createPicture(
       pictureName: pictures.pictureName,
       pictureContent: pictures.pictureContent,
       pictureDateCreated: pictures.pictureDateCreated,
-      pictureOwnerId: pictures.pictureOwnerId,
     });
 
-  return createdPicture;
+  return {
+    ...createdPicture,
+    pictureOwner: role === UserRole.Superadmin ? null : currentUser.name,
+  };
 }
 
 export async function deletePicture(

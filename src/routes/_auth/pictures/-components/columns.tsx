@@ -31,12 +31,12 @@ export const getColumns = (): ColumnDef<PictureDto>[] => {
       },
     },
     {
-      accessorKey: 'pictureOwnerId',
+      accessorKey: 'pictureOwner',
       header: () => <div className="text-center">Owner</div>,
       cell: ({ row }) => {
-        const pictureOwnerId: string | null = row.getValue('pictureOwnerId');
+        const pictureOwner: string | null = row.getValue('pictureOwner');
         return (
-          <div className="text-center font-medium">{pictureOwnerId}</div>
+          <div className="text-center font-medium">{pictureOwner}</div>
         );
       },
     },
