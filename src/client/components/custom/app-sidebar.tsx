@@ -26,14 +26,12 @@ const AppSidebar = () => {
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-1">
               <SidebarMenuItem>
                 <Link to="/dashboard">
                   <SidebarMenuButton
                     className={`hover:cursor-pointer ${
-                      pathname === '/dashboard'
-                        ? 'bg-sidebar-accent rounded-md'
-                        : ''
+                      pathname === '/dashboard' ? 'bg-sidebar-accent' : ''
                     }`}
                   >
                     <Home />
@@ -46,9 +44,7 @@ const AppSidebar = () => {
                 <Link to="/machines">
                   <SidebarMenuButton
                     className={`hover:cursor-pointer ${
-                      pathname === '/machines'
-                        ? 'bg-sidebar-accent rounded-md'
-                        : ''
+                      pathname === '/machines' ? 'bg-sidebar-accent' : ''
                     }`}
                   >
                     <Icon
@@ -65,9 +61,7 @@ const AppSidebar = () => {
                 <Link to="/products">
                   <SidebarMenuButton
                     className={`hover:cursor-pointer ${
-                      pathname === '/products'
-                        ? 'bg-sidebar-accent rounded-md'
-                        : ''
+                      pathname === '/products' ? 'bg-sidebar-accent' : ''
                     }`}
                   >
                     <Package2 />
@@ -80,9 +74,7 @@ const AppSidebar = () => {
                 <Link to="/pictures">
                   <SidebarMenuButton
                     className={`hover:cursor-pointer ${
-                      pathname === '/pictures'
-                        ? 'bg-sidebar-accent rounded-md'
-                        : ''
+                      pathname === '/pictures' ? 'bg-sidebar-accent' : ''
                     }`}
                   >
                     <FileImage />
@@ -95,9 +87,7 @@ const AppSidebar = () => {
                 <Link to="/symbols">
                   <SidebarMenuButton
                     className={`hover:cursor-pointer ${
-                      pathname === '/symbols'
-                        ? 'bg-sidebar-accent rounded-md'
-                        : ''
+                      pathname === '/symbols' ? 'bg-sidebar-accent' : ''
                     }`}
                   >
                     <Shapes />
@@ -110,9 +100,7 @@ const AppSidebar = () => {
                 <Link to="/members">
                   <SidebarMenuButton
                     className={`hover:cursor-pointer ${
-                      pathname === '/members'
-                        ? 'bg-sidebar-accent rounded-md'
-                        : ''
+                      pathname === '/members' ? 'bg-sidebar-accent' : ''
                     }`}
                   >
                     <Users />
