@@ -4,7 +4,7 @@ import { defaultStatements, adminAc } from 'better-auth/plugins/admin/access';
 
 export const statement = {
   ...defaultStatements,
-  system: [UserRole.Superadmin],
+  system: [UserRole.Admin],
   machine: [
     'create',
     'read',
@@ -21,9 +21,9 @@ export const statement = {
 
 export const ac = createAccessControl(statement);
 
-export const superadmin = ac.newRole({
+export const admin = ac.newRole({
   ...adminAc.statements,
-  system: [UserRole.Superadmin],
+  system: [UserRole.Admin],
   machine: [
     'create',
     'read',

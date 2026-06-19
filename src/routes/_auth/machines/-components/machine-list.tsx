@@ -30,7 +30,7 @@ const MachinesList: FC<MachinesListProps> = ({ machines, machineTypes }) => {
     })),
   ];
 
-  const actions = userRole === UserRole.Superadmin && (
+  const actions = userRole === UserRole.Admin && (
     <>
       <CreateMachine />
       <AssignMachine />

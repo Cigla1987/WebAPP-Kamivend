@@ -84,16 +84,16 @@ export const getColumns = (
       return <div className="text-center font-medium">{formattedDate}</div>;
     },
   });
-  // Only add ownerName column for admin users
-  if (userRole === UserRole.Superadmin) {
+  // Only add organizationName column for admin users
+  if (userRole === UserRole.Admin) {
     columns.push({
-      accessorKey: 'ownerName',
-      header: () => <div className="text-center">Owner</div>,
+      accessorKey: 'organizationName',
+      header: () => <div className="text-center">Organization</div>,
       cell: ({ row }) => {
-        const ownerName: string = row.getValue('ownerName');
-        const ownerNameDisplay: string = ownerName != null ? ownerName : '-';
+        const orgName: string = row.getValue('organizationName');
+        const orgNameDisplay: string = orgName != null ? orgName : '-';
         return (
-          <div className="text-center font-medium">{ownerNameDisplay}</div>
+          <div className="text-center font-medium">{orgNameDisplay}</div>
         );
       },
     });

@@ -1,8 +1,5 @@
 /**
  * Symbols API Functions
- *
- * These are TanStack Start server functions that can be imported anywhere.
- * The handler code runs only on the server, while the client gets an RPC stub.
  */
 
 import { createServerFn } from '@tanstack/react-start';
@@ -18,7 +15,7 @@ import { errorMiddlewareFn } from '#/middleware/error';
 export const getSymbolsFn = createServerFn({ method: 'GET' })
   .middleware([errorMiddlewareFn, authMiddlewareFn])
   .handler(async ({ context }): Promise<SymbolDto[]> => {
-    return getSymbols(context.user);
+    return getSymbols(context.user, context.activeOrganization);
   });
 
 export const createSymbolFn = createServerFn({ method: 'POST' })
@@ -26,6 +23,6 @@ export const createSymbolFn = createServerFn({ method: 'POST' })
   .inputValidator(createSymbolApiSchema)
   .handler(
     async ({ data, context }): Promise<{ id: string }> => {
-      return createSymbol(data, context.user);
+      return createSymbol(data, context.user, context.activeOrganization);
     }
   );

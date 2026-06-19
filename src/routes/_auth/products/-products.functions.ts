@@ -1,10 +1,5 @@
 /**
  * Product API Functions
- *
- * These are TanStack Start server functions that can be imported anywhere.
- * The handler code runs only on the server, while the client gets an RPC stub.
- *
- * Server-side logic is imported from -products.server.ts (protected from client).
  */
 
 import { createServerFn } from '@tanstack/react-start';
@@ -24,26 +19,26 @@ import { errorMiddlewareFn } from '#/middleware/error';
 export const getProductsFn = createServerFn({ method: 'GET' })
   .middleware([errorMiddlewareFn, authMiddlewareFn])
   .handler(async ({ context }): Promise<ProductDto[]> => {
-    return getProducts(context.user);
+    return getProducts(context.user, context.activeOrganization);
   });
 
 export const createProductFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, authMiddlewareFn])
   .inputValidator(createProductApiSchema)
   .handler(async ({ data, context }): Promise<ProductDto> => {
-    return createProduct(data, context.user);
+    return createProduct(data, context.user, context.activeOrganization);
   });
 
 export const updateProductDiscountFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, authMiddlewareFn])
   .inputValidator(updateProductDiscountApiSchema)
   .handler(async ({ data, context }): Promise<void> => {
-    return updateProductDiscount(data, context.user);
+    return updateProductDiscount(data, context.user, context.activeOrganization);
   });
 
 export const updateProductPictureFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, authMiddlewareFn])
   .inputValidator(updateProductPictureApiSchema)
   .handler(async ({ data, context }): Promise<void> => {
-    return updateProductPicture(data, context.user);
+    return updateProductPicture(data, context.user, context.activeOrganization);
   });

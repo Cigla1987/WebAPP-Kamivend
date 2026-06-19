@@ -3,11 +3,46 @@ import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { tanstackStartCookies } from 'better-auth/tanstack-start';
 import { db } from '../db';
 import { serverEnv } from '#/config/env.ts';
-import { admin, customSession } from 'better-auth/plugins';
-import { ac, employee, owner, superadmin } from '../utils/permissions';
+import { organization, admin } from 'better-auth/plugins';
+import { createAccessControl } from 'better-auth/plugins/access';
 import { UserRole } from '#/shared/enums';
+import { Resend } from 'resend';
 
 const env = serverEnv();
+
+const resend = new Resend(env.RESEND_API_KEY);
+
+const statements = {
+  machine: ['create', 'read', 'update', 'delete', 'assign'],
+  product: ['create', 'read', 'update', 'delete'],
+  compartment: ['read', 'update', 'stock'],
+  symbol: ['create', 'read', 'update', 'delete'],
+  picture: ['create', 'read', 'update', 'delete'],
+  member: ['create', 'read', 'update', 'delete'],
+  invitation: ['create', 'read', 'update', 'delete'],
+} as const;
+
+const ac = createAccessControl(statements);
+
+const owner = ac.newRole({
+  machine: ['create', 'read', 'update', 'delete', 'assign'],
+  product: ['create', 'read', 'update', 'delete'],
+  compartment: ['read', 'update', 'stock'],
+  symbol: ['create', 'read', 'update', 'delete'],
+  picture: ['create', 'read', 'update', 'delete'],
+  member: ['create', 'read', 'update', 'delete'],
+  invitation: ['create', 'read', 'update', 'delete'],
+});
+
+const employee = ac.newRole({
+  machine: ['read'],
+  product: ['read'],
+  compartment: ['read', 'update', 'stock'],
+  symbol: ['read'],
+  picture: ['read'],
+  member: ['read'],
+  invitation: ['read'],
+});
 
 const options = {
   secret: env.BETTER_AUTH_SECRET,
@@ -19,30 +54,6 @@ const options = {
     enabled: true,
     requireEmailVerification: false,
   },
-  // session: {
-  //   expiresIn: 60 * 60 * 24 * 7,
-  //   updateAge: 60 * 24,
-  //   cookieCache: {
-  //     enabled: true,
-  //     strategy: 'jwe',
-  //     maxAge: 60 * 1000,
-  //   },
-  // },
-  user: {
-    additionalFields: {
-      role: {
-        type: 'string',
-        required: true,
-        defaultValue: UserRole.Employee,
-        input: false,
-      },
-      ownerId: {
-        type: 'string',
-        required: false,
-        input: false,
-      },
-    },
-  },
   advanced: {
     useSecureCookies: env.NODE_ENV === 'production',
     cookies: {
@@ -53,27 +64,30 @@ const options = {
   },
   plugins: [
     admin({
+      defaultRole: UserRole.User,
+      adminRoles: [UserRole.Admin],
+    }),
+    organization({
       ac,
-      defaultRole: UserRole.Owner,
-      adminRoles: [UserRole.Superadmin],
-      roles: { owner, superadmin, employee },
+      roles: { owner, employee },
+      async sendInvitationEmail(data) {
+        const inviteLink = `${env.BETTER_AUTH_URL}/invite/accept/${data.id}`;
+        console.log('Sending email...', resend, data);
+        await resend.emails.send({
+          from: env.EMAIL_FROM,
+          to: data.email,
+          subject: `You've been invited to join ${data.organization.name}`,
+          html: `
+            <p>You've been invited to join <strong>${data.organization.name}</strong> by ${data.inviter.user.name}.</p>
+            <p>Click the link below to accept the invitation:</p>
+            <a href="${inviteLink}">${inviteLink}</a>
+          `,
+        });
+        console.log('Sent email.');
+      },
     }),
     tanstackStartCookies(),
   ],
 } satisfies BetterAuthOptions;
 
-export const auth = betterAuth({
-  ...options,
-  plugins: [
-    ...(options.plugins ?? []),
-    customSession(async ({ user }) => {
-      return {
-        user: {
-          id: user.id,
-          name: user.name,
-          role: user.role,
-        },
-      };
-    }, options),
-  ],
-});
+export const auth = betterAuth(options);

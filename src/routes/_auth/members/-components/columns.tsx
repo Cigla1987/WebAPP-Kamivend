@@ -1,7 +1,7 @@
 import { type ColumnDef } from '@tanstack/react-table';
-import type { EmployeeDto } from '../-employees.server';
+import type { MemberDto } from '../-members.server';
 
-export const getColumns = (): ColumnDef<EmployeeDto>[] => {
+export const getColumns = (): ColumnDef<MemberDto>[] => {
   return [
     {
       accessorKey: 'name',

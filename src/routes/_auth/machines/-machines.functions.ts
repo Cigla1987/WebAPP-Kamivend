@@ -1,10 +1,5 @@
 /**
  * Machine API Functions
- *
- * These are TanStack Start server functions that can be imported anywhere.
- * The handler code runs only on the server, while the client gets an RPC stub.
- *
- * Server-side logic is imported from machines.server.ts (protected from client).
  */
 
 import { createServerFn } from '@tanstack/react-start';
@@ -30,14 +25,14 @@ import { errorMiddlewareFn } from '#/middleware/error';
 export const getMachinesFn = createServerFn({ method: 'GET' })
   .middleware([errorMiddlewareFn, authMiddlewareFn])
   .handler(async ({ context }): Promise<MachineDto[]> => {
-    return getMachines(context.user);
+    return getMachines(context.user, context.activeOrganization);
   });
 
 export const createMachineFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, authMiddlewareFn])
   .inputValidator(createMachineApiSchema)
-  .handler(async ({ data }): Promise<{ id: string }> => {
-    return createMachine(data);
+  .handler(async ({ data, context }): Promise<{ id: string }> => {
+    return createMachine(data, context.user, context.activeOrganization);
   });
 
 export const getMachineTypesFn = createServerFn({ method: 'GET' })
@@ -55,13 +50,13 @@ export const getMachineModesFn = createServerFn({ method: 'GET' })
 export const assignMachineFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, authMiddlewareFn])
   .inputValidator(assignMachineApiSchema)
-  .handler(async ({ data }): Promise<{ machineName: string }> => {
-    return updateMachineOwner(data);
+  .handler(async ({ data, context }): Promise<{ machineName: string }> => {
+    return updateMachineOwner(data, context.user, context.activeOrganization);
   });
 
 export const updateMachineModeFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, authMiddlewareFn])
   .inputValidator(updateMachineModeApiSchema)
-  .handler(async ({ data }): Promise<{ machineName: string }> => {
-    return updateMachineMode(data);
+  .handler(async ({ data, context }): Promise<{ machineName: string }> => {
+    return updateMachineMode(data, context.user, context.activeOrganization);
   });

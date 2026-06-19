@@ -11,7 +11,7 @@ export const Route = createFileRoute('/_auth')({
       queryFn: getSessionFn,
       staleTime: 1000 * 60 * 5,
     });
-    return { user: session.user };
+    return { user: session.user, activeOrganization: session.activeOrganization, memberRole: session.memberRole };
   },
   component: AuthenticatedLayout,
 });

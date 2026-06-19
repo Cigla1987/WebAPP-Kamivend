@@ -1,14 +1,12 @@
 /**
  * ⚠️ SERVER-ONLY FILE
- * This file is protected by TanStack Start import protection.
- * It CANNOT be imported by client-side code for VALUES.
- * TYPE-ONLY imports are allowed (thanks to PR #7305).
  */
 
 import { db } from '@/server/db';
 import { UserRole } from '#/shared/enums';
 import { pictures, user } from '@/server/db/schema';
-import { and, eq, or, isNull } from 'drizzle-orm';
+import { organization } from '@/server/db/schema/auth';
+import { eq, and } from 'drizzle-orm';
 import type { User } from '#/server/schemas/auth';
 import z from 'zod';
 
@@ -36,11 +34,9 @@ type CreatePicture = z.infer<typeof createPictureApiSchema>;
 type DeletePicture = z.infer<typeof deletePictureApiSchema>;
 
 export async function getPictures(
-  currentUser: Pick<User, 'id' | 'role'>
+  currentUser: Pick<User, 'id' | 'role'>,
+  activeOrg: typeof organization.$inferSelect | null
 ): Promise<PictureDto[]> {
-  const userId = currentUser.id;
-  const role = currentUser.role;
-
   const baseQuery = db
     .select({
       id: pictures.id,
@@ -50,44 +46,17 @@ export async function getPictures(
       pictureOwner: user.name,
     })
     .from(pictures)
-    .leftJoin(user, eq(pictures.pictureOwnerId, user.id));
+    .leftJoin(user, eq(pictures.createdBy, user.id));
 
   let results: PictureDto[];
 
-  if (role === UserRole.Superadmin) {
+  if (currentUser.role === UserRole.Admin) {
     results = await baseQuery;
   } else {
-    const [currentUserRecord] = await db
-      .select({ ownerId: user.ownerId })
-      .from(user)
-      .where(eq(user.id, userId));
-
-    if (currentUserRecord.ownerId === null) {
-      // Current user is an owner - show their pictures + all their employees' pictures + null owner pictures
-      const employees = await db
-        .select({ id: user.id })
-        .from(user)
-        .where(eq(user.ownerId, userId));
-
-      const employeeIds = employees.map((m) => m.id);
-
-      results = await baseQuery.where(
-        or(
-          eq(pictures.pictureOwnerId, userId),
-          ...employeeIds.map((employeeId) => eq(pictures.pictureOwnerId, employeeId)),
-          isNull(pictures.pictureOwnerId)
-        )
-      );
-    } else {
-      // Current user is an employee - show their pictures + their owner's pictures + null owner pictures
-      results = await baseQuery.where(
-        or(
-          eq(pictures.pictureOwnerId, userId),
-          eq(pictures.pictureOwnerId, currentUserRecord.ownerId),
-          isNull(pictures.pictureOwnerId)
-        )
-      );
+    if (!activeOrg) {
+      return [];
     }
+    results = await baseQuery.where(eq(pictures.organizationId, activeOrg.id));
   }
 
   return results;
@@ -95,17 +64,20 @@ export async function getPictures(
 
 export async function createPicture(
   data: CreatePicture,
-  currentUser: Pick<User, 'id' | 'role' | 'name'>
+  currentUser: Pick<User, 'id' | 'role' | 'name'>,
+  activeOrg: typeof organization.$inferSelect | null
 ): Promise<PictureDto> {
-  const userId = currentUser.id;
-  const role = currentUser.role;
+  if (!activeOrg) {
+    throw new Error('No active organization');
+  }
 
   const [createdPicture] = await db
     .insert(pictures)
     .values({
       pictureName: data.pictureName,
       pictureContent: data.pictureContent,
-      pictureOwnerId: role === UserRole.Superadmin ? null : userId,
+      organizationId: activeOrg.id,
+      createdBy: currentUser.id,
     })
     .returning({
       id: pictures.id,
@@ -116,26 +88,31 @@ export async function createPicture(
 
   return {
     ...createdPicture,
-    pictureOwner: role === UserRole.Superadmin ? null : currentUser.name,
+    pictureOwner: currentUser.name,
   };
 }
 
 export async function deletePicture(
   data: DeletePicture,
-  currentUser: Pick<User, 'id' | 'role'>
+  currentUser: Pick<User, 'id' | 'role'>,
+  activeOrg: typeof organization.$inferSelect | null
 ): Promise<void> {
-  const userId = currentUser.id;
-  const role = currentUser.role;
+  if (!activeOrg) {
+    throw new Error('No active organization');
+  }
 
   const baseQuery = db.select({ id: pictures.id }).from(pictures);
 
   let existing: { id: string }[];
 
-  if (role === UserRole.Superadmin) {
+  if (currentUser.role === UserRole.Admin) {
     existing = await baseQuery.where(eq(pictures.id, data.pictureId));
   } else {
     existing = await baseQuery.where(
-      and(eq(pictures.id, data.pictureId), eq(pictures.pictureOwnerId, userId))
+      and(
+        eq(pictures.id, data.pictureId),
+        eq(pictures.organizationId, activeOrg.id)
+      )
     );
   }
 
