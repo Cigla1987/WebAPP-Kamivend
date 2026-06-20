@@ -7,20 +7,16 @@ import {
 import { getColumns } from './-components/columns';
 import { getInvitationColumns } from './-components/invitation-columns';
 import MembersList from './-components/members-list';
-import { UserRole, MemberRole } from '#/shared/enums';
+import { isOwner } from '#/utils/permissions';
 
 export const Route = createFileRoute('/_auth/members/')({
-  loader: async ({ context: { queryClient, user, memberRole } }) => {
-    const isOwner =
-      memberRole === MemberRole.Owner || user.role === UserRole.Admin;
-
-    const promises = [queryClient.ensureQueryData(membersQueryOptions())];
-
-    if (isOwner) {
-      promises.push(queryClient.ensureQueryData(pendingInvitationsQueryOptions()));
-    }
-
-    await Promise.all(promises);
+  loader: async ({ context: { queryClient, memberRole } }) => {
+    await Promise.all([
+      queryClient.ensureQueryData(membersQueryOptions()),
+      ...(isOwner(memberRole)
+        ? [queryClient.ensureQueryData(pendingInvitationsQueryOptions())]
+        : []),
+    ]);
   },
   pendingComponent: () => <p className="text-9xl text-white">loading</p>,
   component: MembersIndex,
@@ -28,13 +24,11 @@ export const Route = createFileRoute('/_auth/members/')({
 
 function MembersIndex() {
   const { data: members } = useSuspenseQuery(membersQueryOptions());
-  const { user, memberRole } = Route.useRouteContext();
-  const isOwner =
-    memberRole === MemberRole.Owner || user.role === UserRole.Admin;
+  const { memberRole } = Route.useRouteContext();
 
   const { data: invitations = [] } = useQuery({
     ...pendingInvitationsQueryOptions(),
-    enabled: isOwner,
+    enabled: isOwner(memberRole),
   });
 
   const columns = getColumns();

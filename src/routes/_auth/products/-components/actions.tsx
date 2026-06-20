@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { MoreHorizontal } from 'lucide-react';
-import { UserRole, MemberRole } from '#/shared/enums';
+import { isOwner as checkIsOwner } from '#/utils/permissions';
+import { UserRole } from '#/shared/enums';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,7 +19,7 @@ const Actions = ({ product }: { product: ProductDto }) => {
   const [isAssignPictureOpen, setIsAssignPictureOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const { user, memberRole } = useRouteContext({ from: '/_auth' });
-  const isOwner = memberRole === MemberRole.Owner || user.role === UserRole.Admin;
+  const isOwner = checkIsOwner(memberRole) || user.role === UserRole.Admin;
 
   const handleUpdateDiscount = (e: React.MouseEvent) => {
     e.preventDefault();

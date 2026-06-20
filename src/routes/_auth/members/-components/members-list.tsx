@@ -1,7 +1,8 @@
 import { type FC } from 'react';
 import { type ColumnDef } from '@tanstack/react-table';
 import { getRouteApi } from '@tanstack/react-router';
-import { UserRole, MemberRole } from '#/shared/enums';
+import { isOwner as checkIsOwner } from '#/utils/permissions';
+import { UserRole } from '#/shared/enums';
 import {
   Card,
   CardContent,
@@ -33,8 +34,7 @@ const MembersList: FC<MembersListProps> = ({
 }) => {
   const { user, memberRole } = authenticatedRoute.useRouteContext();
 
-  const isOwner =
-    memberRole === MemberRole.Owner || user.role === UserRole.Admin;
+  const isOwner = checkIsOwner(memberRole) || user.role === UserRole.Admin;
   const actions = isOwner && <InviteMember />;
 
   return (
