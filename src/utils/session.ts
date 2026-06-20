@@ -39,7 +39,7 @@ export const getSessionFn = createServerFn({ method: 'GET' }).handler(
           )
         )
         .limit(1);
-      memberRole = mem?.role || null;
+      memberRole = mem?.role;
     }
 
     return {

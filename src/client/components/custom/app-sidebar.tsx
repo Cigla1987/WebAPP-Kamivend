@@ -14,6 +14,7 @@ import { FileImage, Home, Package2, Shapes, Users, Shield } from 'lucide-react';
 import { Icon } from '@iconify/react';
 import { getRouteApi } from '@tanstack/react-router';
 import { UserRole } from '#/shared/enums';
+import { isOrgMember } from '#/utils/permissions';
 
 const authenticatedRoute = getRouteApi('/_auth');
 
@@ -23,7 +24,7 @@ const AppSidebar = () => {
   });
 
   const { toggleSidebar } = useSidebar();
-  const { user } = authenticatedRoute.useRouteContext();
+  const { user, memberRole } = authenticatedRoute.useRouteContext();
 
   return (
     <Sidebar collapsible="icon" variant="floating">
@@ -60,7 +61,7 @@ const AppSidebar = () => {
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>
-              
+
               <SidebarMenuItem>
                 <Link to="/products">
                   <SidebarMenuButton
@@ -99,20 +100,20 @@ const AppSidebar = () => {
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>
-
-              <SidebarMenuItem>
-                <Link to="/members">
-                  <SidebarMenuButton
-                    className={`hover:cursor-pointer ${
-                      pathname === '/members' ? 'bg-sidebar-accent' : ''
-                    }`}
-                  >
-                    <Users />
-                    Members
-                  </SidebarMenuButton>
-                </Link>
-              </SidebarMenuItem>
-
+              {isOrgMember(memberRole) && (
+                <SidebarMenuItem>
+                  <Link to="/members">
+                    <SidebarMenuButton
+                      className={`hover:cursor-pointer ${
+                        pathname === '/members' ? 'bg-sidebar-accent' : ''
+                      }`}
+                    >
+                      <Users />
+                      Members
+                    </SidebarMenuButton>
+                  </Link>
+                </SidebarMenuItem>
+              )}
               {user.role === UserRole.Admin && (
                 <SidebarMenuItem>
                   <Link to="/admin">
