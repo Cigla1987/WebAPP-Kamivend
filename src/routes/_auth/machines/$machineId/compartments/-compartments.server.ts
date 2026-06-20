@@ -37,7 +37,6 @@ export type CompartmentDto = {
 
 export async function fetchCompartmentsByMachine(
   machineId: string,
-  _userId: string,
   role: string,
   activeOrg: typeof organization.$inferSelect | null
 ): Promise<CompartmentDto[]> {
@@ -83,7 +82,7 @@ export async function fetchCompartmentsByMachine(
       .where(
         and(
           eq(compartments.machineId, machineId),
-          eq(compartments.organizationId, activeOrg.id)
+          eq(machines.organizationId, activeOrg.id)
         )
       )
       .orderBy(asc(compartments.compartmentNumber));

@@ -7,7 +7,10 @@ export const authMiddlewareFn = createMiddleware({ type: 'function' }).server(
 
     return next({
       context: {
-        user: session.user,
+        user: {
+          ...session.user,
+          role: session.user.role!,
+        },
         activeOrganization: session.activeOrganization,
         memberRole: session.memberRole,
       },

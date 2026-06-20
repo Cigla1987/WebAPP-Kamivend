@@ -3,7 +3,7 @@
  */
 
 import { db } from '@/server/db';
-import { UserRole, MemberRole } from '#/shared/enums';
+import { MemberRole } from '#/shared/enums';
 import {
   user,
   member,
@@ -65,7 +65,6 @@ export async function getMembers(
 }
 
 export async function getPendingInvitations(
-  _currentUser: Pick<User, 'id' | 'role'>,
   activeOrg: typeof organization.$inferSelect | null
 ): Promise<InvitationDto[]> {
   if (!activeOrg) {
@@ -97,28 +96,10 @@ export async function getPendingInvitations(
 
 export async function inviteMember(
   data: z.infer<typeof inviteMemberApiSchema>,
-  currentUser: Pick<User, 'id' | 'role'>,
   activeOrg: typeof organization.$inferSelect | null
 ): Promise<MemberDto> {
   if (!activeOrg) {
     throw new Error('No active organization');
-  }
-
-  // Check if user is owner or admin
-  if (currentUser.role !== UserRole.Admin) {
-    const [mem] = await db
-      .select()
-      .from(member)
-      .where(
-        and(
-          eq(member.organizationId, activeOrg.id),
-          eq(member.userId, currentUser.id)
-        )
-      )
-      .limit(1);
-    if (!mem || mem.role !== MemberRole.Owner) {
-      throw new Error('Unauthorized');
-    }
   }
 
   // Create invitation via better-auth

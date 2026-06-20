@@ -12,6 +12,8 @@ import {
 import type { CompartmentDto } from './-compartments.server';
 import { authMiddlewareFn } from '#/middleware/auth';
 import { errorMiddlewareFn } from '#/middleware/error';
+import { requireRole } from '#/middleware/roles';
+import { UserRole, MemberRole } from '#/shared/enums';
 
 export const getCompartmentsByMachine = createServerFn({
   method: 'GET',
@@ -21,14 +23,13 @@ export const getCompartmentsByMachine = createServerFn({
   .handler(async ({ context, data }): Promise<CompartmentDto[]> => {
     return fetchCompartmentsByMachine(
       data.machineId,
-      context.user.id,
       context.user.role,
       context.activeOrganization
     );
   });
 
 export const updatePrice = createServerFn({ method: 'POST' })
-  .middleware([errorMiddlewareFn, authMiddlewareFn])
+  .middleware([errorMiddlewareFn, requireRole(UserRole.Admin, MemberRole.Owner, MemberRole.Employee)])
   .inputValidator(
     (data: { id: string; newPrice: number; updateAll: boolean }) => data
   )
@@ -42,14 +43,14 @@ export const updatePrice = createServerFn({ method: 'POST' })
   });
 
 export const updateManagedBy = createServerFn({ method: 'POST' })
-  .middleware([errorMiddlewareFn, authMiddlewareFn])
+  .middleware([errorMiddlewareFn, requireRole(UserRole.Admin, MemberRole.Owner)])
   .inputValidator((data: { id: string; managedBy: string | null }) => data)
   .handler(async ({ data }): Promise<void> => {
     await updateCompartmentManagedBy(data.id, data.managedBy);
   });
 
 export const updateDiscount = createServerFn({ method: 'POST' })
-  .middleware([errorMiddlewareFn, authMiddlewareFn])
+  .middleware([errorMiddlewareFn, requireRole(UserRole.Admin, MemberRole.Owner, MemberRole.Employee)])
   .inputValidator(
     (data: {
       id: string;

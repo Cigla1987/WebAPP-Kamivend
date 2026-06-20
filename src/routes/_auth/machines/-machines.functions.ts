@@ -21,6 +21,8 @@ import type {
 } from './-machines.server';
 import { authMiddlewareFn } from '#/middleware/auth';
 import { errorMiddlewareFn } from '#/middleware/error';
+import { requireRole } from '#/middleware/roles';
+import { UserRole, MemberRole } from '#/shared/enums';
 
 export const getMachinesFn = createServerFn({ method: 'GET' })
   .middleware([errorMiddlewareFn, authMiddlewareFn])
@@ -29,10 +31,10 @@ export const getMachinesFn = createServerFn({ method: 'GET' })
   });
 
 export const createMachineFn = createServerFn({ method: 'POST' })
-  .middleware([errorMiddlewareFn, authMiddlewareFn])
+  .middleware([errorMiddlewareFn, requireRole(UserRole.Admin)])
   .inputValidator(createMachineApiSchema)
   .handler(async ({ data, context }): Promise<{ id: string }> => {
-    return createMachine(data, context.user, context.activeOrganization);
+    return createMachine(data, context.user);
   });
 
 export const getMachineTypesFn = createServerFn({ method: 'GET' })
@@ -48,15 +50,15 @@ export const getMachineModesFn = createServerFn({ method: 'GET' })
   });
 
 export const assignMachineFn = createServerFn({ method: 'POST' })
-  .middleware([errorMiddlewareFn, authMiddlewareFn])
+  .middleware([errorMiddlewareFn, requireRole(UserRole.Admin)])
   .inputValidator(assignMachineApiSchema)
   .handler(async ({ data, context }): Promise<{ machineName: string }> => {
     return updateMachineOwner(data, context.user, context.activeOrganization);
   });
 
 export const updateMachineModeFn = createServerFn({ method: 'POST' })
-  .middleware([errorMiddlewareFn, authMiddlewareFn])
+  .middleware([errorMiddlewareFn, requireRole(UserRole.Admin, MemberRole.Owner)])
   .inputValidator(updateMachineModeApiSchema)
-  .handler(async ({ data, context }): Promise<{ machineName: string }> => {
-    return updateMachineMode(data, context.user, context.activeOrganization);
+  .handler(async ({ data }): Promise<{ machineName: string }> => {
+    return updateMachineMode(data);
   });

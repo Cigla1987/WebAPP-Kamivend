@@ -9,11 +9,11 @@ import {
   machineModes,
   compartments,
 } from '@/server/db/schema';
-import { user, organization, member } from '@/server/db/schema/auth';
-import { eq, and } from 'drizzle-orm';
+import { user, organization } from '@/server/db/schema/auth';
+import { eq } from 'drizzle-orm';
 import type { User } from '#/server/schemas/auth';
 import z from 'zod';
-import { MachineType, UserRole, MemberRole } from '#/shared/enums';
+import { MachineType, UserRole } from '#/shared/enums';
 
 export type MachineDto = {
   id: string;
@@ -108,30 +108,8 @@ export async function getMachineModes(): Promise<MachineModeDto[]> {
 
 export async function createMachine(
   data: CreateMachine,
-  currentUser: Pick<User, 'id' | 'role'>,
-  activeOrg: typeof organization.$inferSelect | null
+  currentUser: Pick<User, 'id' | 'role'>
 ): Promise<{ id: string }> {
-  if (!activeOrg) {
-    throw new Error('No active organization');
-  }
-
-  if (currentUser.role !== UserRole.Admin) {
-    // Check if user is owner of the org
-    const [mem] = await db
-      .select()
-      .from(member)
-      .where(
-        and(
-          eq(member.organizationId, activeOrg.id),
-          eq(member.userId, currentUser.id)
-        )
-      )
-      .limit(1);
-    if (!mem || mem.role !== MemberRole.Owner) {
-      throw new Error('Unauthorized');
-    }
-  }
-
   const existingMachine = await getMachineBySerialNumber(data.serialNumber);
   if (existingMachine) {
     throw new Error('Machine with this serial number already exists.');
@@ -162,7 +140,6 @@ export async function createMachine(
       machineModeId: data.machineModeId,
       machineTypeId: data.machineTypeId,
       compartmentCount: data.compartmentCount || 0,
-      organizationId: activeOrg.id,
       createdBy: currentUser.id,
     })
     .returning();
@@ -176,7 +153,6 @@ export async function createMachine(
       (_, index) => ({
         machineId: createdMachine.id,
         compartmentNumber: index + 1,
-        organizationId: activeOrg.id,
         createdBy: currentUser.id,
       })
     );
@@ -234,14 +210,8 @@ export const updateMachineModeApiSchema = z.object({
 type UpdateMachineMode = z.infer<typeof updateMachineModeApiSchema>;
 
 export async function updateMachineMode(
-  data: UpdateMachineMode,
-  _currentUser: Pick<User, 'id' | 'role'>,
-  activeOrg: typeof organization.$inferSelect | null
+  data: UpdateMachineMode
 ): Promise<{ machineName: string }> {
-  if (!activeOrg) {
-    throw new Error('No active organization');
-  }
-
   const [existingMachine] = await db
     .select({
       id: machines.id,

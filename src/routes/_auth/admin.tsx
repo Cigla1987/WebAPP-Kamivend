@@ -33,14 +33,6 @@ export const Route = createFileRoute('/_auth/admin')({
 function AdminPage() {
   const { user } = authenticatedRoute.useRouteContext();
   const { data: organizations } = useSuspenseQuery(organizationsQueryOptions());
-  const navigate = useNavigate();
-
-  const handleEnterOrg = async (orgId: string) => {
-    await authClient.organization.setActive({
-      organizationId: orgId,
-    });
-    navigate({ to: '/dashboard' });
-  };
 
   return (
     <div className="container mx-auto p-6">
@@ -57,11 +49,7 @@ function AdminPage() {
               <CardTitle>{org.name}</CardTitle>
               <CardDescription>{org.slug}</CardDescription>
             </CardHeader>
-            <CardContent className="flex justify-end">
-              <Button onClick={() => handleEnterOrg(org.id)}>
-                Enter Organization
-              </Button>
-            </CardContent>
+            <CardContent className="flex justify-end"></CardContent>
           </Card>
         ))}
         {organizations?.length === 0 && (

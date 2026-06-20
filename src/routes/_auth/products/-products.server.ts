@@ -3,7 +3,7 @@
  */
 
 import { db } from '@/server/db';
-import { UserRole, MemberRole } from '#/shared/enums';
+import { UserRole } from '#/shared/enums';
 import {
   products,
   pictures,
@@ -11,8 +11,8 @@ import {
   currencies,
   units,
 } from '@/server/db/schema';
-import { organization, member } from '@/server/db/schema/auth';
-import { eq, and } from 'drizzle-orm';
+import { organization } from '@/server/db/schema/auth';
+import { eq } from 'drizzle-orm';
 import type { User } from '#/server/schemas/auth';
 import z from 'zod';
 
@@ -106,22 +106,6 @@ export async function createProduct(
     throw new Error('No active organization');
   }
 
-  if (currentUser.role !== UserRole.Admin) {
-    const [mem] = await db
-      .select()
-      .from(member)
-      .where(
-        and(
-          eq(member.organizationId, activeOrg.id),
-          eq(member.userId, currentUser.id)
-        )
-      )
-      .limit(1);
-    if (!mem || mem.role !== MemberRole.Owner) {
-      throw new Error('Unauthorized');
-    }
-  }
-
   if (data.productSymbolId) {
     const existingSymbol = await db
       .select({ id: products.id })
@@ -176,7 +160,6 @@ export async function createProduct(
 
 export async function updateProductDiscount(
   data: UpdateProductDiscount,
-  currentUser: Pick<User, 'id' | 'role'>,
   activeOrg: typeof organization.$inferSelect | null
 ): Promise<void> {
   if (!activeOrg) {
@@ -193,7 +176,7 @@ export async function updateProductDiscount(
     throw new Error('Product not found.');
   }
 
-  if (currentUser.role !== UserRole.Admin && existingProduct.organizationId !== activeOrg.id) {
+  if (existingProduct.organizationId !== activeOrg.id) {
     throw new Error('Unauthorized.');
   }
 
@@ -209,7 +192,6 @@ export async function updateProductDiscount(
 
 export async function updateProductPicture(
   data: UpdateProductPicture,
-  currentUser: Pick<User, 'id' | 'role'>,
   activeOrg: typeof organization.$inferSelect | null
 ): Promise<void> {
   if (!activeOrg) {
@@ -226,7 +208,7 @@ export async function updateProductPicture(
     throw new Error('Product not found.');
   }
 
-  if (currentUser.role !== UserRole.Admin && existingProduct.organizationId !== activeOrg.id) {
+  if (existingProduct.organizationId !== activeOrg.id) {
     throw new Error('Unauthorized.');
   }
 

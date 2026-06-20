@@ -15,6 +15,8 @@ import {
 import type { ProductDto } from './-products.server';
 import { authMiddlewareFn } from '#/middleware/auth';
 import { errorMiddlewareFn } from '#/middleware/error';
+import { requireRole } from '#/middleware/roles';
+import { UserRole, MemberRole } from '#/shared/enums';
 
 export const getProductsFn = createServerFn({ method: 'GET' })
   .middleware([errorMiddlewareFn, authMiddlewareFn])
@@ -23,22 +25,22 @@ export const getProductsFn = createServerFn({ method: 'GET' })
   });
 
 export const createProductFn = createServerFn({ method: 'POST' })
-  .middleware([errorMiddlewareFn, authMiddlewareFn])
+  .middleware([errorMiddlewareFn, requireRole(UserRole.Admin, MemberRole.Owner)])
   .inputValidator(createProductApiSchema)
   .handler(async ({ data, context }): Promise<ProductDto> => {
     return createProduct(data, context.user, context.activeOrganization);
   });
 
 export const updateProductDiscountFn = createServerFn({ method: 'POST' })
-  .middleware([errorMiddlewareFn, authMiddlewareFn])
+  .middleware([errorMiddlewareFn, requireRole(UserRole.Admin, MemberRole.Owner, MemberRole.Employee)])
   .inputValidator(updateProductDiscountApiSchema)
   .handler(async ({ data, context }): Promise<void> => {
-    return updateProductDiscount(data, context.user, context.activeOrganization);
+    return updateProductDiscount(data, context.activeOrganization);
   });
 
 export const updateProductPictureFn = createServerFn({ method: 'POST' })
-  .middleware([errorMiddlewareFn, authMiddlewareFn])
+  .middleware([errorMiddlewareFn, requireRole(UserRole.Admin, MemberRole.Owner, MemberRole.Employee)])
   .inputValidator(updateProductPictureApiSchema)
   .handler(async ({ data, context }): Promise<void> => {
-    return updateProductPicture(data, context.user, context.activeOrganization);
+    return updateProductPicture(data, context.activeOrganization);
   });

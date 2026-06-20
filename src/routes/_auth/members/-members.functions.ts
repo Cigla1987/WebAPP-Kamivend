@@ -12,6 +12,8 @@ import {
 import type { MemberDto, InvitationDto } from './-members.server';
 import { authMiddlewareFn } from '#/middleware/auth';
 import { errorMiddlewareFn } from '#/middleware/error';
+import { requireRole } from '#/middleware/roles';
+import { MemberRole } from '#/shared/enums';
 
 export const getMembersFn = createServerFn({ method: 'GET' })
   .middleware([errorMiddlewareFn, authMiddlewareFn])
@@ -20,14 +22,14 @@ export const getMembersFn = createServerFn({ method: 'GET' })
   });
 
 export const getPendingInvitationsFn = createServerFn({ method: 'GET' })
-  .middleware([errorMiddlewareFn, authMiddlewareFn])
+  .middleware([errorMiddlewareFn, requireRole(MemberRole.Owner)])
   .handler(async ({ context }): Promise<InvitationDto[]> => {
-    return getPendingInvitations(context.user, context.activeOrganization);
+    return getPendingInvitations(context.activeOrganization);
   });
 
 export const inviteMemberFn = createServerFn({ method: 'POST' })
-  .middleware([errorMiddlewareFn, authMiddlewareFn])
+  .middleware([errorMiddlewareFn, requireRole(MemberRole.Owner)])
   .inputValidator(inviteMemberApiSchema)
   .handler(async ({ data, context }): Promise<MemberDto> => {
-    return inviteMember(data, context.user, context.activeOrganization);
+    return inviteMember(data, context.activeOrganization);
   });
