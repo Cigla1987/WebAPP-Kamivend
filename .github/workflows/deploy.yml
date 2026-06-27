@@ -27,9 +27,6 @@ jobs:
             --exclude='.env' \
             --exclude='.env.local' \
             --exclude='dist' \
-            --exclude='Dockerfile' \
-            --exclude='docker-compose.yml' \
-            --exclude='.dockerignore' \
             --exclude='.github' \
             ./ ${{ secrets.VPS_USER }}@${{ secrets.VPS_HOST }}:${{ secrets.VPS_DEPLOY_PATH }}/
 
