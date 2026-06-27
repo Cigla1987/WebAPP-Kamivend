@@ -20,7 +20,7 @@ RUN pnpm run build
 FROM base AS production
 ENV NODE_ENV=production
 COPY --from=builder /app/dist ./dist
-RUN ln -s dist/client public
+RUN cp -r dist/client public
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=builder /app/migrations ./migrations
 COPY --from=builder /app/drizzle.config.ts ./
