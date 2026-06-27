@@ -1,10 +1,14 @@
-import { createAPIFileRoute } from '@tanstack/react-start/api'
+import { createFileRoute } from '@tanstack/react-router';
 
-export const APIRoute = createAPIFileRoute('/api/health')({
-  GET: async () => {
-    return new Response(
-      JSON.stringify({ status: 'ok', timestamp: new Date().toISOString() }),
-      { status: 200, headers: { 'Content-Type': 'application/json' } },
-    )
+export const Route = createFileRoute('/api/health')({
+  server: {
+    handlers: {
+      GET: async () => {
+        return Response.json({
+          status: 'ok',
+          timestamp: new Date().toISOString(),
+        });
+      },
+    },
   },
-})
+});
