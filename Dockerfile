@@ -23,4 +23,4 @@ COPY --from=builder /app/dist ./dist
 COPY --from=deps /app/node_modules ./node_modules
 COPY package.json ./
 EXPOSE 3000
-CMD ["npx", "srvx", "--prod", "-s", "dist/client", "dist/server/server.js"]
+CMD ["pnpm", "start"]

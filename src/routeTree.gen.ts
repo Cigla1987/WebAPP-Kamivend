@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthRouteImport } from './routes/_auth'
 import { Route as publicIndexRouteImport } from './routes/(public)/index'
+import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as AuthDashboardRouteImport } from './routes/_auth/dashboard'
 import { Route as publicLoginRouteImport } from './routes/(public)/login'
 import { Route as AuthSymbolsRouteRouteImport } from './routes/_auth/symbols/route'
@@ -34,6 +35,11 @@ const AuthRoute = AuthRouteImport.update({
 const publicIndexRoute = publicIndexRouteImport.update({
   id: '/(public)/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthDashboardRoute = AuthDashboardRouteImport.update({
@@ -123,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/symbols': typeof AuthSymbolsRouteRouteWithChildren
   '/login': typeof publicLoginRoute
   '/dashboard': typeof AuthDashboardRoute
+  '/api/health': typeof ApiHealthRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/employees/': typeof AuthEmployeesIndexRoute
   '/machines/': typeof AuthMachinesIndexRoute
@@ -136,6 +143,7 @@ export interface FileRoutesByTo {
   '/': typeof publicIndexRoute
   '/login': typeof publicLoginRoute
   '/dashboard': typeof AuthDashboardRoute
+  '/api/health': typeof ApiHealthRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/employees': typeof AuthEmployeesIndexRoute
   '/machines': typeof AuthMachinesIndexRoute
@@ -154,6 +162,7 @@ export interface FileRoutesById {
   '/_auth/symbols': typeof AuthSymbolsRouteRouteWithChildren
   '/(public)/login': typeof publicLoginRoute
   '/_auth/dashboard': typeof AuthDashboardRoute
+  '/api/health': typeof ApiHealthRoute
   '/(public)/': typeof publicIndexRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_auth/employees/': typeof AuthEmployeesIndexRoute
@@ -175,6 +184,7 @@ export interface FileRouteTypes {
     | '/symbols'
     | '/login'
     | '/dashboard'
+    | '/api/health'
     | '/api/auth/$'
     | '/employees/'
     | '/machines/'
@@ -188,6 +198,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/dashboard'
+    | '/api/health'
     | '/api/auth/$'
     | '/employees'
     | '/machines'
@@ -205,6 +216,7 @@ export interface FileRouteTypes {
     | '/_auth/symbols'
     | '/(public)/login'
     | '/_auth/dashboard'
+    | '/api/health'
     | '/(public)/'
     | '/api/auth/$'
     | '/_auth/employees/'
@@ -219,6 +231,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   AuthRoute: typeof AuthRouteWithChildren
   publicLoginRoute: typeof publicLoginRoute
+  ApiHealthRoute: typeof ApiHealthRoute
   publicIndexRoute: typeof publicIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
@@ -237,6 +250,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof publicIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_auth/dashboard': {
@@ -443,6 +463,7 @@ const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
 const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRouteWithChildren,
   publicLoginRoute: publicLoginRoute,
+  ApiHealthRoute: ApiHealthRoute,
   publicIndexRoute: publicIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
