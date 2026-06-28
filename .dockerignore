@@ -1,7 +1,9 @@
 node_modules
-dist
-.cache
-.env.local
-.env.development
-.env
+npm-debug.log
+Dockerfile
+.dockerignore
 .git
+.env
+.env.local
+dist
+.output

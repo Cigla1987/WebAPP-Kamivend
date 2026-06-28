@@ -1,25 +1,29 @@
-# Build stage
-FROM node:24-alpine AS builder
+# syntax=docker/dockerfile:1
+
+# Base image
+FROM node:24-slim AS base
+ENV PNPM_HOME="/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
+RUN corepack enable
+COPY . /app
 WORKDIR /app
 
-RUN npm install -g pnpm
+# Production dependencies
+FROM base AS prod-deps
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --prod --frozen-lockfile
 
-COPY package.json pnpm-lock.yaml ./
-RUN pnpm install --frozen-lockfile
-
-COPY . .
-RUN pnpm build
+# Build stage
+FROM base AS build
+RUN --mount=type=cache,id=pnpm,target=/pnpm/store pnpm install --frozen-lockfile
+RUN pnpm run build
 
 # Production stage
-FROM node:24-alpine
-WORKDIR /app
-
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/package.json ./package.json
-COPY --from=builder /app/node_modules ./node_modules
-
+FROM base
+COPY --from=prod-deps /app/node_modules /app/node_modules
+COPY --from=build /app/.output /app/.output
+COPY --from=build /app/migrations /app/migrations
+COPY --from=build /app/drizzle.config.ts /app/drizzle.config.ts
+COPY package.json /app/package.json
+COPY pnpm-workspace.yaml /app/pnpm-workspace.yaml
 EXPOSE 3000
-ENV NODE_ENV=production
-ENV PORT=3000
-
-CMD ["pnpm", "start"]
+CMD [ "sh", "-c", "pnpm db:migrate && pnpm start" ]
