@@ -25,7 +25,7 @@ import {
   SelectValue,
 } from '#/client/components/ui/select';
 import { updateManagedBy } from '../-compartments.functions';
-import { getUsersByOwner } from '#/routes/_auth/machines/-users.functions';
+import { getUsersByOrganization } from '#/routes/_auth/machines/-users.functions';
 import type { CompartmentDto } from '../-compartments.server';
 import type { UserDto } from '#/routes/_auth/machines/-users.server';
 
@@ -46,22 +46,26 @@ const UpdateManagedBy: React.FC<UpdateManagedByProps> = ({
   onOpenChange,
   compartment,
 }) => {
-  const { user } = authenticatedRoute.useRouteContext();
-  const userId = user.id;
+  const { activeOrganization } = authenticatedRoute.useRouteContext();
   const [loading, setLoading] = useState(false);
 
   const { machineId } = useParams({
     from: '/_auth/machines/$machineId/compartments/',
   });
 
-  const { data: ownerEmployees } = useSuspenseQuery({
-    queryKey: ['users', 'byOwner', userId],
-    queryFn: () => getUsersByOwner({ data: { ownerId: userId!.toString() } }),
+  const { data: orgEmployees } = useSuspenseQuery({
+    queryKey: ['users', 'byOrganization', activeOrganization?.id],
+    queryFn: () =>
+      activeOrganization
+        ? getUsersByOrganization({
+            data: { organizationId: activeOrganization.id },
+          })
+        : Promise.resolve([]),
   });
 
   const employeeItems = [
     { label: 'No user', value: 'null' },
-    ...(ownerEmployees?.map((employee: UserDto) => ({
+    ...(orgEmployees?.map((employee: UserDto) => ({
       label: employee.username,
       value: employee.id,
     })) ?? []),
@@ -146,7 +150,7 @@ const UpdateManagedBy: React.FC<UpdateManagedByProps> = ({
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="null">No user</SelectItem>
-                          {ownerEmployees?.map((employee: UserDto) => (
+                          {orgEmployees?.map((employee: UserDto) => (
                             <SelectItem key={employee.id} value={employee.id}>
                               {employee.username}
                             </SelectItem>

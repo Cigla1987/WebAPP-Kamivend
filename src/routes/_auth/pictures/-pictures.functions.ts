@@ -1,10 +1,5 @@
 /**
  * Pictures API Functions
- *
- * These are TanStack Start server functions that can be imported anywhere.
- * The handler code runs only on the server, while the client gets an RPC stub.
- *
- * Server-side logic is imported from -pictures.server.ts (protected from client).
  */
 
 import { createServerFn } from '@tanstack/react-start';
@@ -22,19 +17,19 @@ import { errorMiddlewareFn } from '#/middleware/error';
 export const getPicturesFn = createServerFn({ method: 'GET' })
   .middleware([errorMiddlewareFn, authMiddlewareFn])
   .handler(async ({ context }): Promise<PictureDto[]> => {
-    return getPictures(context.user);
+    return getPictures(context.user, context.activeOrganization);
   });
 
 export const createPictureFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, authMiddlewareFn])
   .inputValidator(createPictureApiSchema)
   .handler(async ({ data, context }): Promise<PictureDto> => {
-    return createPicture(data, context.user);
+    return createPicture(data, context.user, context.activeOrganization);
   });
 
 export const deletePictureFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, authMiddlewareFn])
   .inputValidator(deletePictureApiSchema)
   .handler(async ({ data, context }): Promise<void> => {
-    return deletePicture(data, context.user);
+    return deletePicture(data, context.user, context.activeOrganization);
   });

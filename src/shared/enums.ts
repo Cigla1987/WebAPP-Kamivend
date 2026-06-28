@@ -9,7 +9,11 @@ export enum MachineMode {
 }
 
 export enum UserRole {
-  Superadmin = 'superadmin',
+  Admin = 'admin',
+  User = 'user',
+}
+
+export enum MemberRole {
   Owner = 'owner',
   Employee = 'employee',
 }

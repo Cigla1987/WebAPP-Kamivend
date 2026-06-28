@@ -1,15 +1,12 @@
 /**
  * ⚠️ SERVER-ONLY FILE
- * This file is protected by TanStack Start import protection.
- * It CANNOT be imported by client-side code for VALUES.
- * TYPE-ONLY imports are allowed (thanks to PR #7305).
  */
 
 import { db } from '@/server/db';
-import { UserRole } from '#/shared/enums';
+import { UserRole, MemberRole } from '#/shared/enums';
 import { symbols } from '@/server/db/schema';
-import { user } from '@/server/db/schema/auth';
-import { eq, isNull, or } from 'drizzle-orm';
+import { organization, member } from '@/server/db/schema/auth';
+import { eq, and } from 'drizzle-orm';
 import type { User } from '#/server/schemas/auth';
 import z from 'zod';
 
@@ -17,7 +14,7 @@ export type SymbolDto = {
   id: string;
   symbolName: string;
   symbolPicture: string;
-  ownerId: string | null;
+  organizationId: string | null;
 };
 
 export const createSymbolApiSchema = z.object({
@@ -31,46 +28,29 @@ export const createSymbolApiSchema = z.object({
 type CreateSymbol = z.infer<typeof createSymbolApiSchema>;
 
 export async function getSymbols(
-  currentUser: Pick<User, 'id' | 'role'>
+  currentUser: Pick<User, 'id' | 'role'>,
+  activeOrg: typeof organization.$inferSelect | null
 ): Promise<SymbolDto[]> {
-  const userId = currentUser.id;
-  const role = currentUser.role;
-
   const baseQuery = db
     .select({
       id: symbols.id,
       symbolName: symbols.symbolName,
       symbolPicture: symbols.symbolPicture,
-      ownerId: symbols.ownerId,
+      organizationId: symbols.organizationId,
     })
     .from(symbols);
 
   let results: SymbolDto[];
 
-  if (role === UserRole.Superadmin) {
+  if (currentUser.role === UserRole.Admin) {
     results = await baseQuery;
-  } else if (role === UserRole.Owner) {
-    results = await baseQuery.where(
-      or(eq(symbols.ownerId, userId), isNull(symbols.ownerId))
-    );
-  } else if (role === UserRole.Employee) {
-    const [employee] = await db
-      .select({ ownerId: user.ownerId })
-      .from(user)
-      .where(eq(user.id, userId))
-      .limit(1);
-
-    const ownerId = employee?.ownerId;
-
-    if (ownerId) {
-      results = await baseQuery.where(
-        or(eq(symbols.ownerId, ownerId), isNull(symbols.ownerId))
-      );
-    } else {
-      results = await baseQuery.where(isNull(symbols.ownerId));
-    }
   } else {
-    throw new Error('Unauthorized');
+    if (!activeOrg) {
+      return [];
+    }
+    results = await baseQuery.where(
+      eq(symbols.organizationId, activeOrg.id)
+    );
   }
 
   return results;
@@ -78,17 +58,36 @@ export async function getSymbols(
 
 export async function createSymbol(
   data: CreateSymbol,
-  currentUser: Pick<User, 'id' | 'role'>
+  currentUser: Pick<User, 'id' | 'role'>,
+  activeOrg: typeof organization.$inferSelect | null
 ): Promise<{ id: string }> {
-  const userId = currentUser.id;
-  const role = currentUser.role;
+  if (!activeOrg) {
+    throw new Error('No active organization');
+  }
+
+  if (currentUser.role !== UserRole.Admin) {
+    const [mem] = await db
+      .select()
+      .from(member)
+      .where(
+        and(
+          eq(member.organizationId, activeOrg.id),
+          eq(member.userId, currentUser.id)
+        )
+      )
+      .limit(1);
+    if (!mem || mem.role !== MemberRole.Owner) {
+      throw new Error('Unauthorized');
+    }
+  }
 
   const [createdSymbol] = await db
     .insert(symbols)
     .values({
       symbolName: data.symbolName,
       symbolPicture: data.symbolPicture,
-      ownerId: role === UserRole.Superadmin ? null : userId,
+      organizationId: activeOrg.id,
+      createdBy: currentUser.id,
     })
     .returning();
 

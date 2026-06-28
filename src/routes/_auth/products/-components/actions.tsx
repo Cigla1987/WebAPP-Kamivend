@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { MoreHorizontal } from 'lucide-react';
+import { isOwner as checkIsOwner } from '#/utils/permissions';
+import { UserRole } from '#/shared/enums';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -7,8 +9,7 @@ import {
   DropdownMenuTrigger,
 } from '#/client/components/ui/dropdown-menu';
 import { Button } from '#/client/components/ui/button';
-import authClient from '#/client/lib/auth-client';
-import { UserRole } from '#/shared/enums';
+import { useRouteContext } from '@tanstack/react-router';
 import UpdateProductDiscount from './update-product-discount';
 import AssignProductPicture from './assign-product-picture';
 import type { ProductDto } from '../-products.server';
@@ -17,7 +18,8 @@ const Actions = ({ product }: { product: ProductDto }) => {
   const [isUpdateDiscountOpen, setIsUpdateDiscountOpen] = useState(false);
   const [isAssignPictureOpen, setIsAssignPictureOpen] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const role = authClient.useSession().data?.user.role;
+  const { user, memberRole } = useRouteContext({ from: '/_auth' });
+  const isOwner = checkIsOwner(memberRole) || user.role === UserRole.Admin;
 
   const handleUpdateDiscount = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -43,7 +45,7 @@ const Actions = ({ product }: { product: ProductDto }) => {
           }
         ></DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          {(role === UserRole.Superadmin || role === UserRole.Owner) && (
+          {isOwner && (
             <DropdownMenuItem closeOnClick={false} onClick={handleUpdateDiscount}>
               Update discount
             </DropdownMenuItem>
@@ -54,7 +56,7 @@ const Actions = ({ product }: { product: ProductDto }) => {
           <DropdownMenuItem>Assign symbol</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
-      {(role === UserRole.Superadmin || role === UserRole.Owner) && (
+      {isOwner && (
         <UpdateProductDiscount
           isOpen={isUpdateDiscountOpen}
           onOpenChange={setIsUpdateDiscountOpen}

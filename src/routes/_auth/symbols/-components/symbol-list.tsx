@@ -1,10 +1,11 @@
 import { type FC } from 'react';
 import TabbedList from '#/client/components/custom/tabbed-list';
 import { useRouteContext } from '@tanstack/react-router';
+import { isOwner } from '#/utils/permissions';
+import { UserRole } from '#/shared/enums';
 import type { SymbolDto } from '../-symbols.server';
 import CreateSymbol from './create-symbol';
 import { type ColumnDef } from '@tanstack/react-table';
-import { UserRole } from '#/shared/enums';
 
 interface SymbolsListProps {
   symbols: SymbolDto[];
@@ -12,8 +13,7 @@ interface SymbolsListProps {
 }
 
 const SymbolsList: FC<SymbolsListProps> = ({ symbols, tableColumns }) => {
-  const { user } = useRouteContext({ from: '/_auth' });
-  const userRole = user.role;
+  const { user, memberRole } = useRouteContext({ from: '/_auth' });
 
   const tabs = [
     {
@@ -24,7 +24,7 @@ const SymbolsList: FC<SymbolsListProps> = ({ symbols, tableColumns }) => {
     },
   ];
 
-  const actions = (userRole === UserRole.Superadmin || userRole === UserRole.Owner) && (
+  const actions = (isOwner(memberRole) || user.role === UserRole.Admin) && (
     <>
       <CreateSymbol />
     </>

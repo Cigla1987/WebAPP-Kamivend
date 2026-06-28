@@ -1,8 +1,5 @@
 /**
  * ⚠️ SERVER-ONLY FILE
- * This file is protected by TanStack Start import protection.
- * It CANNOT be imported by client-side code for VALUES.
- * TYPE-ONLY imports are allowed (thanks to PR #7305).
  */
 
 import { db } from '@/server/db';
@@ -14,13 +11,9 @@ import {
   products,
   pictures,
 } from '@/server/db/schema';
-import { user } from '@/server/db/schema/auth';
+import { user, organization } from '@/server/db/schema/auth';
 import { eq, and, asc } from 'drizzle-orm';
 
-/**
- * Compartment type with joined relations
- * Matches the actual query result from fetchCompartmentsByMachine()
- */
 export type CompartmentDto = {
   id: string;
   machineId: string;
@@ -42,14 +35,10 @@ export type CompartmentDto = {
   lastUpdated: Date | null;
 };
 
-/**
- * Get all compartments for a machine with joined data
- * @returns Array of compartments with relations
- */
 export async function fetchCompartmentsByMachine(
   machineId: string,
-  userId: string,
-  role: string
+  role: string,
+  activeOrg: typeof organization.$inferSelect | null
 ): Promise<CompartmentDto[]> {
   const baseQuery = db
     .select({
@@ -81,27 +70,22 @@ export async function fetchCompartmentsByMachine(
 
   let results;
 
-  if (role === UserRole.Superadmin) {
+  if (role === UserRole.Admin) {
     results = await baseQuery
       .where(eq(compartments.machineId, machineId))
       .orderBy(asc(compartments.compartmentNumber));
-  } else if (role === UserRole.Owner) {
-    results = await baseQuery
-      .where(
-        and(eq(compartments.machineId, machineId), eq(machines.ownerId, userId))
-      )
-      .orderBy(asc(compartments.compartmentNumber));
-  } else if (role === UserRole.Employee) {
+  } else {
+    if (!activeOrg) {
+      return [];
+    }
     results = await baseQuery
       .where(
         and(
           eq(compartments.machineId, machineId),
-          eq(compartments.managedBy, userId)
+          eq(machines.organizationId, activeOrg.id)
         )
       )
       .orderBy(asc(compartments.compartmentNumber));
-  } else {
-    throw new Error('Unauthorized');
   }
 
   return results.map((row) => ({
@@ -113,9 +97,6 @@ export async function fetchCompartmentsByMachine(
   })) as CompartmentDto[];
 }
 
-/**
- * Update compartment price
- */
 export async function updateCompartmentPrice(
   id: string,
   newPrice: number,
@@ -125,7 +106,6 @@ export async function updateCompartmentPrice(
   const now = new Date();
 
   if (updateAll) {
-    // Get product ID first
     const [productRow] = await db
       .select({ productId: compartments.productId })
       .from(compartments)
@@ -135,7 +115,6 @@ export async function updateCompartmentPrice(
       throw new Error('This compartment is empty');
     }
 
-    // Update all compartments with same product and managed by user
     await db
       .update(compartments)
       .set({
@@ -149,7 +128,6 @@ export async function updateCompartmentPrice(
         )
       );
   } else {
-    // Update single compartment
     await db
       .update(compartments)
       .set({
@@ -160,9 +138,6 @@ export async function updateCompartmentPrice(
   }
 }
 
-/**
- * Update compartment managed by
- */
 export async function updateCompartmentManagedBy(
   id: string,
   managedBy: string | null
@@ -173,9 +148,6 @@ export async function updateCompartmentManagedBy(
     .where(eq(compartments.id, id));
 }
 
-/**
- * Update compartment discount
- */
 export async function updateCompartmentDiscount(
   id: string,
   discountValue: number,

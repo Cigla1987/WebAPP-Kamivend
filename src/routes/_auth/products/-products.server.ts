@@ -1,8 +1,5 @@
 /**
  * ⚠️ SERVER-ONLY FILE
- * This file is protected by TanStack Start import protection.
- * It CANNOT be imported by client-side code for VALUES.
- * TYPE-ONLY imports are allowed (thanks to PR #7305).
  */
 
 import { db } from '@/server/db';
@@ -14,6 +11,7 @@ import {
   currencies,
   units,
 } from '@/server/db/schema';
+import { organization } from '@/server/db/schema/auth';
 import { eq } from 'drizzle-orm';
 import type { User } from '#/server/schemas/auth';
 import z from 'zod';
@@ -62,11 +60,9 @@ export type ProductDto = {
 };
 
 export async function getProducts(
-  currentUser: Pick<User, 'id' | 'role'>
+  currentUser: Pick<User, 'id' | 'role'>,
+  activeOrg: typeof organization.$inferSelect | null
 ): Promise<ProductDto[]> {
-  const userId = currentUser.id;
-  const role = currentUser.role;
-
   const baseQuery = db
     .select({
       id: products.id,
@@ -89,10 +85,13 @@ export async function getProducts(
 
   let results: ProductDto[];
 
-  if (role === UserRole.Superadmin) {
+  if (currentUser.role === UserRole.Admin) {
     results = await baseQuery;
   } else {
-    results = await baseQuery.where(eq(products.ownerId, userId));
+    if (!activeOrg) {
+      return [];
+    }
+    results = await baseQuery.where(eq(products.organizationId, activeOrg.id));
   }
 
   return results;
@@ -100,9 +99,12 @@ export async function getProducts(
 
 export async function createProduct(
   data: CreateProduct,
-  currentUser: Pick<User, 'id'>
+  currentUser: Pick<User, 'id' | 'role'>,
+  activeOrg: typeof organization.$inferSelect | null
 ): Promise<ProductDto> {
-  const userId = currentUser.id;
+  if (!activeOrg) {
+    throw new Error('No active organization');
+  }
 
   if (data.productSymbolId) {
     const existingSymbol = await db
@@ -126,7 +128,8 @@ export async function createProduct(
       defaultCurrencyId: data.currencyId,
       defaultQuantity: data.defaultQuantity.toString(),
       defaultUnitId: data.unitId,
-      ownerId: userId,
+      organizationId: activeOrg.id,
+      createdBy: currentUser.id,
       productSymbolId: data.productSymbolId ?? null,
     })
     .returning({ id: products.id });
@@ -157,22 +160,24 @@ export async function createProduct(
 
 export async function updateProductDiscount(
   data: UpdateProductDiscount,
-  currentUser: Pick<User, 'id' | 'role'>
+  activeOrg: typeof organization.$inferSelect | null
 ): Promise<void> {
-  const userId = currentUser.id;
-  const role = currentUser.role;
+  if (!activeOrg) {
+    throw new Error('No active organization');
+  }
 
   const [existingProduct] = await db
-    .select({ id: products.id, ownerId: products.ownerId })
+    .select({ id: products.id, organizationId: products.organizationId })
     .from(products)
     .where(eq(products.id, data.id))
     .limit(1);
 
-  if (role !== UserRole.Superadmin && existingProduct.ownerId !== userId) {
-    throw new Error('Unauthorized.');
-  }
   if (!existingProduct) {
     throw new Error('Product not found.');
+  }
+
+  if (existingProduct.organizationId !== activeOrg.id) {
+    throw new Error('Unauthorized.');
   }
 
   await db
@@ -187,22 +192,24 @@ export async function updateProductDiscount(
 
 export async function updateProductPicture(
   data: UpdateProductPicture,
-  currentUser: Pick<User, 'id' | 'role'>
+  activeOrg: typeof organization.$inferSelect | null
 ): Promise<void> {
-  const userId = currentUser.id;
-  const role = currentUser.role;
+  if (!activeOrg) {
+    throw new Error('No active organization');
+  }
 
   const [existingProduct] = await db
-    .select({ id: products.id, ownerId: products.ownerId })
+    .select({ id: products.id, organizationId: products.organizationId })
     .from(products)
     .where(eq(products.id, data.id))
     .limit(1);
 
-  if (role !== UserRole.Superadmin && existingProduct.ownerId !== userId) {
-    throw new Error('Unauthorized.');
-  }
   if (!existingProduct) {
     throw new Error('Product not found.');
+  }
+
+  if (existingProduct.organizationId !== activeOrg.id) {
+    throw new Error('Unauthorized.');
   }
 
   await db

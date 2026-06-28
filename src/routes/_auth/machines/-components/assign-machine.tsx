@@ -1,5 +1,5 @@
 import { Suspense, useState } from 'react';
-import { useForm } from '@tanstack/react-form';
+import { useForm, useStore } from '@tanstack/react-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { PlusCircle } from 'lucide-react';
@@ -27,13 +27,18 @@ import {
   SelectValue,
 } from '#/client/components/ui/select';
 import { Skeleton } from '#/client/components/ui/skeleton';
+import { Spinner } from '#/client/components/ui/spinner';
 import {
   useSuspenseQuery,
   useQueryClient,
   useMutation,
+  useQuery,
 } from '@tanstack/react-query';
 import { assignMachineFn } from '../-machines.functions';
-import { ownersQueryOptions } from '../-users.queries';
+import {
+  ownersQueryOptions,
+  organizationsByOwnerQueryOptions,
+} from '../-users.queries';
 import { machinesQueryOptions } from '../-machines.queries';
 
 const assignMachineSchema = z.object({
@@ -41,9 +46,8 @@ const assignMachineSchema = z.object({
     .string()
     .length(6, { message: 'Machine must be selected' })
     .trim(),
-  ownerId: z.string(),
-
-  // .nonempty('Owner must be selected.'),
+  userId: z.string().min(1, { message: 'Owner must be selected' }),
+  organizationId: z.string().min(1, { message: 'Organization must be selected' }),
 });
 
 const FormSkeletons = () => (
@@ -64,6 +68,12 @@ const FormSkeletons = () => (
           <Skeleton className="h-9 w-full" />
         </div>
       </FieldWrapper>
+      <FieldWrapper>
+        <div className="flex flex-col gap-1.5">
+          <Skeleton className="h-4 w-20" />
+          <Skeleton className="h-9 w-full" />
+        </div>
+      </FieldWrapper>
     </FieldGroup>
     <DialogFooter className=" ">
       <Skeleton className="h-9 w-16" />
@@ -81,20 +91,16 @@ const FormContent = ({
   const { data: owners } = useSuspenseQuery(ownersQueryOptions());
   const { data: machines } = useSuspenseQuery(machinesQueryOptions());
 
-  const ownerItems = owners.map((owner) => ({
-    label: owner.name,
-    value: owner.id,
-  }));
-
   const machineItems = machines.map((machine) => ({
     label: `${machine.machineName} (${machine.serialNumber})`,
     value: machine.serialNumber,
   }));
 
-  const { Field, handleSubmit, state } = useForm({
+  const form = useForm({
     defaultValues: {
       serialNumber: '',
-      ownerId: '',
+      userId: '',
+      organizationId: '',
     },
     validators: {
       onSubmit: assignMachineSchema,
@@ -103,10 +109,19 @@ const FormContent = ({
       mutation.mutate({
         data: {
           serialNumber: value.serialNumber,
-          ownerId: value.ownerId,
+          userId: value.userId,
+          organizationId: value.organizationId,
         },
       });
     },
+  });
+
+  const userId = useStore(form.store, (state) => state.values.userId);
+  const canSubmit = useStore(form.store, (state) => state.canSubmit);
+
+  const orgQuery = useQuery({
+    ...organizationsByOwnerQueryOptions(userId),
+    enabled: !!userId,
   });
 
   const mutation = useMutation({
@@ -134,7 +149,7 @@ const FormContent = ({
         onSubmit={(e) => {
           e.preventDefault();
           e.stopPropagation();
-          handleSubmit();
+          form.handleSubmit();
         }}
       >
         <div className="relative">
@@ -142,7 +157,7 @@ const FormContent = ({
             className={`grid w-full items-center gap-4 transition-all duration-300`}
           >
             <FieldGroup className="grid w-full items-center gap-4">
-              <Field
+              <form.Field
                 name="serialNumber"
                 children={(field) => (
                   <FieldWrapper>
@@ -176,15 +191,21 @@ const FormContent = ({
                   </FieldWrapper>
                 )}
               />
-              <Field
-                name="ownerId"
+              <form.Field
+                name="userId"
                 children={(field) => (
                   <FieldWrapper>
                     <FieldLabel htmlFor={field.name}>Owner</FieldLabel>
                     <Select
-                      items={ownerItems}
+                      items={owners.map((owner) => ({
+                        label: owner.name,
+                        value: owner.id,
+                      }))}
                       value={field.state.value}
-                      onValueChange={(value) => field.handleChange(value ?? '')}
+                      onValueChange={(value) => {
+                        field.handleChange(value ?? '');
+                        form.setFieldValue('organizationId', '');
+                      }}
                     >
                       <SelectTrigger
                         aria-invalid={field.state.meta.errors.length > 0}
@@ -207,13 +228,55 @@ const FormContent = ({
                   </FieldWrapper>
                 )}
               />
+              <form.Field
+                name="organizationId"
+                children={(field) => (
+                  <FieldWrapper>
+                    <FieldLabel htmlFor={field.name}>Organization</FieldLabel>
+                    <Select
+                      items={orgQuery.data?.map((org) => ({
+                        label: org.name,
+                        value: org.id,
+                      })) ?? []}
+                      value={field.state.value}
+                      onValueChange={(value) => field.handleChange(value ?? '')}
+                      disabled={!userId || orgQuery.isLoading}
+                    >
+                      <SelectTrigger
+                        aria-invalid={field.state.meta.errors.length > 0}
+                      >
+                        {orgQuery.isLoading ? (
+                          <span className="flex items-center gap-2">
+                            <Spinner className="size-4" />
+                            Loading...
+                          </span>
+                        ) : (
+                          <SelectValue placeholder="Select an organization" />
+                        )}
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectGroup>
+                          {orgQuery.data?.map((org) => (
+                            <SelectItem key={org.id} value={org.id}>
+                              {org.name}
+                            </SelectItem>
+                          ))}
+                        </SelectGroup>
+                      </SelectContent>
+                    </Select>
+                    {field.state.meta.errors.length > 0 && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
+                  </FieldWrapper>
+                )}
+              />
             </FieldGroup>
           </div>
         </div>
         <DialogFooter className="mt-4">
           <Button
             type="submit"
-            disabled={!state.canSubmit || mutation.isPending}
+            disabled={!canSubmit || mutation.isPending}
           >
             Save
           </Button>

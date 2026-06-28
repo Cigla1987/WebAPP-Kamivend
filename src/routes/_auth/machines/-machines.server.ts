@@ -1,8 +1,5 @@
 /**
  * ⚠️ SERVER-ONLY FILE
- * This file is protected by TanStack Start import protection.
- * It CANNOT be imported by client-side code for VALUES.
- * TYPE-ONLY imports are allowed (thanks to PR #7305).
  */
 
 import { db } from '@/server/db';
@@ -12,7 +9,7 @@ import {
   machineModes,
   compartments,
 } from '@/server/db/schema';
-import { user } from '@/server/db/schema/auth';
+import { user, organization } from '@/server/db/schema/auth';
 import { eq } from 'drizzle-orm';
 import type { User } from '#/server/schemas/auth';
 import z from 'zod';
@@ -28,7 +25,7 @@ export type MachineDto = {
   machineModeId: string | null;
   machineModeName: string | null;
   machineTypeName: string | null;
-  ownerName: string | null;
+  organizationName: string | null;
 };
 
 export const createMachineApiSchema = z.object({
@@ -47,8 +44,8 @@ type CreateMachine = z.infer<typeof createMachineApiSchema>;
 
 export const assignMachineApiSchema = z.object({
   serialNumber: z.string().min(1, { error: 'Serial number is required' }),
-  // ownerId: z.string().min(1, { error: 'Owner is required' }),
-  ownerId: z.string(),
+  userId: z.string(),
+  organizationId: z.string().min(1, { error: 'Organization is required' }),
 });
 
 type AssignMachine = z.infer<typeof assignMachineApiSchema>;
@@ -64,12 +61,9 @@ export type MachineModeDto = {
 };
 
 export async function getMachines(
-  currentUser: Pick<User, 'id' | 'role'>
+  currentUser: Pick<User, 'id' | 'role'>,
+  activeOrg: typeof organization.$inferSelect | null
 ): Promise<MachineDto[]> {
-  const userId = currentUser.id;
-  const role = currentUser.role;
-
-  // Base query with inner joins (machines must have mode and type)
   const baseQuery = db
     .select({
       id: machines.id,
@@ -81,37 +75,22 @@ export async function getMachines(
       machineModeId: machineModes.id,
       machineModeName: machineModes.machineModeName,
       machineTypeName: machineTypes.machineTypeName,
-      ownerName: user.name,
+      organizationName: organization.name,
     })
     .from(machines)
     .innerJoin(machineModes, eq(machines.machineModeId, machineModes.id))
     .innerJoin(machineTypes, eq(machines.machineTypeId, machineTypes.id))
-    .leftJoin(user, eq(machines.ownerId, user.id));
+    .leftJoin(organization, eq(machines.organizationId, organization.id));
 
   let results: MachineDto[];
 
-  if (role === UserRole.Superadmin) {
+  if (currentUser.role === UserRole.Admin) {
     results = await baseQuery;
-  } else if (role === UserRole.Owner) {
-    results = await baseQuery.where(eq(machines.ownerId, userId));
-  } else if (role === UserRole.Employee) {
-    results = await baseQuery
-      .innerJoin(compartments, eq(machines.id, compartments.machineId))
-      .where(eq(compartments.managedBy, userId))
-      .groupBy(
-        machines.id,
-        machines.machineName,
-        machines.serialNumber,
-        machines.productionYear,
-        machineModes.id,
-        machineModes.machineModeName,
-        machineTypes.machineTypeName,
-        machines.compartmentCount,
-        machines.machineDateCreated,
-        user.name
-      );
   } else {
-    throw new Error('Unauthorized');
+    if (!activeOrg) {
+      return [];
+    }
+    results = await baseQuery.where(eq(machines.organizationId, activeOrg.id));
   }
 
   return results;
@@ -128,7 +107,8 @@ export async function getMachineModes(): Promise<MachineModeDto[]> {
 }
 
 export async function createMachine(
-  data: CreateMachine
+  data: CreateMachine,
+  currentUser: Pick<User, 'id' | 'role'>
 ): Promise<{ id: string }> {
   const existingMachine = await getMachineBySerialNumber(data.serialNumber);
   if (existingMachine) {
@@ -145,7 +125,6 @@ export async function createMachine(
     throw new Error('Invalid machine type');
   }
 
-  // Validate compartment count for lockbox machines
   if (machineType.machineTypeName === MachineType.Lockbox) {
     if (!data.compartmentCount || data.compartmentCount <= 0) {
       throw new Error('Compartment count is required for lockbox machines');
@@ -161,10 +140,10 @@ export async function createMachine(
       machineModeId: data.machineModeId,
       machineTypeId: data.machineTypeId,
       compartmentCount: data.compartmentCount || 0,
+      createdBy: currentUser.id,
     })
     .returning();
 
-  // Create compartments for lockbox machines
   if (
     machineType.machineTypeName === MachineType.Lockbox &&
     data.compartmentCount > 0
@@ -174,6 +153,7 @@ export async function createMachine(
       (_, index) => ({
         machineId: createdMachine.id,
         compartmentNumber: index + 1,
+        createdBy: currentUser.id,
       })
     );
 
@@ -184,7 +164,9 @@ export async function createMachine(
 }
 
 export async function updateMachineOwner(
-  data: AssignMachine
+  data: AssignMachine,
+  _currentUser: Pick<User, 'id' | 'role'>,
+  _activeOrg: typeof organization.$inferSelect | null
 ): Promise<{ machineName: string }> {
   const existingMachine = await getMachineBySerialNumber(data.serialNumber);
 
@@ -192,26 +174,29 @@ export async function updateMachineOwner(
     throw new Error('Machine not found.');
   }
 
-  const [owner] = await db
+  const [targetUser] = await db
     .select({
       id: user.id,
     })
     .from(user)
-    .where(eq(user.id, data.ownerId))
+    .where(eq(user.id, data.userId))
     .limit(1);
 
-  if (!owner) {
-    throw new Error('Owner not found.');
+  if (!targetUser) {
+    throw new Error('User not found.');
   }
 
   await db
     .update(machines)
-    .set({ ownerId: owner.id })
+    .set({
+      createdBy: targetUser.id,
+      organizationId: data.organizationId,
+    })
     .where(eq(machines.id, existingMachine.id));
 
   await db
     .update(compartments)
-    .set({ managedBy: owner.id })
+    .set({ managedBy: targetUser.id })
     .where(eq(compartments.machineId, existingMachine.id));
 
   return { machineName: existingMachine.machineName };
