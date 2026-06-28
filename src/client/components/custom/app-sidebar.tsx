@@ -11,7 +11,7 @@ import {
 } from '#/client/components/ui/sidebar';
 import { Link, useLocation } from '@tanstack/react-router';
 import { FileImage, Home, Package2, Shapes, Users, Shield } from 'lucide-react';
-import { Icon } from '@iconify/react';
+import VendingMachineIcon from '#/icons/roentgen_vending_machine.svg?react';
 import { getRouteApi } from '@tanstack/react-router';
 import { UserRole } from '#/shared/enums';
 import { isOrgMember } from '#/utils/permissions';
@@ -52,11 +52,7 @@ const AppSidebar = () => {
                       pathname === '/machines' ? 'bg-sidebar-accent' : ''
                     }`}
                   >
-                    <Icon
-                      icon="roentgen:vending-machine"
-                      width={24}
-                      height={24}
-                    />
+                    <VendingMachineIcon />
                     Machines
                   </SidebarMenuButton>
                 </Link>
