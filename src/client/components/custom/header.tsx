@@ -20,6 +20,7 @@ import { Button, buttonVariants } from '#/client/components/ui/button';
 import { ModeToggle } from '#/client/components/ui/mode-toggle';
 import authClient from '#/client/lib/auth-client';
 import { CaretDownIcon } from '@phosphor-icons/react';
+import { SidebarTrigger } from '#/client/components/ui/sidebar';
 import { cn } from '#/client/lib/utils';
 import { MachineType } from '#/shared/enums';
 
@@ -80,7 +81,9 @@ const Header = () => {
   return (
     <header className="container mx-auto mt-2 sm:px-6">
       <nav className="flex items-center justify-between gap-3">
-        {showBreadcrumb ? (
+        <div className="flex items-center gap-2">
+          <SidebarTrigger className="md:hidden" />
+          {showBreadcrumb ? (
           <Breadcrumb>
             <BreadcrumbList>
               {visibleMatches.map((match, index) => {
@@ -168,6 +171,7 @@ const Header = () => {
         ) : (
           <div />
         )}
+        </div>
 
         <div className="flex items-center gap-3">
           <ModeToggle />
