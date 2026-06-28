@@ -8,6 +8,8 @@ const serverEnvSchema = z.object({
   ADMIN_EMAIL: z.email(),
   ADMIN_PASSWORD: z.string(),
   ADMIN_NAME: z.string(),
+  RESEND_API_KEY: z.string(),
+  EMAIL_FROM: z.string().default('onboarding@resend.dev'),
 });
 
 export const serverEnv = () => serverEnvSchema.parse(process.env);

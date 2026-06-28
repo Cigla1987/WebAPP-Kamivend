@@ -12,6 +12,7 @@ import { formDevtoolsPlugin } from '@tanstack/react-form-devtools';
 import { TooltipProvider } from '#/client/components/ui/tooltip';
 import { ThemeProvider } from '#/client/components/ui/theme-provider';
 import { Toaster } from '#/client/components/ui/sonner';
+import RouteError from '#/client/components/custom/route-error';
 
 interface MyRouterContext {
   queryClient: QueryClient;
@@ -41,6 +42,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
     ],
   }),
   shellComponent: RootDocument,
+  errorComponent: RouteError,
   notFoundComponent: () => {
     return (
       <div>

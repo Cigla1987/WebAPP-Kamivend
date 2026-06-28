@@ -15,6 +15,11 @@
         "mcp"
       ],
       "enabled": true
+    },
+    "better-auth": {
+      "type": "remote",
+      "url": "https://mcp.better-auth.com/mcp",
+      "enabled": true
     }
   }
 }

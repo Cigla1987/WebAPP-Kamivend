@@ -11,31 +11,43 @@ import {
   varchar,
 } from 'drizzle-orm/pg-core';
 import { v7 as uuidv7 } from 'uuid';
-import { user } from './auth';
+import { user, organization } from './auth';
 
+// symbols will be deleted
 export const symbols = pgTable('symbols', {
-  id: uuid('id').primaryKey().$defaultFn(() => uuidv7()),
+  id: uuid('id')
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
   symbolName: varchar('symbol_name', { length: 50 }).notNull(),
   symbolPicture: text('symbol_picture').notNull(),
-  ownerId: text('owner_id').references(() => user.id, {
+  organizationId: text('organization_id').references(() => organization.id, {
+    onDelete: 'restrict',
+  }),
+  createdBy: text('created_by').references(() => user.id, {
     onDelete: 'restrict',
   }),
 });
 
 export const machineTypes = pgTable('machine_types', {
-  id: uuid('id').primaryKey().$defaultFn(() => uuidv7()),
+  id: uuid('id')
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
   machineTypeName: varchar('machine_type_name', { length: 50 })
     .notNull()
     .unique(),
 });
 
 export const machineModes = pgTable('machine_modes', {
-  id: uuid('id').primaryKey().$defaultFn(() => uuidv7()),
+  id: uuid('id')
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
   machineModeName: varchar('machine_mode_name', { length: 50 }),
 });
 
 export const machines = pgTable('machines', {
-  id: uuid('id').primaryKey().$defaultFn(() => uuidv7()),
+  id: uuid('id')
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
   machineName: varchar('machine_name', { length: 100 }).notNull(),
   serialNumber: varchar('serial_number', { length: 100 }).notNull().unique(),
   productionYear: integer('production_year').notNull(),
@@ -51,39 +63,53 @@ export const machines = pgTable('machines', {
   machineTypeId: uuid('machine_type_id')
     .notNull()
     .references(() => machineTypes.id, { onDelete: 'restrict' }),
-  ownerId: text('owner_id').references(() => user.id, {
+  organizationId: text('organization_id').references(() => organization.id, {
+    onDelete: 'restrict',
+  }),
+  createdBy: text('created_by').references(() => user.id, {
     onDelete: 'restrict',
   }),
 });
 
 export const units = pgTable('units', {
-  id: uuid('id').primaryKey().$defaultFn(() => uuidv7()),
+  id: uuid('id')
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
   unitName: varchar('unit_name', { length: 20 }).notNull().unique(),
   unitSymbol: varchar('unit_symbol', { length: 3 }).notNull(),
 });
 
 export const currencies = pgTable('currencies', {
-  id: uuid('id').primaryKey().$defaultFn(() => uuidv7()),
+  id: uuid('id')
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
   currencyName: varchar('currency_name', { length: 20 }).notNull().unique(),
   currencySymbol: varchar('currency_symbol', { length: 1 }).notNull(),
 });
 
 export const pictures = pgTable('pictures', {
-  id: uuid('id').primaryKey().$defaultFn(() => uuidv7()),
+  id: uuid('id')
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
   pictureName: varchar('picture_name', { length: 255 }).notNull(),
   pictureContent: text('picture_content'),
   pictureDateCreated: timestamp('picture_date_created', {
     withTimezone: true,
   }).defaultNow(),
-  pictureOwnerId: text('picture_owner_id').references(() => user.id, {
+  organizationId: text('organization_id').references(() => organization.id, {
     onDelete: 'cascade',
+  }),
+  createdBy: text('created_by').references(() => user.id, {
+    onDelete: 'restrict',
   }),
 });
 
 export const products = pgTable(
   'products',
   {
-    id: uuid('id').primaryKey().$defaultFn(() => uuidv7()),
+    id: uuid('id')
+      .primaryKey()
+      .$defaultFn(() => uuidv7()),
     productName: varchar('product_name', { length: 100 }).notNull(),
     defaultPrice: numeric('default_price', {
       precision: 10,
@@ -102,27 +128,31 @@ export const products = pgTable(
     productDateCreated: timestamp('product_date_created', {
       withTimezone: true,
     }).defaultNow(),
-    ownerId: text('owner_id')
+    organizationId: text('organization_id')
       .notNull()
-      .references(() => user.id, { onDelete: 'restrict' }),
-    productPictureId: uuid('product_picture_id').references(
-      () => pictures.id,
-      {
-        onDelete: 'set null',
-      }
-    ),
+      .references(() => organization.id, { onDelete: 'restrict' }),
+    productPictureId: uuid('product_picture_id').references(() => pictures.id, {
+      onDelete: 'set null',
+    }),
     productSymbolId: uuid('product_symbol_id').references(() => symbols.id, {
       onDelete: 'restrict',
     }),
     discountValue: integer('discount_value'),
     discountDay: integer('discount_day'),
     lastUpdated: timestamp('last_updated', { withTimezone: true }).defaultNow(),
+    createdBy: text('created_by').references(() => user.id, {
+      onDelete: 'restrict',
+    }),
   },
   (table) => [
     {
       uniqueProduct: {
-        name: 'unique_product_name_owner_quantity',
-        columns: [table.productName, table.ownerId, table.defaultQuantity],
+        name: 'unique_product_name_org_quantity',
+        columns: [
+          table.productName,
+          table.organizationId,
+          table.defaultQuantity,
+        ],
       },
     },
   ]
@@ -131,7 +161,9 @@ export const products = pgTable(
 export const compartments = pgTable(
   'compartments',
   {
-    id: uuid('id').primaryKey().$defaultFn(() => uuidv7()),
+    id: uuid('id')
+      .primaryKey()
+      .$defaultFn(() => uuidv7()),
     machineId: uuid('machine_id')
       .notNull()
       .references(() => machines.id, { onDelete: 'cascade' }),
@@ -165,7 +197,12 @@ export const compartments = pgTable(
 );
 
 export const smartfridges = pgTable('smartfridges', {
-  id: uuid('id').primaryKey().$defaultFn(() => uuidv7()),
+  id: uuid('id')
+    .primaryKey()
+    .$defaultFn(() => uuidv7()),
+  organizationId: text('organization_id').references(() => organization.id, {
+    onDelete: 'cascade',
+  }),
   machineId: uuid('machine_id')
     .notNull()
     .references(() => machines.id, { onDelete: 'cascade' }),

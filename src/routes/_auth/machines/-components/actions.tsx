@@ -1,5 +1,5 @@
 import { MoreHorizontal } from 'lucide-react';
-import { MachineType, UserRole } from '#/shared/enums';
+import { MachineType, MemberRole } from '#/shared/enums';
 import type { MachineDto } from '../-machines.server';
 import {
   DropdownMenu,
@@ -14,8 +14,7 @@ import UpdateMachineMode from './update-machine-mode';
 
 const Actions = ({ machine }: { machine: MachineDto }) => {
   const [isUpdateOpen, setIsUpdateOpen] = useState(false);
-  const { user } = useRouteContext({ from: '/_auth' });
-  const userRole = user.role;
+  const { memberRole } = useRouteContext({ from: '/_auth' });
 
   const handleUpdate = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -36,7 +35,6 @@ const Actions = ({ machine }: { machine: MachineDto }) => {
           ></DropdownMenuTrigger>
         )}
         <DropdownMenuContent align="end">
-          {/* Available to all authenticated users */}
           <Link
             to="/machines/$machineId/compartments"
             params={{ machineId: machine.id.toString() }}
@@ -44,8 +42,7 @@ const Actions = ({ machine }: { machine: MachineDto }) => {
             <DropdownMenuItem>View compartments</DropdownMenuItem>
           </Link>
 
-          {/* Owner-only actions */}
-          {userRole === UserRole.Owner && (
+          {memberRole === MemberRole.Owner && (
             <DropdownMenuItem onClick={handleUpdate}>
               Update machine mode
             </DropdownMenuItem>

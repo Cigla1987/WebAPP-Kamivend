@@ -1,10 +1,5 @@
 /**
  * Compartment API Functions
- *
- * These are TanStack Start server functions that can be imported anywhere.
- * The handler code runs only on the server, while the client gets an RPC stub.
- *
- * Server-side logic is imported from compartments.server.ts (protected from client).
  */
 
 import { createServerFn } from '@tanstack/react-start';
@@ -17,11 +12,9 @@ import {
 import type { CompartmentDto } from './-compartments.server';
 import { authMiddlewareFn } from '#/middleware/auth';
 import { errorMiddlewareFn } from '#/middleware/error';
+import { requireRole } from '#/middleware/roles';
+import { UserRole, MemberRole } from '#/shared/enums';
 
-/**
- * Get all compartments by machine ID
- * @returns Array of compartments with joined relations
- */
 export const getCompartmentsByMachine = createServerFn({
   method: 'GET',
 })
@@ -30,16 +23,13 @@ export const getCompartmentsByMachine = createServerFn({
   .handler(async ({ context, data }): Promise<CompartmentDto[]> => {
     return fetchCompartmentsByMachine(
       data.machineId,
-      context.user.id,
-      context.user.role
+      context.user.role,
+      context.activeOrganization
     );
   });
 
-/**
- * Update compartment price
- */
 export const updatePrice = createServerFn({ method: 'POST' })
-  .middleware([errorMiddlewareFn, authMiddlewareFn])
+  .middleware([errorMiddlewareFn, requireRole(UserRole.Admin, MemberRole.Owner, MemberRole.Employee)])
   .inputValidator(
     (data: { id: string; newPrice: number; updateAll: boolean }) => data
   )
@@ -52,21 +42,15 @@ export const updatePrice = createServerFn({ method: 'POST' })
     );
   });
 
-/**
- * Update compartment managed by
- */
 export const updateManagedBy = createServerFn({ method: 'POST' })
-  .middleware([errorMiddlewareFn, authMiddlewareFn])
+  .middleware([errorMiddlewareFn, requireRole(UserRole.Admin, MemberRole.Owner)])
   .inputValidator((data: { id: string; managedBy: string | null }) => data)
   .handler(async ({ data }): Promise<void> => {
     await updateCompartmentManagedBy(data.id, data.managedBy);
   });
 
-/**
- * Update compartment discount
- */
 export const updateDiscount = createServerFn({ method: 'POST' })
-  .middleware([errorMiddlewareFn, authMiddlewareFn])
+  .middleware([errorMiddlewareFn, requireRole(UserRole.Admin, MemberRole.Owner, MemberRole.Employee)])
   .inputValidator(
     (data: {
       id: string;
