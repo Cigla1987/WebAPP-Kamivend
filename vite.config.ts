@@ -1,6 +1,5 @@
 import { defineConfig } from 'vite';
 import { devtools } from '@tanstack/devtools-vite';
-import tsconfigPaths from 'vite-tsconfig-paths';
 
 import { tanstackStart } from '@tanstack/react-start/plugin/vite';
 
@@ -10,9 +9,11 @@ import { nitro } from 'nitro/vite';
 import svgr from 'vite-plugin-svgr';
 
 const config = defineConfig({
+  resolve: {
+    tsconfigPaths: true,
+  },
   plugins: [
     devtools(),
-    tsconfigPaths({ projects: ['./tsconfig.json'] }),
     tailwindcss(),
     tanstackStart({
       importProtection: {
