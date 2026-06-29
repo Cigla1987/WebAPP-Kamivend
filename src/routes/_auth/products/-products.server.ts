@@ -7,7 +7,6 @@ import { UserRole } from '#/shared/enums';
 import {
   products,
   pictures,
-  symbols,
   currencies,
   units,
 } from '@/server/db/schema';
@@ -26,7 +25,6 @@ export const createProductApiSchema = z.object({
   currencyId: z.uuid('Currency ID must be a valid UUID'),
   defaultQuantity: z.number().positive('Quantity must be a positive number'),
   unitId: z.uuid('Unit ID must be a valid UUID'),
-  productSymbolId: z.uuid().nullish(),
 });
 
 export const updateProductDiscountApiSchema = z.object({
@@ -56,7 +54,6 @@ export type ProductDto = {
   discountValue: number | null;
   discountDay: number | null;
   productPicture: string | null;
-  productSymbolPicture: string | null;
 };
 
 export async function getProducts(
@@ -75,13 +72,11 @@ export async function getProducts(
       discountValue: products.discountValue,
       discountDay: products.discountDay,
       productPicture: pictures.pictureContent,
-      productSymbolPicture: symbols.symbolPicture,
     })
     .from(products)
     .leftJoin(currencies, eq(currencies.id, products.defaultCurrencyId))
     .leftJoin(units, eq(units.id, products.defaultUnitId))
-    .leftJoin(pictures, eq(pictures.id, products.productPictureId))
-    .leftJoin(symbols, eq(symbols.id, products.productSymbolId));
+    .leftJoin(pictures, eq(pictures.id, products.productPictureId));
 
   let results: ProductDto[];
 
@@ -106,20 +101,6 @@ export async function createProduct(
     throw new Error('No active organization');
   }
 
-  if (data.productSymbolId) {
-    const existingSymbol = await db
-      .select({ id: products.id })
-      .from(products)
-      .where(eq(products.productSymbolId, data.productSymbolId))
-      .limit(1);
-
-    if (existingSymbol.length > 0) {
-      throw new Error(
-        'Symbol is already in use. Please select another symbol.'
-      );
-    }
-  }
-
   const [createdProduct] = await db
     .insert(products)
     .values({
@@ -130,7 +111,6 @@ export async function createProduct(
       defaultUnitId: data.unitId,
       organizationId: activeOrg.id,
       createdBy: currentUser.id,
-      productSymbolId: data.productSymbolId ?? null,
     })
     .returning({ id: products.id });
 
@@ -146,13 +126,11 @@ export async function createProduct(
       discountValue: products.discountValue,
       discountDay: products.discountDay,
       productPicture: pictures.pictureContent,
-      productSymbolPicture: symbols.symbolPicture,
     })
     .from(products)
     .leftJoin(currencies, eq(currencies.id, products.defaultCurrencyId))
     .leftJoin(units, eq(units.id, products.defaultUnitId))
     .leftJoin(pictures, eq(pictures.id, products.productPictureId))
-    .leftJoin(symbols, eq(symbols.id, products.productSymbolId))
     .where(eq(products.id, createdProduct.id));
 
   return product;

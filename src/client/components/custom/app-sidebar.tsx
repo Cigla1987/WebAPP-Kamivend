@@ -10,7 +10,7 @@ import {
   useSidebar,
 } from '#/client/components/ui/sidebar';
 import { Link, useLocation } from '@tanstack/react-router';
-import { FileImage, Home, Package2, Shapes, Users, Shield } from 'lucide-react';
+import { FileImage, Home, Package2, Users, Shield } from 'lucide-react';
 import VendingMachineIcon from '#/icons/roentgen_vending_machine.svg?react';
 import { getRouteApi } from '@tanstack/react-router';
 import { UserRole } from '#/shared/enums';
@@ -84,18 +84,6 @@ const AppSidebar = () => {
                 </Link>
               </SidebarMenuItem>
 
-              <SidebarMenuItem>
-                <Link to="/symbols">
-                  <SidebarMenuButton
-                    className={`hover:cursor-pointer ${
-                      pathname === '/symbols' ? 'bg-sidebar-accent' : ''
-                    }`}
-                  >
-                    <Shapes />
-                    Symbols
-                  </SidebarMenuButton>
-                </Link>
-              </SidebarMenuItem>
               {isOrgMember(memberRole) && (
                 <SidebarMenuItem>
                   <Link to="/members">

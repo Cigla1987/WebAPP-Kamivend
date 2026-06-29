@@ -3,7 +3,6 @@ import * as path from 'path';
 import { eq, sql } from 'drizzle-orm';
 import {
   user,
-  symbols,
   machineTypes,
   machineModes,
   machines,
@@ -39,7 +38,6 @@ const resetDatabase = createServerOnlyFn(async (): Promise<boolean> => {
         units,
         machine_modes,
         machine_types,
-        symbols,
         member,
         invitation,
         organization,
@@ -65,7 +63,7 @@ const seedDb = createServerOnlyFn(async (): Promise<boolean> => {
       SELECT table_name 
       FROM information_schema.tables 
       WHERE table_schema = 'public' 
-      AND table_name IN ('user', 'products', 'compartments', 'machines', 'machine_types', 'machine_modes', 'units', 'currencies', 'symbols')
+      AND table_name IN ('user', 'products', 'compartments', 'machines', 'machine_types', 'machine_modes', 'units', 'currencies')
     `;
 
     const existingTables = await db.execute(tableCheckQuery);
@@ -80,7 +78,6 @@ const seedDb = createServerOnlyFn(async (): Promise<boolean> => {
       'machine_modes',
       'units',
       'currencies',
-      'symbols',
     ];
     const missingTables = requiredTables.filter(
       (table) => !tableNames.includes(table)
@@ -197,28 +194,6 @@ const seedDb = createServerOnlyFn(async (): Promise<boolean> => {
       },
     });
 
-    const symbolsDir = path.join(process.cwd(), 'symbols_singles_pictures_png');
-    const pngFiles = fs
-      .readdirSync(symbolsDir)
-      .filter((file) => file.endsWith('.png'));
-
-    const symbolsData = await Promise.all(
-      pngFiles.map(async (file) => {
-        const filePath = path.join(symbolsDir, file);
-        const dataUrl = await convertFileToDataUrl(filePath);
-        const symbolName = file.replace('_symbol.png', '').replace('_', ' ');
-
-        return {
-          symbolName,
-          symbolPicture: dataUrl,
-          organizationId: adminOrg.id,
-          createdBy: user1Id,
-        };
-      })
-    );
-
-    await db.insert(symbols).values(symbolsData);
-
     const insertedMachines = await db
       .insert(machines)
       .values([
@@ -262,7 +237,6 @@ const seedDb = createServerOnlyFn(async (): Promise<boolean> => {
           defaultUnitId: literId,
           organizationId: adminOrg.id,
           createdBy: user1Id,
-          productSymbolId: null,
           discountValue: null,
           discountDay: null,
         },
@@ -274,7 +248,6 @@ const seedDb = createServerOnlyFn(async (): Promise<boolean> => {
           defaultUnitId: kiloId,
           organizationId: adminOrg.id,
           createdBy: user1Id,
-          productSymbolId: null,
           discountValue: 10,
           discountDay: 1,
         },
@@ -286,7 +259,6 @@ const seedDb = createServerOnlyFn(async (): Promise<boolean> => {
           defaultUnitId: literId,
           organizationId: adminOrg.id,
           createdBy: user1Id,
-          productSymbolId: null,
           discountValue: null,
           discountDay: null,
         },
@@ -298,7 +270,6 @@ const seedDb = createServerOnlyFn(async (): Promise<boolean> => {
           defaultUnitId: kiloId,
           organizationId: adminOrg.id,
           createdBy: user1Id,
-          productSymbolId: null,
           discountValue: 15,
           discountDay: 5,
         },
@@ -310,7 +281,6 @@ const seedDb = createServerOnlyFn(async (): Promise<boolean> => {
           defaultUnitId: literId,
           organizationId: adminOrg.id,
           createdBy: user1Id,
-          productSymbolId: null,
           discountValue: null,
           discountDay: null,
         },
@@ -322,7 +292,6 @@ const seedDb = createServerOnlyFn(async (): Promise<boolean> => {
           defaultUnitId: pieceId,
           organizationId: adminOrg.id,
           createdBy: user1Id,
-          productSymbolId: null,
           discountValue: 20,
           discountDay: 3,
         },
@@ -454,7 +423,7 @@ const seedProdDb = createServerOnlyFn(async (): Promise<boolean> => {
       SELECT table_name 
       FROM information_schema.tables 
       WHERE table_schema = 'public' 
-      AND table_name IN ('user', 'machine_types', 'machine_modes', 'units', 'currencies', 'symbols')
+      AND table_name IN ('user', 'machine_types', 'machine_modes', 'units', 'currencies')
     `;
 
     const existingTables = await db.execute(tableCheckQuery);
@@ -466,7 +435,6 @@ const seedProdDb = createServerOnlyFn(async (): Promise<boolean> => {
       'machine_modes',
       'units',
       'currencies',
-      'symbols',
     ];
     const missingTables = requiredTables.filter(
       (table) => !tableNames.includes(table)
@@ -581,45 +549,6 @@ const seedProdDb = createServerOnlyFn(async (): Promise<boolean> => {
           },
         });
 
-        const existingSymbols = await db.select().from(symbols);
-
-        if (existingSymbols.length === 0) {
-          logger.info('Production: Seeding symbols...');
-          const symbolsDir = path.join(
-            process.cwd(),
-            '..',
-            'symbols_singles_pictures_png'
-          );
-
-          if (fs.existsSync(symbolsDir)) {
-            const pngFiles = fs
-              .readdirSync(symbolsDir)
-              .filter((file) => file.endsWith('.png'));
-
-            const symbolsData = pngFiles.map((file, index) => {
-              const filePath = path.join(symbolsDir, file);
-              const imageBuffer = fs.readFileSync(filePath);
-              const base64Image = `${imageBuffer.toString('base64')}`;
-              const symbolName = file
-                .replace('_symbol.png', '')
-                .replace('_', ' ');
-
-              return {
-                symbolName,
-                symbolPicture: base64Image,
-                symbolCode: String(index + 1).padStart(3, '0'),
-              };
-            });
-
-            await db.insert(symbols).values(symbolsData);
-          } else {
-            logger.warn(
-              'Production: Symbols directory not found, skipping symbol seeding...'
-            );
-          }
-        } else {
-          logger.info('Production: Symbols already exist');
-        }
       } catch (error) {
         logger.error(error, 'Error creating admin user:');
         return false;
@@ -643,47 +572,6 @@ const seedProdDb = createServerOnlyFn(async (): Promise<boolean> => {
             userId: existingAdminUsers[0].id,
           },
         });
-      }
-
-      const existingSymbols = await db.select().from(symbols);
-
-      if (existingSymbols.length === 0) {
-        logger.info('Production: Seeding symbols with existing admin...');
-
-        const symbolsDir = path.join(
-          process.cwd(),
-          '..',
-          'symbols_singles_pictures_png'
-        );
-
-        if (fs.existsSync(symbolsDir)) {
-          const pngFiles = fs
-            .readdirSync(symbolsDir)
-            .filter((file) => file.endsWith('.png'));
-
-          const symbolsData = await Promise.all(
-            pngFiles.map(async (file, index) => {
-              const filePath = path.join(symbolsDir, file);
-              const dataUrl = await convertFileToDataUrl(filePath);
-              const symbolName = file
-                .replace('_symbol.png', '')
-                .replace('_', ' ');
-              return {
-                symbolName,
-                symbolPicture: dataUrl,
-                symbolCode: String(index + 1).padStart(3, '0'),
-              };
-            })
-          );
-
-          await db.insert(symbols).values(symbolsData);
-        } else {
-          logger.warn(
-            'Production: Symbols directory not found, skipping symbol seeding...'
-          );
-        }
-      } else {
-        logger.info('Production: Symbols already exist');
       }
     }
 

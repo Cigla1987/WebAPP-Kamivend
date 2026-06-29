@@ -13,21 +13,6 @@ import {
 import { v7 as uuidv7 } from 'uuid';
 import { user, organization } from './auth';
 
-// symbols will be deleted
-export const symbols = pgTable('symbols', {
-  id: uuid('id')
-    .primaryKey()
-    .$defaultFn(() => uuidv7()),
-  symbolName: varchar('symbol_name', { length: 50 }).notNull(),
-  symbolPicture: text('symbol_picture').notNull(),
-  organizationId: text('organization_id').references(() => organization.id, {
-    onDelete: 'restrict',
-  }),
-  createdBy: text('created_by').references(() => user.id, {
-    onDelete: 'restrict',
-  }),
-});
-
 export const machineTypes = pgTable('machine_types', {
   id: uuid('id')
     .primaryKey()
@@ -133,9 +118,6 @@ export const products = pgTable(
       .references(() => organization.id, { onDelete: 'restrict' }),
     productPictureId: uuid('product_picture_id').references(() => pictures.id, {
       onDelete: 'set null',
-    }),
-    productSymbolId: uuid('product_symbol_id').references(() => symbols.id, {
-      onDelete: 'restrict',
     }),
     discountValue: integer('discount_value'),
     discountDay: integer('discount_day'),

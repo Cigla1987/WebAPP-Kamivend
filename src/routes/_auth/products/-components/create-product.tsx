@@ -36,7 +36,7 @@ import {
 import { createProductFn } from '../-products.functions';
 import { unitsQueryOptions } from '../../_units/-units.queries';
 import { currenciesQueryOptions } from '../../_currencies/-currencies.queries';
-import { symbolsQueryOptions } from '../../symbols/-symbols.queries';
+
 
 const createProductSchema = z.object({
   productName: z.string().min(6, 'Name must contain at least 6 characters.'),
@@ -48,7 +48,6 @@ const createProductSchema = z.object({
     .number('Quantity is required.')
     .positive('Quantity cannot be less than 0.'),
   unitId: z.uuid('Unit is required.'),
-  productSymbolId: z.uuid().nullish(),
 });
 
 const FormSkeletons = () => (
@@ -57,7 +56,7 @@ const FormSkeletons = () => (
       <Skeleton className="h-6 w-32" />
     </DialogHeader>
     <FieldGroup className="grid w-full items-center gap-4">
-      {Array.from({ length: 6 }).map((_, i) => (
+      {Array.from({ length: 5 }).map((_, i) => (
         <div key={i} className="flex flex-col gap-1.5">
           <Skeleton className="h-4 w-24" />
           <Skeleton className="h-9 w-full" />
@@ -79,8 +78,6 @@ const FormContent = ({
 
   const { data: units } = useSuspenseQuery(unitsQueryOptions());
   const { data: currencies } = useSuspenseQuery(currenciesQueryOptions());
-  const { data: symbols } = useSuspenseQuery(symbolsQueryOptions());
-
   const currencyItems = currencies.map((currency) => ({
     label: `${currency.currencySymbol} - ${currency.currencyName}`,
     value: currency.id.toString(),
@@ -91,11 +88,6 @@ const FormContent = ({
     value: unit.id.toString(),
   }));
 
-  const symbolItems = symbols.map((symbol) => ({
-    label: symbol.symbolName || 'Unnamed Symbol',
-    value: symbol.id.toString(),
-  }));
-
   const { Field, handleSubmit, state } = useForm({
     defaultValues: {
       productName: 'Potato',
@@ -103,7 +95,6 @@ const FormContent = ({
       currencyId: '',
       defaultQuantity: 1,
       unitId: '',
-      productSymbolId: null as string | null,
     },
     validators: {
       onSubmit: ({ value }) => {
@@ -128,7 +119,6 @@ const FormContent = ({
           currencyId: value.currencyId,
           defaultQuantity: value.defaultQuantity,
           unitId: value.unitId,
-          productSymbolId: value.productSymbolId,
         },
       });
     },
@@ -308,76 +298,7 @@ const FormContent = ({
                 )}
               />
 
-              <Field
-                name="productSymbolId"
-                children={(field) => (
-                  <FieldWrapper>
-                    <FieldLabel htmlFor={field.name}>Symbol</FieldLabel>
-                    <Select
-                      items={symbolItems}
-                      value={field.state.value ?? ''}
-                      onValueChange={(value) =>
-                        value && field.handleChange(value)
-                      }
-                    >
-                      <SelectTrigger
-                        aria-invalid={field.state.meta.errors.length > 0}
-                      >
-                        <SelectValue placeholder="Select symbol">
-                          {field.state.value &&
-                            symbols.find((s) => s.id === field.state.value) && (
-                              <div className="flex items-center gap-2">
-                                <img
-                                  src={
-                                    symbols.find(
-                                      (s) => s.id === field.state.value
-                                    )?.symbolPicture
-                                  }
-                                  alt={
-                                    symbols.find(
-                                      (s) => s.id === field.state.value
-                                    )?.symbolName
-                                  }
-                                  className="h-6 w-6 rounded-full object-cover"
-                                />
-                                <span>
-                                  {
-                                    symbols.find(
-                                      (s) => s.id === field.state.value
-                                    )?.symbolName
-                                  }
-                                </span>
-                              </div>
-                            )}
-                        </SelectValue>
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectGroup>
-                          {symbols.map((symbol) => (
-                            <SelectItem key={symbol.id} value={symbol.id}>
-                              <div className="flex items-center gap-2">
-                                {symbol.symbolPicture && (
-                                  <img
-                                    src={symbol.symbolPicture}
-                                    alt={symbol.symbolName || 'Symbol'}
-                                    className="h-6 w-6 rounded-full object-cover"
-                                  />
-                                )}
-                                <span>
-                                  {symbol.symbolName || 'Unnamed Symbol'}
-                                </span>
-                              </div>
-                            </SelectItem>
-                          ))}
-                        </SelectGroup>
-                      </SelectContent>
-                    </Select>
-                    {field.state.meta.errors.length > 0 && (
-                      <FieldError errors={field.state.meta.errors} />
-                    )}
-                  </FieldWrapper>
-                )}
-              />
+
             </FieldGroup>
           </div>
         </div>

@@ -53,7 +53,6 @@ const Actions = ({ product }: { product: ProductDto }) => {
           <DropdownMenuItem closeOnClick={false} onClick={handleAssignPicture}>
             Assign picture
           </DropdownMenuItem>
-          <DropdownMenuItem>Assign symbol</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
       {isOwner && (
