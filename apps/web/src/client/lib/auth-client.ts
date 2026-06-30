@@ -4,10 +4,7 @@ import { inferAdditionalFields } from 'better-auth/client/plugins';
 import { organizationClient } from 'better-auth/client/plugins';
 
 const authClient = createAuthClient({
-  plugins: [
-    inferAdditionalFields<typeof auth>(),
-    organizationClient(),
-  ],
+  plugins: [inferAdditionalFields<typeof auth>(), organizationClient()],
 });
 
 export default authClient;
