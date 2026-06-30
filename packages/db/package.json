@@ -1,0 +1,26 @@
+{
+  "name": "@vending/db",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/schema/index.ts",
+      "default": "./src/schema/index.ts"
+    },
+    "./schema": {
+      "types": "./src/schema/index.ts",
+      "default": "./src/schema/index.ts"
+    }
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.45.1",
+    "uuid": "^14.0.0",
+    "@vending/auth": "workspace:*"
+  },
+  "devDependencies": {
+    "@vending/tsconfig": "workspace:*",
+    "@types/uuid": "^10.0.0",
+    "typescript": "^5.7.2"
+  }
+}

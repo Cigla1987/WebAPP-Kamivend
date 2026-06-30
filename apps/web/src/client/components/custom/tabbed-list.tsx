@@ -1,0 +1,101 @@
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@vending/ui';
+import { DataTable } from '@vending/ui';
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from '@vending/ui';
+import type { ColumnDef } from '@tanstack/react-table';
+
+interface Tab<T> {
+  label: string;
+  value: string;
+  filterFn?: (data: T[]) => T[];
+  title?: string;
+  description?: string;
+}
+
+interface TabbedListProps<T> {
+  data: T[];
+  columns: ColumnDef<T>[] | ((data: T[]) => ColumnDef<T>[]);
+  tabs?: Tab<T>[];
+  defaultTab?: string;
+  actions?: React.ReactNode;
+}
+
+function TabbedList<T>({
+  data,
+  tabs,
+  columns,
+  defaultTab = 'all',
+  actions,
+}: TabbedListProps<T>) {
+  const tableColumns = typeof columns === 'function' ? columns(data) : columns;
+
+  return (
+    <div className="container mx-auto pb-10">
+      <main className="px-6 py-4 sm:py-0">
+        {tabs ? (
+          <Tabs defaultValue={defaultTab}>
+            <div className="flex items-center">
+              <TabsList>
+                {tabs.map((tab) => (
+                  <TabsTrigger key={tab.value} value={tab.value}>
+                    {tab.label}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+              {actions && (
+                <div className="ml-auto flex items-center gap-2">{actions}</div>
+              )}
+            </div>
+            {tabs.map((tab) => {
+              const tabData = tab.filterFn ? tab.filterFn(data) : data;
+              const tabColumns =
+                typeof columns === 'function' ? columns(tabData) : columns;
+
+              return (
+                <TabsContent key={tab.value} value={tab.value}>
+                  <Card>
+                    {(tab.title || tab.description) && (
+                      <CardHeader>
+                        {tab.title && <CardTitle>{tab.title}</CardTitle>}
+                        {tab.description && (
+                          <CardDescription>{tab.description}</CardDescription>
+                        )}
+                      </CardHeader>
+                    )}
+                    <CardContent>
+                      <DataTable columns={tabColumns} data={tabData} />
+                    </CardContent>
+                  </Card>
+                </TabsContent>
+              );
+            })}
+          </Tabs>
+        ) : (
+          <>
+            <div className="flex items-center">
+              {actions && (
+                <div className="ml-auto flex items-center gap-2">{actions}</div>
+              )}
+            </div>
+            <Card className="mt-2">
+              <CardContent>
+                <DataTable columns={tableColumns} data={data} />
+              </CardContent>
+            </Card>
+          </>
+        )}
+      </main>
+    </div>
+  );
+}
+export default TabbedList;

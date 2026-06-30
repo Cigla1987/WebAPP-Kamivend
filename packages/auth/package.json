@@ -1,0 +1,28 @@
+{
+  "name": "@vending/auth",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./schema": {
+      "types": "./src/schema.ts",
+      "default": "./src/schema.ts"
+    }
+  },
+  "dependencies": {
+    "better-auth": "^1.6.22",
+    "drizzle-orm": "^0.45.1",
+    "drizzle-zod": "^0.8.3",
+    "resend": "^6.12.4",
+    "zod": "^4.4.3",
+    "@vending/domain": "workspace:*"
+  },
+  "devDependencies": {
+    "@vending/tsconfig": "workspace:*",
+    "typescript": "^5.7.2"
+  }
+}
