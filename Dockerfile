@@ -21,8 +21,8 @@ RUN pnpm run build
 FROM base
 COPY --from=prod-deps /app/node_modules /app/node_modules
 COPY --from=build /app/.output /app/.output
-COPY --from=build /app/migrations /app/migrations
-COPY --from=build /app/drizzle.config.ts /app/drizzle.config.ts
+COPY --from=build /app/apps/web/migrations /app/migrations
+COPY --from=build /app/apps/web/drizzle.config.ts /app/drizzle.config.ts
 COPY package.json /app/package.json
 COPY pnpm-workspace.yaml /app/pnpm-workspace.yaml
 EXPOSE 3000
