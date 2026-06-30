@@ -26,21 +26,21 @@ export const getProductsFn = createServerFn({ method: 'GET' })
 
 export const createProductFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, requireRole(UserRole.Admin, MemberRole.Owner)])
-  .inputValidator(createProductApiSchema)
+  .validator(createProductApiSchema)
   .handler(async ({ data, context }): Promise<ProductDto> => {
     return createProduct(data, context.user, context.activeOrganization);
   });
 
 export const updateProductDiscountFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, requireRole(UserRole.Admin, MemberRole.Owner, MemberRole.Employee)])
-  .inputValidator(updateProductDiscountApiSchema)
+  .validator(updateProductDiscountApiSchema)
   .handler(async ({ data, context }): Promise<void> => {
     return updateProductDiscount(data, context.activeOrganization);
   });
 
 export const updateProductPictureFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, requireRole(UserRole.Admin, MemberRole.Owner, MemberRole.Employee)])
-  .inputValidator(updateProductPictureApiSchema)
+  .validator(updateProductPictureApiSchema)
   .handler(async ({ data, context }): Promise<void> => {
     return updateProductPicture(data, context.activeOrganization);
   });

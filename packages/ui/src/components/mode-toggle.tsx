@@ -1,13 +1,13 @@
 import { SunIcon, MoonIcon } from '@phosphor-icons/react';
 
-import { Button } from './button';
+import { Button } from '#components/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from './dropdown-menu';
-import { useTheme } from './theme-provider';
+} from '#components/dropdown-menu';
+import { useTheme } from '#components/theme-provider';
 
 export function ModeToggle() {
   const { setTheme } = useTheme();

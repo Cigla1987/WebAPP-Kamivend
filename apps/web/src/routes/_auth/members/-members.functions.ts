@@ -29,7 +29,7 @@ export const getPendingInvitationsFn = createServerFn({ method: 'GET' })
 
 export const inviteMemberFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, requireRole(MemberRole.Owner)])
-  .inputValidator(inviteMemberApiSchema)
+  .validator(inviteMemberApiSchema)
   .handler(async ({ data, context }): Promise<MemberDto> => {
     return inviteMember(data, context.activeOrganization);
   });

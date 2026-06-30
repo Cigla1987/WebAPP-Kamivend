@@ -22,14 +22,14 @@ export const getPicturesFn = createServerFn({ method: 'GET' })
 
 export const createPictureFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, authMiddlewareFn])
-  .inputValidator(createPictureApiSchema)
+  .validator(createPictureApiSchema)
   .handler(async ({ data, context }): Promise<PictureDto> => {
     return createPicture(data, context.user, context.activeOrganization);
   });
 
 export const deletePictureFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, authMiddlewareFn])
-  .inputValidator(deletePictureApiSchema)
+  .validator(deletePictureApiSchema)
   .handler(async ({ data, context }): Promise<void> => {
     return deletePicture(data, context.user, context.activeOrganization);
   });

@@ -8,14 +8,18 @@ import {
   fetchAllOwners,
   fetchOrganizationsByOwner,
 } from './-users.server';
-import type { UserDto, OwnerDto, OrganizationSummaryDto } from './-users.server';
+import type {
+  UserDto,
+  OwnerDto,
+  OrganizationSummaryDto,
+} from './-users.server';
 import { authMiddlewareFn } from '#/middleware/auth';
 
 export const getUsersByOrganization = createServerFn({
   method: 'GET',
 })
   .middleware([authMiddlewareFn])
-  .inputValidator((data: { organizationId: string }) => data)
+  .validator((data: { organizationId: string }) => data)
   .handler(async ({ data }): Promise<UserDto[]> => {
     return fetchUsersByOrganization(data.organizationId);
   });
@@ -30,7 +34,7 @@ export const getOrganizationsByOwnerFn = createServerFn({
   method: 'GET',
 })
   .middleware([authMiddlewareFn])
-  .inputValidator((data: { ownerId: string }) => data)
+  .validator((data: { ownerId: string }) => data)
   .handler(async ({ data }): Promise<OrganizationSummaryDto[]> => {
     return fetchOrganizationsByOwner(data.ownerId);
   });

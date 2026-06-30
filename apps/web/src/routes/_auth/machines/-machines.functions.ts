@@ -32,7 +32,7 @@ export const getMachinesFn = createServerFn({ method: 'GET' })
 
 export const createMachineFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, requireRole(UserRole.Admin)])
-  .inputValidator(createMachineApiSchema)
+  .validator(createMachineApiSchema)
   .handler(async ({ data, context }): Promise<{ id: string }> => {
     return createMachine(data, context.user);
   });
@@ -51,14 +51,14 @@ export const getMachineModesFn = createServerFn({ method: 'GET' })
 
 export const assignMachineFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, requireRole(UserRole.Admin)])
-  .inputValidator(assignMachineApiSchema)
+  .validator(assignMachineApiSchema)
   .handler(async ({ data, context }): Promise<{ machineName: string }> => {
     return updateMachineOwner(data, context.user, context.activeOrganization);
   });
 
 export const updateMachineModeFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, requireRole(UserRole.Admin, MemberRole.Owner)])
-  .inputValidator(updateMachineModeApiSchema)
+  .validator(updateMachineModeApiSchema)
   .handler(async ({ data }): Promise<{ machineName: string }> => {
     return updateMachineMode(data);
   });
