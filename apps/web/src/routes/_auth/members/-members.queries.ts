@@ -5,7 +5,7 @@ import { ONE_MINUTE } from '#/utils/constants';
 export function membersQueryOptions() {
   return queryOptions({
     queryKey: ['members'] as const,
-    queryFn: getMembersFn,
+    queryFn: () => getMembersFn(),
     staleTime: ONE_MINUTE,
   });
 }
@@ -13,7 +13,7 @@ export function membersQueryOptions() {
 export function pendingInvitationsQueryOptions() {
   return queryOptions({
     queryKey: ['pending-invitations'] as const,
-    queryFn: getPendingInvitationsFn,
+    queryFn: () => getPendingInvitationsFn(),
     staleTime: ONE_MINUTE,
   });
 }

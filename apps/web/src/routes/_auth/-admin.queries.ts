@@ -5,7 +5,7 @@ import { ONE_MINUTE } from '#/utils/constants';
 export function organizationsQueryOptions() {
   return queryOptions({
     queryKey: ['organizations'] as const,
-    queryFn: getOrganizationsFn,
+    queryFn: () => getOrganizationsFn(),
     staleTime: ONE_MINUTE,
   });
 }

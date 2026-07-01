@@ -9,7 +9,7 @@ import { ONE_MINUTE } from '#/utils/constants';
 export function machinesQueryOptions() {
   return queryOptions({
     queryKey: ['machines'] as const,
-    queryFn: getMachinesFn,
+    queryFn: () => getMachinesFn(),
     staleTime: ONE_MINUTE,
   });
 }
@@ -17,7 +17,7 @@ export function machinesQueryOptions() {
 export function machineModesQueryOptions() {
   return queryOptions({
     queryKey: ['machineModes'] as const,
-    queryFn: getMachineModesFn,
+    queryFn: () => getMachineModesFn(),
     staleTime: ONE_MINUTE,
   });
 }
@@ -25,7 +25,7 @@ export function machineModesQueryOptions() {
 export function machineTypesQueryOptions() {
   return queryOptions({
     queryKey: ['machineTypes'] as const,
-    queryFn: getMachineTypesFn,
+    queryFn: () => getMachineTypesFn(),
     staleTime: ONE_MINUTE,
   });
 }

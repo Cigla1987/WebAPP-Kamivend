@@ -5,7 +5,7 @@ import { ONE_MINUTE } from '#/utils/constants';
 export function productsQueryOptions() {
   return queryOptions({
     queryKey: ['products'] as const,
-    queryFn: getProductsFn,
+    queryFn: () => getProductsFn(),
     staleTime: ONE_MINUTE,
   });
 }

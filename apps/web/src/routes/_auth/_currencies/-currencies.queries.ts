@@ -5,7 +5,7 @@ import { ONE_MINUTE } from '#/utils/constants';
 export function currenciesQueryOptions() {
   return queryOptions({
     queryKey: ['currencies'] as const,
-    queryFn: getCurrenciesFn,
+    queryFn: () => getCurrenciesFn(),
     staleTime: ONE_MINUTE,
   });
 }

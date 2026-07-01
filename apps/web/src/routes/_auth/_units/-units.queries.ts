@@ -5,7 +5,7 @@ import { ONE_MINUTE } from '#/utils/constants';
 export function unitsQueryOptions() {
   return queryOptions({
     queryKey: ['units'] as const,
-    queryFn: getUnitsFn,
+    queryFn: () => getUnitsFn(),
     staleTime: ONE_MINUTE,
   });
 }
