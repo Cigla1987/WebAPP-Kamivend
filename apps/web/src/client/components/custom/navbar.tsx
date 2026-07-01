@@ -71,9 +71,9 @@ const Navbar: React.FC = () => {
           </Link>
         </nav>
         <div className="flex items-center gap-2">
-          <Link to="/login" className="hidden md:block">
+          <a href={import.meta.env.PROD ? 'https://app.kamivend.com/login' : '/login'} className="hidden md:block">
             <Button variant="default">Login</Button>
-          </Link>
+          </a>
 
           <Sheet>
             <SheetTrigger
@@ -111,11 +111,11 @@ const Navbar: React.FC = () => {
                 >
                   Contact
                 </Link>
-                <Link to="/login" className="pt-4">
+                <a href={import.meta.env.PROD ? 'https://app.kamivend.com/login' : '/login'} className="pt-4">
                   <Button variant="default" className="w-full">
                     Login
                   </Button>
-                </Link>
+                </a>
               </div>
             </SheetContent>
           </Sheet>
