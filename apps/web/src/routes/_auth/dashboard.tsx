@@ -3,24 +3,9 @@ import { useState } from 'react';
 import { useForm } from '@tanstack/react-form';
 import { Button } from '@vending/ui';
 import { UserRole } from '@vending/domain';
-import {
-  Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@vending/ui';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@vending/ui';
-import {
-  Field,
-  FieldLabel,
-  FieldError,
-  FieldGroup,
-} from '@vending/ui';
+import { Card, CardDescription, CardHeader, CardTitle } from '@vending/ui';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@vending/ui';
+import { Field, FieldLabel, FieldError, FieldGroup } from '@vending/ui';
 import { Input } from '@vending/ui';
 import authClient from '#/client/lib/auth-client';
 import { useQueryClient } from '@tanstack/react-query';
@@ -35,10 +20,14 @@ export const Route = createFileRoute('/_auth/dashboard')({
   component: Dashboard,
 });
 
-function Dashboard() {
-  const { user, activeOrganization } = Route.useRouteContext();
+const CreateOrgDialog = ({
+  open,
+  onOpenChange,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) => {
   const queryClient = useQueryClient();
-  const [showDialog, setShowDialog] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const createOrgForm = useForm({
@@ -59,7 +48,7 @@ function Dashboard() {
         if (result.error) {
           setError(result.error.message || 'Failed to create organization');
         } else {
-          setShowDialog(false);
+          onOpenChange(false);
           // Invalidate session query to get updated active organization
           queryClient.invalidateQueries({ queryKey: ['session'] });
         }
@@ -70,13 +59,69 @@ function Dashboard() {
   });
 
   return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Create Organization</DialogTitle>
+        </DialogHeader>
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            createOrgForm.handleSubmit();
+          }}
+        >
+          <FieldGroup className="grid gap-4">
+            <createOrgForm.Field
+              name="name"
+              children={(field) => (
+                <Field className="flex flex-col space-y-1.5">
+                  <FieldLabel htmlFor={field.name}>
+                    Organization Name
+                  </FieldLabel>
+                  <Input
+                    id={field.name}
+                    name={field.name}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => {
+                      field.handleChange(e.target.value);
+                      if (error) setError(null);
+                    }}
+                  />
+                  <FieldError
+                    errors={[
+                      { message: field.state.meta.errors?.[0]?.message },
+                    ]}
+                  />
+                </Field>
+              )}
+            />
+
+            <Button type="submit" disabled={!createOrgForm.state.canSubmit}>
+              Create Organization
+            </Button>
+
+            {error && <p className="text-destructive text-sm">{error}</p>}
+          </FieldGroup>
+        </form>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+function Dashboard() {
+  const { user, activeOrganization } = Route.useRouteContext();
+  const [showDialog, setShowDialog] = useState(false);
+
+  return (
     <div className="container mx-auto p-6">
       <h1 className="text-2xl font-bold">Dashboard</h1>
       <p className="text-muted-foreground">
         Welcome, {user?.name} ({user?.role})
       </p>
       {activeOrganization && (
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="text-muted-foreground mt-2 text-sm">
           Active Organization: {activeOrganization.name}
         </p>
       )}
@@ -84,7 +129,7 @@ function Dashboard() {
       {!activeOrganization && user?.role !== UserRole.Admin && (
         <>
           <Card
-            className="mt-6 max-w-md cursor-pointer hover:bg-accent/50 transition-colors"
+            className="hover:bg-accent/50 mt-6 max-w-md cursor-pointer transition-colors"
             onClick={() => setShowDialog(true)}
           >
             <CardHeader>
@@ -95,59 +140,9 @@ function Dashboard() {
             </CardHeader>
           </Card>
 
-          <Dialog open={showDialog} onOpenChange={setShowDialog}>
-            <DialogContent className="sm:max-w-[425px]">
-              <DialogHeader>
-                <DialogTitle>Create Organization</DialogTitle>
-              </DialogHeader>
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  createOrgForm.handleSubmit();
-                }}
-              >
-                <FieldGroup className="grid gap-4">
-                  <createOrgForm.Field
-                    name="name"
-                    children={(field) => (
-                      <Field className="flex flex-col space-y-1.5">
-                        <FieldLabel htmlFor={field.name}>
-                          Organization Name
-                        </FieldLabel>
-                        <Input
-                          id={field.name}
-                          name={field.name}
-                          value={field.state.value}
-                          onBlur={field.handleBlur}
-                          onChange={(e) => {
-                            field.handleChange(e.target.value);
-                            if (error) setError(null);
-                          }}
-                        />
-                        <FieldError
-                          errors={[
-                            { message: field.state.meta.errors?.[0]?.message },
-                          ]}
-                        />
-                      </Field>
-                    )}
-                  />
-
-                  <Button
-                    type="submit"
-                    disabled={!createOrgForm.state.canSubmit}
-                  >
-                    Create Organization
-                  </Button>
-
-                  {error && (
-                    <p className="text-sm text-destructive">{error}</p>
-                  )}
-                </FieldGroup>
-              </form>
-            </DialogContent>
-          </Dialog>
+          {showDialog && (
+            <CreateOrgDialog open={showDialog} onOpenChange={setShowDialog} />
+          )}
         </>
       )}
     </div>
