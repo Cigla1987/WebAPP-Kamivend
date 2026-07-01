@@ -5,6 +5,11 @@ import { getSessionFn } from '#/utils/session';
 import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_auth')({
+  pendingComponent: () => (
+    <div className="flex h-screen items-center justify-center">
+      Loading...
+    </div>
+  ),
   beforeLoad: async ({ context }) => {
     const session = await context.queryClient.fetchQuery({
       queryKey: ['session'],
