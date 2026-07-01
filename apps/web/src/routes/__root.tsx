@@ -3,12 +3,8 @@ import {
   Scripts,
   createRootRouteWithContext,
 } from '@tanstack/react-router';
-import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools';
-import { TanStackDevtools } from '@tanstack/react-devtools';
-import TanStackQueryDevtools from '../integrations/tanstack-query/devtools';
 import appCss from '@vending/ui/styles.css?url';
 import type { QueryClient } from '@tanstack/react-query';
-import { formDevtoolsPlugin } from '@tanstack/react-form-devtools';
 import { TooltipProvider } from '@vending/ui';
 import { ThemeProvider } from '@vending/ui';
 import { Toaster } from '@vending/ui';
@@ -63,20 +59,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         <ThemeProvider defaultTheme="dark" storageKey="vite-ui-theme">
           <TooltipProvider>{children}</TooltipProvider>
         </ThemeProvider>
-
-        <TanStackDevtools
-          config={{
-            position: 'bottom-right',
-          }}
-          plugins={[
-            {
-              name: 'Tanstack Router',
-              render: <TanStackRouterDevtoolsPanel />,
-            },
-            TanStackQueryDevtools,
-            formDevtoolsPlugin(),
-          ]}
-        />
 
         <Scripts />
         <Toaster />
