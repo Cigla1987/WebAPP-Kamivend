@@ -4,6 +4,7 @@ import Hero from '#/client/components/custom/hero';
 import Stepper from '#/client/components/custom/stepper';
 import Features from '#/client/components/custom/features';
 import { ReactLenis } from 'lenis/react';
+import { ClientOnly } from '#/client/components/client-only';
 
 export const Route = createFileRoute('/(public)/')({
   component: PublicPage,
@@ -12,14 +13,16 @@ export const Route = createFileRoute('/(public)/')({
 function PublicPage() {
   return (
     <>
-      <ReactLenis root>
-        <Navbar />
-        <div className="container mx-auto">
-          <Hero />
-          <Stepper />
-          <Features />
-        </div>
-      </ReactLenis>
+      <ClientOnly>
+        <ReactLenis root>
+          <Navbar />
+          <div className="container mx-auto">
+            <Hero />
+            <Stepper />
+            <Features />
+          </div>
+        </ReactLenis>
+      </ClientOnly>
     </>
   );
 }
