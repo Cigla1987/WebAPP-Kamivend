@@ -2,7 +2,7 @@ import AppSidebar from '#/client/components/custom/app-sidebar';
 import Header from '#/client/components/custom/header';
 import { SidebarProvider } from '@vending/ui';
 import { getSessionFn } from '#/utils/session';
-import { createFileRoute, Outlet } from '@tanstack/react-router';
+import { createFileRoute, Outlet, redirect } from '@tanstack/react-router';
 
 export const Route = createFileRoute('/_auth')({
   beforeLoad: async ({ context }) => {
@@ -11,6 +11,11 @@ export const Route = createFileRoute('/_auth')({
       queryFn: getSessionFn,
       staleTime: 1000 * 60 * 5,
     });
+
+    if (!session) {
+      throw redirect({ to: '/login' });
+    }
+
     return {
       user: session.user,
       activeOrganization: session.activeOrganization,

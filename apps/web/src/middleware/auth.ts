@@ -5,6 +5,10 @@ export const authMiddlewareFn = createMiddleware({ type: 'function' }).server(
   async ({ next }) => {
     const session = await getSessionFn();
 
+    if (!session) {
+      throw new Error('Unauthorized');
+    }
+
     return next({
       context: {
         user: {
