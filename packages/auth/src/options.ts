@@ -37,6 +37,12 @@ export function createAuthOptions(
     database: drizzleAdapter(db, {
       provider: 'pg',
     }),
+    trustedOrigins: [
+      'https://kamivend.com',
+      'https://app.kamivend.com',
+      'https://www.kamivend.com',
+      ...(config.nodeEnv === 'development' ? ['http://localhost:3000'] : []),
+    ],
     emailAndPassword: {
       enabled: true,
       requireEmailVerification: false,
