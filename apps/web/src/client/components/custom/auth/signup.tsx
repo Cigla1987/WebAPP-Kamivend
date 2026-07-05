@@ -1,0 +1,212 @@
+import { useState } from 'react';
+import { useForm } from '@tanstack/react-form';
+import { Button } from '@vending/ui';
+import {
+  Field,
+  FieldLabel,
+  FieldError,
+  FieldGroup,
+} from '@vending/ui';
+import { Input } from '@vending/ui';
+import { Alert, AlertTitle } from '@vending/ui';
+import { AlertCircleIcon } from 'lucide-react';
+import LoadingSpinner from '../loading-spinner';
+import authClient from '#/client/lib/auth-client';
+import { useNavigate } from '@tanstack/react-router';
+import { z } from 'zod';
+
+const signupSchema = z.object({
+  username: z
+    .string()
+    .min(5, { error: 'Username must be at least 5 characters long.' })
+    .max(30, { error: 'Username must be at most 30 characters long.' })
+    .regex(/^[a-zA-Z0-9]+$/, {
+      error: 'Username can only contain letters and numbers.',
+    }),
+  password: z
+    .string()
+    .min(12, 'Password must be at least 12 characters.')
+    .regex(/[A-Z]/, 'Must contain uppercase letter.')
+    .regex(/[a-z]/, 'Must contain lowercase letter.')
+    .regex(/[0-9]/, 'Must contain a number.'),
+  confirmPassword: z
+    .string()
+    .min(12, 'Password must be at least 12 characters.')
+    .regex(/[A-Z]/, 'Must contain uppercase letter.')
+    .regex(/[a-z]/, 'Must contain lowercase letter.')
+    .regex(/[0-9]/, 'Must contain a number.'),
+  email: z.email({ error: 'Invalid email address.' }),
+});
+
+const Signup: React.FC = () => {
+  const navigate = useNavigate();
+  const [isPending, setIsPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const signupForm = useForm({
+    defaultValues: {
+      email: '',
+      password: '',
+      username: '',
+      confirmPassword: '',
+    },
+    validators: {
+      onSubmit: signupSchema,
+    },
+    onSubmit: async ({ value }) => {
+      setIsPending(true);
+      setError(null);
+
+      try {
+        const result = await authClient.signUp.email({
+          email: value.email,
+          password: value.password,
+          name: value.username,
+        });
+
+        if (result.error) {
+          setError(result.error.message || 'Signup failed');
+        } else {
+          navigate({ to: '/dashboard' });
+        }
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        setIsPending(false);
+      }
+    },
+  });
+
+  return (
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        signupForm.handleSubmit();
+      }}
+      className="space-y-8"
+    >
+      <FieldGroup className="grid w-full items-center gap-6">
+        <signupForm.Field
+          name="username"
+          children={(field) => (
+            <Field className="flex flex-col space-y-1.5">
+              <FieldLabel htmlFor={field.name}>Username</FieldLabel>
+              <Input
+                id={field.name}
+                name={field.name}
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => {
+                  field.handleChange(e.target.value);
+                  if (error) setError(null);
+                }}
+              />
+              <FieldError
+                errors={[{ message: field.state.meta.errors?.[0]?.message }]}
+              />
+            </Field>
+          )}
+        ></signupForm.Field>
+
+        <signupForm.Field
+          name="email"
+          children={(field) => (
+            <Field className="flex flex-col space-y-1.5">
+              <FieldLabel htmlFor={field.name}>Email address</FieldLabel>
+              <Input
+                id={field.name}
+                name={field.name}
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => {
+                  field.handleChange(e.target.value);
+                  if (error) setError(null);
+                }}
+              />
+              <FieldError
+                errors={[{ message: field.state.meta.errors?.[0]?.message }]}
+              />
+            </Field>
+          )}
+        ></signupForm.Field>
+
+        <signupForm.Field
+          name="password"
+          children={(field) => (
+            <Field className="flex flex-col space-y-1.5">
+              <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+              <Input
+                id={field.name}
+                name={field.name}
+                type="password"
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => {
+                  field.handleChange(e.target.value);
+                  if (error) setError(null);
+                }}
+              />
+              <FieldError
+                errors={field.state.meta.errors?.map((err) => ({
+                  message: typeof err === 'string' ? err : err?.message,
+                }))}
+              />
+            </Field>
+          )}
+        ></signupForm.Field>
+
+        <signupForm.Field
+          name="confirmPassword"
+          validators={{
+            onChangeListenTo: ['password'],
+            onChange: ({ value, fieldApi }) => {
+              if (value !== fieldApi.form.getFieldValue('password')) {
+                return 'Passwords do not match';
+              }
+              return undefined;
+            },
+          }}
+          children={(field) => (
+            <Field className="flex flex-col space-y-1.5">
+              <FieldLabel htmlFor={field.name}>Confirm password</FieldLabel>
+              <Input
+                id={field.name}
+                name={field.name}
+                type="password"
+                value={field.state.value}
+                onBlur={field.handleBlur}
+                onChange={(e) => {
+                  field.handleChange(e.target.value);
+                  if (error) setError(null);
+                }}
+              />
+              <FieldError
+                errors={field.state.meta.errors?.map((err) => ({
+                  message: typeof err === 'string' ? err : err?.message,
+                }))}
+              />
+            </Field>
+          )}
+        ></signupForm.Field>
+
+        <Button
+          className="w-full"
+          type="submit"
+          disabled={isPending || !signupForm.state.canSubmit}
+        >
+          {isPending ? <LoadingSpinner size={48} /> : <span>Signup</span>}
+        </Button>
+
+        {error && (
+          <Alert variant="destructive" className="bg-destructive/20 w-full">
+            <AlertCircleIcon />
+            <AlertTitle>{error}</AlertTitle>
+          </Alert>
+        )}
+      </FieldGroup>
+    </form>
+  );
+};
+
+export default Signup;

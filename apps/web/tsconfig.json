@@ -1,0 +1,32 @@
+{
+  "extends": "../../packages/tsconfig/tsconfig.base.json",
+  "include": ["**/*.ts", "**/*.tsx", "eslint.config.js", "prettier.config.js", "vite.config.js"],
+  "compilerOptions": {
+    "target": "ES2022",
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "baseUrl": ".",
+    "paths": {
+      "#/*": ["./src/*"],
+      "@vending/ui": ["../../packages/ui/src/index.ts"],
+      "@vending/ui/*": ["../../packages/ui/src/*"],
+      "@vending/db": ["../../packages/db/src/index.ts"],
+      "@vending/db/*": ["../../packages/db/src/*"],
+      "@vending/auth": ["../../packages/auth/src/index.ts"],
+      "@vending/auth/*": ["../../packages/auth/src/*"],
+      "@vending/domain": ["../../packages/domain/src/index.ts"]
+    },
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["vite/client"],
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  }
+}

@@ -1,0 +1,19 @@
+kamivend.com {
+    route {
+        @static path /assets/* /favicon.ico /manifest.json /robots.txt /sitemap.xml
+        reverse_proxy @static app:3000
+
+        @notRoot not path /
+        redir @notRoot https://app.kamivend.com{uri} permanent
+
+        reverse_proxy app:3000
+    }
+}
+
+www.kamivend.com {
+    redir https://kamivend.com{uri} permanent
+}
+
+app.kamivend.com {
+    reverse_proxy app:3000
+}
