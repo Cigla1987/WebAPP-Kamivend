@@ -2,6 +2,8 @@ import { app, BrowserWindow, globalShortcut, ipcMain, shell } from 'electron';
 import path from 'node:path';
 import Store from 'electron-store';
 
+let allowQuit = false;
+
 const store = new Store<{
   token: string | null;
   apiUrl: string;
@@ -33,6 +35,11 @@ function createWindow() {
   } else {
     mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
     mainWindow.setMenu(null);
+    mainWindow.on('close', (event) => {
+      if (!allowQuit) {
+        event.preventDefault();
+      }
+    });
     mainWindow.webContents.on('devtools-opened', () => {
       mainWindow.webContents.closeDevTools();
     });
@@ -72,6 +79,7 @@ app.whenReady().then(() => {
   });
 
   ipcMain.handle('app:quit', () => {
+    allowQuit = true;
     app.quit();
   });
 
@@ -79,6 +87,7 @@ app.whenReady().then(() => {
 
   if (!process.env.VITE_DEV_SERVER_URL) {
     globalShortcut.register('Ctrl+Shift+K', () => {
+      allowQuit = true;
       app.quit();
     });
   }
