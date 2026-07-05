@@ -15,5 +15,10 @@ www.kamivend.com {
 }
 
 app.kamivend.com {
-    reverse_proxy app:3000
+    handle / {
+        redir https://kamivend.com{uri} permanent
+    }
+    handle {
+        reverse_proxy app:3000
+    }
 }
