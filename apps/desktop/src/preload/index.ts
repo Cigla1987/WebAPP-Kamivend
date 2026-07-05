@@ -10,6 +10,7 @@ export interface DesktopAPI {
     query: (sql: string) => Promise<unknown[]>;
     exec: (sql: string) => Promise<void>;
   };
+  quit: () => Promise<void>;
 }
 
 const api: DesktopAPI = {
@@ -22,6 +23,7 @@ const api: DesktopAPI = {
     query: (sql) => ipcRenderer.invoke('db:query', sql),
     exec: (sql) => ipcRenderer.invoke('db:exec', sql),
   },
+  quit: () => ipcRenderer.invoke('app:quit'),
 };
 
 contextBridge.exposeInMainWorld('desktop', api);

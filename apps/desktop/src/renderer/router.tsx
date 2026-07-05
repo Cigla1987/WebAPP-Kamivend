@@ -16,7 +16,7 @@ const indexRoute = createRoute({
   component: function HomePage() {
     const [token, setToken] = useState<string | null>(null);
 
-  useEffect(() => {
+    useEffect(() => {
       window.desktop.store.get('token').then((value) => {
         if (typeof value === 'string') {
           setToken(value);
@@ -54,6 +54,12 @@ const indexRoute = createRoute({
             }}
           >
             Clear token
+          </Button>
+          <Button
+            variant="destructive"
+            onClick={() => window.desktop.quit()}
+          >
+            Quit App
           </Button>
         </div>
       </main>

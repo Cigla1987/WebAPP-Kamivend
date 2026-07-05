@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, shell } from 'electron';
+import { app, BrowserWindow, globalShortcut, ipcMain, shell } from 'electron';
 import path from 'node:path';
 import Store from 'electron-store';
 
@@ -18,6 +18,7 @@ function createWindow() {
     height: 800,
     minWidth: 900,
     minHeight: 600,
+    kiosk: !process.env.VITE_DEV_SERVER_URL,
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.mjs'),
       contextIsolation: true,
@@ -31,12 +32,18 @@ function createWindow() {
     mainWindow.webContents.openDevTools();
   } else {
     mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
+    mainWindow.setMenu(null);
+    mainWindow.webContents.on('devtools-opened', () => {
+      mainWindow.webContents.closeDevTools();
+    });
   }
 
   mainWindow.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: 'deny' };
   });
+
+  return mainWindow;
 }
 
 app.whenReady().then(() => {
@@ -64,7 +71,17 @@ app.whenReady().then(() => {
     throw new Error('SQLite is not wired yet (minimal setup)');
   });
 
+  ipcMain.handle('app:quit', () => {
+    app.quit();
+  });
+
   createWindow();
+
+  if (!process.env.VITE_DEV_SERVER_URL) {
+    globalShortcut.register('Ctrl+Shift+K', () => {
+      app.quit();
+    });
+  }
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
