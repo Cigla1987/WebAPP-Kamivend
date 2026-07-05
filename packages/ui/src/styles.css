@@ -4,6 +4,7 @@
 @import '@fontsource-variable/jetbrains-mono';
 
 @source '../../../apps/web/src/**/*.{ts,tsx}';
+@source '../../../apps/desktop/src/**/*.{ts,tsx}';
 @source '../src/**/*.{ts,tsx}';
 
 /* ejected from shadcn — inlined tailwind.css */

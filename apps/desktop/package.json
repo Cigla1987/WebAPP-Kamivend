@@ -1,0 +1,49 @@
+{
+  "name": "@vending/desktop",
+  "version": "0.0.0",
+  "private": true,
+  "author": "Vending Team",
+  "type": "module",
+  "description": "Vending desktop application for field technicians",
+  "main": "out/main/index.js",
+  "desktopName": "vending-desktop",
+  "imports": {
+    "#/*": "./src/*"
+  },
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "dist": "electron-vite build && electron-builder",
+    "lint": "eslint",
+    "format": "prettier --check .",
+    "check": "prettier --write . && eslint --fix"
+  },
+  "dependencies": {
+    "@tanstack/react-router": "latest",
+    "@tanstack/router-devtools": "latest",
+    "@vending/domain": "workspace:*",
+    "@vending/ui": "workspace:*",
+    "better-sqlite3": "^12.11.1",
+    "electron-store": "^11.0.2",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "@types/better-sqlite3": "^7.6.12",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@vending/tsconfig": "workspace:*",
+    "@vitejs/plugin-react": "^5.1.4",
+    "electron": "^43.0.0",
+    "electron-builder": "^26.0.12",
+    "electron-vite": "^6.0.0-beta.1",
+    "@tailwindcss/vite": "^4.1.18",
+    "@tanstack/eslint-config": "latest",
+    "prettier": "^3.8.1",
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "typescript": "^5.7.2",
+    "vite": "^8.1.0"
+  }
+}
