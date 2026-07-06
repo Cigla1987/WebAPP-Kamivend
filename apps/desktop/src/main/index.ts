@@ -3,8 +3,17 @@ import path from 'node:path';
 import Store from 'electron-store';
 import { config } from 'dotenv';
 
-// Load .env from the app root directory (works in dev and production)
-config({ path: path.join(app.getAppPath(), '.env') });
+// Load .env from the correct location:
+// - Dev: app root directory (app.getAppPath())
+// - Production: resources directory (outside .asar archive)
+const envPath = app.isPackaged
+  ? path.join(process.resourcesPath, '.env')
+  : path.join(app.getAppPath(), '.env');
+
+const dotenvResult = config({ path: envPath });
+if (dotenvResult.error) {
+  console.warn('[Main] Failed to load .env file:', dotenvResult.error.message);
+}
 
 let allowQuit = true;
 

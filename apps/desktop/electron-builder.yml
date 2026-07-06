@@ -6,9 +6,10 @@ directories:
   output: dist
   buildResources: build
 files:
-  - .env
   - out/**/*
   - package.json
+extraResources:
+  - .env
 asarUnpack:
   - node_modules/better-sqlite3/**
   - out/main/chunks/*.node
