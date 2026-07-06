@@ -29,6 +29,10 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Set production API URL
+        run: |
+          echo "VENDING_API_URL=${{ vars.VENDING_API_URL }}" > .env
+
       - name: Build desktop app
         run: pnpm dist
 

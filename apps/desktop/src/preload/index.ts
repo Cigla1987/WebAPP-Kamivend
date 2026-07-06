@@ -10,6 +10,14 @@ export interface DesktopAPI {
     query: (sql: string) => Promise<unknown[]>;
     exec: (sql: string) => Promise<void>;
   };
+  auth: {
+    signIn: (credentials: { email: string; password: string }) => Promise<{
+      data: unknown;
+      error: unknown;
+    }>;
+    getSession: () => Promise<{ data: unknown; error: unknown }>;
+    signOut: () => Promise<{ data: unknown; error: unknown }>;
+  };
   quit: () => Promise<void>;
 }
 
@@ -22,6 +30,11 @@ const api: DesktopAPI = {
   db: {
     query: (sql) => ipcRenderer.invoke('db:query', sql),
     exec: (sql) => ipcRenderer.invoke('db:exec', sql),
+  },
+  auth: {
+    signIn: (credentials) => ipcRenderer.invoke('auth:signIn', credentials),
+    getSession: () => ipcRenderer.invoke('auth:getSession'),
+    signOut: () => ipcRenderer.invoke('auth:signOut'),
   },
   quit: () => ipcRenderer.invoke('app:quit'),
 };

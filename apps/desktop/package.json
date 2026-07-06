@@ -20,18 +20,25 @@
     "check": "prettier --write . && eslint --fix"
   },
   "dependencies": {
+    "@tanstack/react-form": "latest",
     "@tanstack/react-router": "latest",
     "@tanstack/router-devtools": "latest",
     "@vending/domain": "workspace:*",
     "@vending/ui": "workspace:*",
+    "better-auth": "^1.6.22",
     "better-sqlite3": "^12.11.1",
+    "dotenv": "^17.3.1",
     "electron-store": "^11.0.2",
+    "lucide-react": "^1.22.0",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@types/node": "^22.10.2",
+    "@tailwindcss/vite": "^4.1.18",
+    "@tanstack/eslint-config": "latest",
     "@types/better-sqlite3": "^7.6.12",
+    "@types/node": "^22.10.2",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
     "@vending/tsconfig": "workspace:*",
@@ -39,8 +46,6 @@
     "electron": "^43.0.0",
     "electron-builder": "^26.0.12",
     "electron-vite": "^6.0.0-beta.1",
-    "@tailwindcss/vite": "^4.1.18",
-    "@tanstack/eslint-config": "latest",
     "prettier": "^3.8.1",
     "prettier-plugin-tailwindcss": "^0.7.2",
     "typescript": "^5.7.2",

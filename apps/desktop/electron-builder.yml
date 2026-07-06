@@ -6,6 +6,7 @@ directories:
   output: dist
   buildResources: build
 files:
+  - .env
   - out/**/*
   - package.json
 asarUnpack:
