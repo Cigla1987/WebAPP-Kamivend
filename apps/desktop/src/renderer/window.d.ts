@@ -1,7 +1,7 @@
 import type { DesktopAPI } from '../preload';
-import type { authClient } from '../main/lib/auth-client';
+import type { AuthClient } from '../main/lib/auth-client';
 
-type Bridges = typeof authClient.$Infer.Bridges;
+type Bridges = AuthClient['$Infer']['Bridges'];
 
 declare global {
   interface Window extends Bridges {

@@ -2,14 +2,9 @@ import { app, BrowserWindow, globalShortcut, ipcMain, shell } from 'electron';
 import path from 'node:path';
 import Store from 'electron-store';
 import { config } from 'dotenv';
-import { authClient } from './lib/auth-client';
+import { createElectronAuthClient } from './lib/auth-client';
 
-// Must be called before app is ready
-authClient.setupMain();
-
-// Load .env from the correct location:
-// - Dev: app root directory (app.getAppPath())
-// - Production: resources directory (outside .asar archive)
+// Load .env FIRST, before creating any auth client that depends on it
 const envPath = app.isPackaged
   ? path.join(process.resourcesPath, '.env')
   : path.join(app.getAppPath(), '.env');
@@ -19,6 +14,13 @@ if (dotenvResult.error) {
   console.warn('[Main] Failed to load .env file:', dotenvResult.error.message);
 }
 
+// Create auth client AFTER dotenv has loaded
+const apiUrl = process.env.VENDING_API_URL ?? 'http://localhost:3000';
+const { authClient } = createElectronAuthClient(apiUrl);
+
+// Must be called before app is ready
+authClient.setupMain();
+
 let allowQuit = true;
 let mainWindow: BrowserWindow | null = null;
 
@@ -26,7 +28,7 @@ const store = new Store<{
   apiUrl: string;
 }>({
   defaults: {
-    apiUrl: process.env.VENDING_API_URL ?? 'http://localhost:3000',
+    apiUrl,
   },
 });
 
