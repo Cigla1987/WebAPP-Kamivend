@@ -2,6 +2,10 @@ import { app, BrowserWindow, globalShortcut, ipcMain, shell } from 'electron';
 import path from 'node:path';
 import Store from 'electron-store';
 import { config } from 'dotenv';
+import { authClient } from './lib/auth-client';
+
+// Must be called before app is ready
+authClient.setupMain();
 
 // Load .env from the correct location:
 // - Dev: app root directory (app.getAppPath())
@@ -16,24 +20,29 @@ if (dotenvResult.error) {
 }
 
 let allowQuit = true;
+let mainWindow: BrowserWindow | null = null;
 
 const store = new Store<{
-  token: string | null;
   apiUrl: string;
 }>({
   defaults: {
-    token: null,
     apiUrl: process.env.VENDING_API_URL ?? 'http://localhost:3000',
   },
 });
 
+function sendToRendererLog(level: 'log' | 'error' | 'warn', message: string) {
+  // Print in main process terminal
+  console[level](message);
+  // Forward to renderer DevTools
+  mainWindow?.webContents.send('log', level, message);
+}
+
 function createWindow() {
-  const mainWindow = new BrowserWindow({
+  const win = new BrowserWindow({
     width: 1280,
     height: 800,
     minWidth: 900,
     minHeight: 600,
-    // kiosk: !process.env.ELECTRON_RENDERER_URL,
     webPreferences: {
       preload: path.join(__dirname, '../preload/index.mjs'),
       contextIsolation: true,
@@ -43,26 +52,24 @@ function createWindow() {
   });
 
   if (process.env.ELECTRON_RENDERER_URL) {
-    mainWindow.loadURL(process.env.ELECTRON_RENDERER_URL);
-    mainWindow.webContents.openDevTools();
+    win.loadURL(process.env.ELECTRON_RENDERER_URL);
+    win.webContents.openDevTools();
   } else {
-    mainWindow.loadFile(path.join(__dirname, '../renderer/index.html'));
-    mainWindow.on('close', (event) => {
+    win.loadFile(path.join(__dirname, '../renderer/index.html'));
+    win.on('close', (event) => {
       if (!allowQuit) {
         event.preventDefault();
       }
     });
-    // mainWindow.webContents.on('devtools-opened', () => {
-    //   mainWindow.webContents.closeDevTools();
-    // });
   }
 
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+  win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: 'deny' };
   });
 
-  return mainWindow;
+  mainWindow = win;
+  return win;
 }
 
 app.whenReady().then(() => {
@@ -95,82 +102,40 @@ app.whenReady().then(() => {
     app.quit();
   });
 
+  // Auth IPC bridges delegate to the official Better Auth Electron client
   ipcMain.handle(
-    'auth:signIn',
+    'auth:signInEmail',
     async (_event, { email, password }: { email: string; password: string }) => {
-      const apiUrl = store.get('apiUrl');
-      const apiOrigin = new URL(apiUrl).origin;
-
-      const response = await fetch(`${apiUrl}/api/auth/sign-in/email`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Origin: apiOrigin,
-        },
-        credentials: 'omit',
-        body: JSON.stringify({ email, password }),
+      sendToRendererLog('log', `[Auth] Signing in: ${email}`);
+      const result = await authClient.signIn.email({
+        email,
+        password,
       });
-
-      if (!response.ok) {
-        const errorData = await response
-          .json()
-          .catch(() => ({ message: 'Login failed' }));
-        return { error: errorData, data: null };
+      if (result.error) {
+        sendToRendererLog('error', `[Auth] Sign-in failed: ${JSON.stringify(result.error)}`);
+      } else {
+        sendToRendererLog('log', `[Auth] Sign-in succeeded for: ${email}`);
       }
-
-      const authToken = response.headers.get('set-auth-token');
-      if (authToken) {
-        store.set('token', authToken);
-      }
-
-      const data = await response.json();
-      return { data, error: null };
+      return result;
     },
   );
 
   ipcMain.handle('auth:getSession', async () => {
-    const apiUrl = store.get('apiUrl');
-    const apiOrigin = new URL(apiUrl).origin;
-    const token = store.get('token');
-
-    if (!token) {
-      return { data: null, error: null };
+    sendToRendererLog('log', '[Auth] Fetching session...');
+    const result = await authClient.getSession();
+    if (result.data) {
+      sendToRendererLog('log', `[Auth] Session found for: ${result.data.user?.email ?? 'unknown'}`);
+    } else {
+      sendToRendererLog('log', '[Auth] No active session');
     }
-
-    const response = await fetch(`${apiUrl}/api/auth/get-session`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Origin: apiOrigin,
-      },
-      credentials: 'omit',
-    });
-
-    if (!response.ok) {
-      return { data: null, error: null };
-    }
-
-    const data = await response.json();
-    return { data, error: null };
+    return result;
   });
 
   ipcMain.handle('auth:signOut', async () => {
-    const apiUrl = store.get('apiUrl');
-    const apiOrigin = new URL(apiUrl).origin;
-    const token = store.get('token');
-
-    if (token) {
-      await fetch(`${apiUrl}/api/auth/sign-out`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          Origin: apiOrigin,
-        },
-        credentials: 'omit',
-      });
-    }
-
-    store.delete('token');
-    return { data: null, error: null };
+    sendToRendererLog('log', '[Auth] Signing out...');
+    const result = await authClient.signOut();
+    sendToRendererLog('log', '[Auth] Sign-out complete');
+    return result;
   });
 
   createWindow();

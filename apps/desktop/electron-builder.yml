@@ -10,6 +10,10 @@ files:
   - package.json
 extraResources:
   - .env
+protocols:
+  - name: Vending Desktop Protocol
+    schemes:
+      - com.vending.desktop
 asarUnpack:
   - node_modules/better-sqlite3/**
   - out/main/chunks/*.node

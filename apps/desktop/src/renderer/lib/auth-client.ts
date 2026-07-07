@@ -15,16 +15,17 @@ export interface SessionData {
 export const authClient = {
   signIn: {
     email: async ({ email, password }: { email: string; password: string }) => {
-      return window.desktop.auth.signIn({ email, password }) as Promise<
-        AuthResponse<SessionData>
-      >;
+      const result = await window.desktop.auth.signInEmail({ email, password });
+      return result as AuthResponse<SessionData>;
     },
   },
   getSession: async () => {
-    return window.desktop.auth.getSession() as Promise<AuthResponse<SessionData>>;
+    const result = await window.desktop.auth.getSession();
+    return result as AuthResponse<SessionData>;
   },
   signOut: async () => {
-    return window.desktop.auth.signOut() as Promise<AuthResponse<null>>;
+    const result = await window.desktop.auth.signOut();
+    return result as AuthResponse<null>;
   },
 };
 

@@ -2,10 +2,19 @@ import { createAuthClient } from 'better-auth/react';
 import type { auth } from '#/server/lib/auth';
 import { inferAdditionalFields } from 'better-auth/client/plugins';
 import { organizationClient } from 'better-auth/client/plugins';
+import { electronProxyClient } from '@better-auth/electron/proxy';
 
 const authClient = createAuthClient({
   baseURL: import.meta.env.PROD ? 'https://app.kamivend.com' : undefined,
-  plugins: [inferAdditionalFields<typeof auth>(), organizationClient()],
+  plugins: [
+    inferAdditionalFields<typeof auth>(),
+    organizationClient(),
+    electronProxyClient({
+      protocol: {
+        scheme: 'com.vending.desktop',
+      },
+    }),
+  ],
 });
 
 export default authClient;

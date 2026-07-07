@@ -1,5 +1,6 @@
 import { betterAuth } from 'better-auth';
 import { bearer } from 'better-auth/plugins';
+import { electron } from '@better-auth/electron';
 import { tanstackStartCookies } from 'better-auth/tanstack-start';
 import { db } from '../db';
 import { serverEnv } from '#/config/env.ts';
@@ -33,5 +34,5 @@ const options = createAuthOptions(db, {
 
 export const auth = betterAuth({
   ...options,
-  plugins: [...(options.plugins ?? []), bearer(), tanstackStartCookies()],
+  plugins: [...(options.plugins ?? []), bearer(), electron(), tanstackStartCookies()],
 });
