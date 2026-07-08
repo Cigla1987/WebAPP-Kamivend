@@ -1,14 +1,20 @@
 import { useState } from 'react';
 import { useForm } from '@tanstack/react-form';
-import { Button } from '@vending/ui';
-import { FieldGroup } from '@vending/ui';
-import { Alert, AlertTitle } from '@vending/ui';
-import { AlertCircleIcon } from 'lucide-react';
+import {
+  Button,
+  FieldGroup,
+  Alert,
+  AlertTitle,
+  FormInput,
+  FieldLabel,
+  FieldError,
+  Input,
+} from '@vending/ui';
+import { AlertCircleIcon, Eye, EyeOff } from 'lucide-react';
 import LoadingSpinner from '../loading-spinner';
 import authClient from '#/client/lib/auth-client';
 import { useNavigate } from '@tanstack/react-router';
 import { useQueryClient } from '@tanstack/react-query';
-import { FormInput } from '@vending/ui';
 import { z } from 'zod';
 
 const loginSchema = z.object({
@@ -24,6 +30,7 @@ const Login: React.FC = () => {
   const queryClient = useQueryClient();
   const [isPending, setIsPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
 
   const { Field, handleSubmit, state } = useForm({
     defaultValues: {
@@ -80,14 +87,46 @@ const Login: React.FC = () => {
 
         <Field
           name="password"
-          children={(field) => (
-            <FormInput
-              field={field}
-              label="Password"
-              type="password"
-              onChange={() => error && setError(null)}
-            />
-          )}
+          children={(field) => {
+            const errorMessage = Array.isArray(field.state.meta.errors)
+              ? typeof field.state.meta.errors[0] === 'string'
+                ? field.state.meta.errors[0]
+                : field.state.meta.errors[0]?.message
+              : undefined;
+
+            return (
+              <div className="flex flex-col space-y-1.5">
+                <FieldLabel htmlFor={field.name}>Password</FieldLabel>
+                <div className="relative">
+                  <Input
+                    id={field.name}
+                    name={field.name}
+                    type={showPassword ? 'text' : 'password'}
+                    value={field.state.value}
+                    onBlur={field.handleBlur}
+                    onChange={(e) => {
+                      field.handleChange(e.target.value);
+                      if (error) setError(null);
+                    }}
+                    className="pr-9"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute right-0 top-0 h-8 w-8"
+                  >
+                    {showPassword ? <EyeOff /> : <Eye />}
+                  </Button>
+                </div>
+                {errorMessage && (
+                  <FieldError errors={[{ message: errorMessage }]} />
+                )}
+              </div>
+            );
+          }}
         />
 
         <Button

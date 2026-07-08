@@ -84,98 +84,98 @@ const Header = () => {
         <div className="flex items-center gap-2">
           <SidebarTrigger className="md:hidden" />
           {showBreadcrumb ? (
-          <Breadcrumb>
-            <BreadcrumbList>
-              {visibleMatches.map((match, index) => {
-                const isLast = index === visibleMatches.length - 1;
-                const isMachineMatch =
-                  match.routeId === '/_auth/machines/$machineId/compartments';
+            <Breadcrumb>
+              <BreadcrumbList>
+                {visibleMatches.map((match, index) => {
+                  const isLast = index === visibleMatches.length - 1;
+                  const isMachineMatch =
+                    match.routeId === '/_auth/machines/$machineId/compartments';
 
-                // For the machine route, render the machine name dropdown + compartments
-                if (isMachineMatch && compartmentMachines) {
+                  // For the machine route, render the machine name dropdown + compartments
+                  if (isMachineMatch && compartmentMachines) {
+                    return (
+                      <Fragment key={match.id}>
+                        <BreadcrumbItem>
+                          {hasMultipleMachines ? (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger
+                                className={cn(
+                                  buttonVariants({
+                                    variant: 'ghost',
+                                    size: 'xs',
+                                  }),
+                                  'gap-1 font-normal'
+                                )}
+                              >
+                                <span>
+                                  {currentMachine?.machineName ||
+                                    'Unknown Machine'}
+                                </span>
+                                <CaretDownIcon className="text-muted-foreground size-3" />
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="start">
+                                {compartmentMachines.map((machine) => (
+                                  <DropdownMenuItem
+                                    key={machine.id}
+                                    onClick={() =>
+                                      handleMachineSwitch(machine.id)
+                                    }
+                                  >
+                                    {machine.machineName}
+                                  </DropdownMenuItem>
+                                ))}
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          ) : (
+                            <span className="text-foreground text-xs font-normal">
+                              {currentMachine?.machineName || 'Unknown Machine'}
+                            </span>
+                          )}
+                        </BreadcrumbItem>
+                        <BreadcrumbSeparator />
+                        <BreadcrumbItem>
+                          <BreadcrumbPage>
+                            {match.staticData.title}
+                          </BreadcrumbPage>
+                        </BreadcrumbItem>
+                      </Fragment>
+                    );
+                  }
+
+                  // For other routes, render link or page
                   return (
                     <Fragment key={match.id}>
                       <BreadcrumbItem>
-                        {hasMultipleMachines ? (
-                          <DropdownMenu>
-                            <DropdownMenuTrigger
-                              className={cn(
-                                buttonVariants({
-                                  variant: 'ghost',
-                                  size: 'xs',
-                                }),
-                                'gap-1 font-normal'
-                              )}
-                            >
-                              <span>
-                                {currentMachine?.machineName ||
-                                  'Unknown Machine'}
-                              </span>
-                              <CaretDownIcon className="text-muted-foreground size-3" />
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="start">
-                              {compartmentMachines.map((machine) => (
-                                <DropdownMenuItem
-                                  key={machine.id}
-                                  onClick={() =>
-                                    handleMachineSwitch(machine.id)
-                                  }
-                                >
-                                  {machine.machineName}
-                                </DropdownMenuItem>
-                              ))}
-                            </DropdownMenuContent>
-                          </DropdownMenu>
+                        {isLast ? (
+                          <BreadcrumbPage>
+                            {match.staticData.title}
+                          </BreadcrumbPage>
                         ) : (
-                          <span className="text-foreground text-xs font-normal">
-                            {currentMachine?.machineName || 'Unknown Machine'}
-                          </span>
+                          <BreadcrumbLink
+                            render={<Link to={match.pathname} />}
+                            className={cn(
+                              buttonVariants({ variant: 'ghost', size: 'xs' }),
+                              'font-normal'
+                            )}
+                          >
+                            {match.staticData.title}
+                          </BreadcrumbLink>
                         )}
                       </BreadcrumbItem>
-                      <BreadcrumbSeparator />
-                      <BreadcrumbItem>
-                        <BreadcrumbPage>
-                          {match.staticData.title}
-                        </BreadcrumbPage>
-                      </BreadcrumbItem>
+                      {!isLast && <BreadcrumbSeparator />}
                     </Fragment>
                   );
-                }
-
-                // For other routes, render link or page
-                return (
-                  <Fragment key={match.id}>
-                    <BreadcrumbItem>
-                      {isLast ? (
-                        <BreadcrumbPage>
-                          {match.staticData.title}
-                        </BreadcrumbPage>
-                      ) : (
-                        <BreadcrumbLink
-                          render={<Link to={match.pathname} />}
-                          className={cn(
-                            buttonVariants({ variant: 'ghost', size: 'xs' }),
-                            'font-normal'
-                          )}
-                        >
-                          {match.staticData.title}
-                        </BreadcrumbLink>
-                      )}
-                    </BreadcrumbItem>
-                    {!isLast && <BreadcrumbSeparator />}
-                  </Fragment>
-                );
-              })}
-            </BreadcrumbList>
-          </Breadcrumb>
-        ) : (
-          <div />
-        )}
+                })}
+              </BreadcrumbList>
+            </Breadcrumb>
+          ) : (
+            <div />
+          )}
         </div>
 
         <div className="flex items-center gap-3">
           <ModeToggle />
-          <Button variant="outline" size="sm" onClick={handleLogout}>
+          <Button variant="outline" onClick={handleLogout}>
             Logout
           </Button>
         </div>
