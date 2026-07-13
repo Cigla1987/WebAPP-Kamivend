@@ -1,4 +1,4 @@
-import * as React from 'react';
+import * as React from "react";
 import {
   type ColumnDef,
   type SortingState,
@@ -6,7 +6,7 @@ import {
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
-} from '@tanstack/react-table';
+} from "@tanstack/react-table";
 import {
   Table,
   TableBody,
@@ -14,7 +14,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '#components/table';
+} from "#components/table";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -45,12 +45,12 @@ export function DataTable<TData, TValue>({
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead key={header.id}>
+                  <TableHead key={header.id} className="font-bold">
                     {header.isPlaceholder
                       ? null
                       : flexRender(
                           header.column.columnDef.header,
-                          header.getContext()
+                          header.getContext(),
                         )}
                   </TableHead>
                 );
@@ -63,7 +63,7 @@ export function DataTable<TData, TValue>({
             table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
-                data-state={row.getIsSelected() && 'selected'}
+                data-state={row.getIsSelected() && "selected"}
               >
                 {row.getVisibleCells().map((cell) => (
                   <TableCell key={cell.id}>
