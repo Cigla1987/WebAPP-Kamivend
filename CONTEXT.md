@@ -5,7 +5,7 @@
 ### Application
 
 - **Web App** — The primary TanStack Start full-stack web application. Owners manage machines, products, and organizations through a browser interface. Lives in `apps/web/`.
-- **Electron App** — A future desktop application for field technicians. Authenticates against the Web App's API and maintains a local SQLite cache of vending data. Lives in `apps/electron/` (not yet created).
+- **Electron App** — A future desktop application for field technicians. Authenticates against the Web App's API and maintains a local SQLite cache of vending data. Lives in `apps/desktop/` (not yet created).
 
 ### Packages
 

@@ -1,0 +1,26 @@
+appId: com.vending.desktop
+productName: Vending Desktop
+executableName: vending-desktop
+copyright: Copyright © 2026
+directories:
+  output: dist
+  buildResources: build
+files:
+  - out/**/*
+  - package.json
+extraResources:
+  - .env
+protocols:
+  - name: Vending Desktop Protocol
+    schemes:
+      - com.vending.desktop
+asarUnpack:
+  - node_modules/better-sqlite3/**
+  - out/main/chunks/*.node
+mac:
+  category: public.app-category.business
+win:
+  target: nsis
+linux:
+  category: Utility
+  target: AppImage

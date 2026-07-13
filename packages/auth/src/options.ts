@@ -41,6 +41,7 @@ export function createAuthOptions(
       'https://kamivend.com',
       'https://app.kamivend.com',
       'https://www.kamivend.com',
+      'com.vending.desktop:/',
       ...(config.nodeEnv === 'development' ? ['http://localhost:3000'] : []),
     ],
     emailAndPassword: {
