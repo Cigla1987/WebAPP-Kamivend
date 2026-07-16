@@ -3,8 +3,9 @@ import { redirect } from '@tanstack/react-router';
 import { createServerFn } from '@tanstack/react-start';
 import { getRequestHeaders } from '@tanstack/react-start/server';
 import { db } from '#/server/db';
-import { eq, and } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { organization, member } from '@vending/db';
+import { UserRole } from '@vending/domain';
 
 export const getSessionFn = createServerFn({ method: 'GET' }).handler(
   async () => {
@@ -15,31 +16,44 @@ export const getSessionFn = createServerFn({ method: 'GET' }).handler(
       throw redirect({ to: '/login' });
     }
 
-    // Get active organization if set
+    const activeOrganizationId = session.session.activeOrganizationId;
     let activeOrganization = null;
-    if (session.session.activeOrganizationId) {
-      const [org] = await db
-        .select()
-        .from(organization)
-        .where(eq(organization.id, session.session.activeOrganizationId))
-        .limit(1);
-      activeOrganization = org || null;
-    }
+    let memberRole: string | null = null;
 
-    // Get user's member role for active organization
-    let memberRole = null;
-    if (session.session.activeOrganizationId) {
-      const [mem] = await db
-        .select()
-        .from(member)
-        .where(
-          and(
-            eq(member.organizationId, session.session.activeOrganizationId),
-            eq(member.userId, session.user.id)
+    if (activeOrganizationId) {
+      const isPlatformAdmin = session.user.role === UserRole.Admin;
+
+      if (isPlatformAdmin) {
+        const [org] = await db
+          .select()
+          .from(organization)
+          .where(eq(organization.id, activeOrganizationId))
+          .limit(1);
+        activeOrganization = org ?? null;
+      } else {
+        const [membership] = await db
+          .select({
+            role: member.role,
+            organization,
+          })
+          .from(member)
+          .innerJoin(
+            organization,
+            eq(organization.id, member.organizationId)
           )
-        )
-        .limit(1);
-      memberRole = mem?.role;
+          .where(
+            and(
+              eq(member.organizationId, activeOrganizationId),
+              eq(member.userId, session.user.id)
+            )
+          )
+          .limit(1);
+
+        if (membership) {
+          activeOrganization = membership.organization;
+          memberRole = membership.role;
+        }
+      }
     }
 
     return {
