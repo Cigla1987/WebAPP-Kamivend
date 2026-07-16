@@ -1,5 +1,5 @@
 /**
- * ⚠️ SERVER-ONLY FILE
+ * âš ï¸ SERVER-ONLY FILE
  */
 
 import { db } from '#/server/db';
@@ -13,6 +13,7 @@ import {
 } from '@vending/db';
 import { user, organization } from '@vending/auth';
 import { eq, and, asc } from 'drizzle-orm';
+import { requireCompartmentAccess } from '#/server/smartfridge/authorization';
 
 export type CompartmentDto = {
   id: string;
@@ -101,8 +102,11 @@ export async function updateCompartmentPrice(
   id: string,
   newPrice: number,
   updateAll: boolean,
-  userId: string
+  _userId: string,
+  role: string,
+  organizationId: string | null
 ): Promise<void> {
+  const target = await requireCompartmentAccess(id, role, organizationId);
   const now = new Date();
 
   if (updateAll) {
@@ -124,7 +128,7 @@ export async function updateCompartmentPrice(
       .where(
         and(
           eq(compartments.productId, productRow.productId),
-          eq(compartments.managedBy, userId)
+          eq(compartments.machineId, target.machineId)
         )
       );
   } else {
@@ -134,14 +138,22 @@ export async function updateCompartmentPrice(
         currentPrice: newPrice.toString(),
         lastUpdated: now,
       })
-      .where(and(eq(compartments.id, id), eq(compartments.managedBy, userId)));
+      .where(
+        and(
+          eq(compartments.id, id),
+          eq(compartments.machineId, target.machineId)
+        )
+      );
   }
 }
 
 export async function updateCompartmentManagedBy(
   id: string,
-  managedBy: string | null
+  managedBy: string | null,
+  role: string,
+  organizationId: string | null
 ): Promise<void> {
+  await requireCompartmentAccess(id, role, organizationId);
   await db
     .update(compartments)
     .set({ managedBy })
@@ -152,8 +164,11 @@ export async function updateCompartmentDiscount(
   id: string,
   discountValue: number,
   discountDay: number,
-  expirationDate: string
+  expirationDate: string,
+  role: string,
+  organizationId: string | null
 ): Promise<void> {
+  await requireCompartmentAccess(id, role, organizationId);
   const now = new Date();
 
   await db

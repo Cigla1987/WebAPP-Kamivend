@@ -29,7 +29,10 @@ export const getCompartmentsByMachine = createServerFn({
   });
 
 export const updatePrice = createServerFn({ method: 'POST' })
-  .middleware([errorMiddlewareFn, requireRole(UserRole.Admin, MemberRole.Owner, MemberRole.Employee)])
+  .middleware([
+    errorMiddlewareFn,
+    requireRole(UserRole.Admin, MemberRole.Owner, MemberRole.Employee),
+  ])
   .validator(
     (data: { id: string; newPrice: number; updateAll: boolean }) => data
   )
@@ -38,19 +41,32 @@ export const updatePrice = createServerFn({ method: 'POST' })
       data.id,
       data.newPrice,
       data.updateAll,
-      context.user.id
+      context.user.id,
+      context.user.role,
+      context.activeOrganization?.id ?? null
     );
   });
 
 export const updateManagedBy = createServerFn({ method: 'POST' })
-  .middleware([errorMiddlewareFn, requireRole(UserRole.Admin, MemberRole.Owner)])
+  .middleware([
+    errorMiddlewareFn,
+    requireRole(UserRole.Admin, MemberRole.Owner),
+  ])
   .validator((data: { id: string; managedBy: string | null }) => data)
-  .handler(async ({ data }): Promise<void> => {
-    await updateCompartmentManagedBy(data.id, data.managedBy);
+  .handler(async ({ data, context }): Promise<void> => {
+    await updateCompartmentManagedBy(
+      data.id,
+      data.managedBy,
+      context.user.role,
+      context.activeOrganization?.id ?? null
+    );
   });
 
 export const updateDiscount = createServerFn({ method: 'POST' })
-  .middleware([errorMiddlewareFn, requireRole(UserRole.Admin, MemberRole.Owner, MemberRole.Employee)])
+  .middleware([
+    errorMiddlewareFn,
+    requireRole(UserRole.Admin, MemberRole.Owner, MemberRole.Employee),
+  ])
   .validator(
     (data: {
       id: string;
@@ -59,11 +75,13 @@ export const updateDiscount = createServerFn({ method: 'POST' })
       expirationDate: string;
     }) => data
   )
-  .handler(async ({ data }): Promise<void> => {
+  .handler(async ({ data, context }): Promise<void> => {
     await updateCompartmentDiscount(
       data.id,
       data.discountValue,
       data.discountDay,
-      data.expirationDate
+      data.expirationDate,
+      context.user.role,
+      context.activeOrganization?.id ?? null
     );
   });

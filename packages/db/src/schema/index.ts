@@ -1,5 +1,7 @@
-export * from '@vending/auth/schema';
-export * from './vending';
-export * from './smartfridge';
-export * from './smartfridge-product';
-export * from './machine-ownership';
+export * from "@vending/auth/schema";
+export * from "./vending";
+export * from "./smartfridge";
+export * from "./smartfridge-product";
+export * from "./machine-ownership";
+
+export * from "./smartfridge-edge";

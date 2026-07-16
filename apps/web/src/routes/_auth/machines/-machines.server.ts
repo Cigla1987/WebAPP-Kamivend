@@ -1,5 +1,5 @@
 /**
- * ⚠️ SERVER-ONLY FILE
+ * âš ï¸ SERVER-ONLY FILE
  */
 
 import { createHash, randomBytes } from 'node:crypto';
@@ -17,6 +17,7 @@ import { and, eq, gt, isNull } from 'drizzle-orm';
 import type { User } from '@vending/auth';
 import z from 'zod';
 import { MachineType, UserRole } from '@vending/domain';
+import { serverEnv } from '#/config/env';
 
 export type MachineDto = {
   id: string;
@@ -133,7 +134,14 @@ export async function getMachineModes(): Promise<MachineModeDto[]> {
 export async function createMachine(
   data: CreateMachine,
   currentUser: Pick<User, 'id' | 'role'>
-): Promise<{ id: string; activationCode: string }> {
+): Promise<{
+  id: string;
+  machineName: string;
+  serialNumber: string;
+  machineType: string;
+  activationCode: string;
+  activationCodeExpiresAt: Date;
+}> {
   const existingMachine = await getMachineBySerialNumber(data.serialNumber);
   if (existingMachine) {
     throw new Error('Machine with this serial number already exists.');
@@ -159,7 +167,9 @@ export async function createMachine(
   const activationCode = createActivationCode();
   const codeHash = hashActivationCode(activationCode);
   const expiresAt = new Date();
-  expiresAt.setFullYear(expiresAt.getFullYear() + 1);
+  expiresAt.setDate(
+    expiresAt.getDate() + serverEnv().SMART_FRIDGE_MACHINE_CLAIM_TTL_DAYS
+  );
 
   const createdMachine = await db.transaction(async (tx) => {
     const [machine] = await tx
@@ -211,7 +221,14 @@ export async function createMachine(
     return machine;
   });
 
-  return { id: createdMachine.id, activationCode };
+  return {
+    id: createdMachine.id,
+    machineName: createdMachine.machineName,
+    serialNumber: createdMachine.serialNumber,
+    machineType: machineType.machineTypeName,
+    activationCode,
+    activationCodeExpiresAt: expiresAt,
+  };
 }
 
 /** Platform-admin assignment remains available for support and legacy sales. */
@@ -276,7 +293,7 @@ export async function claimMachine(
   data: ClaimMachine,
   currentUser: Pick<User, 'id' | 'role'>,
   activeOrg: typeof organization.$inferSelect | null
-): Promise<{ machineId: string; machineName: string }> {
+): Promise<{ machineId: string; machineName: string; organizationId: string }> {
   if (!activeOrg) {
     throw new Error('Select your organization before claiming a machine.');
   }
@@ -306,7 +323,9 @@ export async function claimMachine(
       .limit(1);
 
     if (!claim) {
-      throw new Error('Serial number or activation code is invalid or expired.');
+      throw new Error(
+        'Serial number or activation code is invalid or expired.'
+      );
     }
 
     if (claim.organizationId) {
@@ -337,6 +356,7 @@ export async function claimMachine(
     return {
       machineId: claim.machineId,
       machineName: claim.machineName,
+      organizationId: activeOrg.id,
     };
   });
 }

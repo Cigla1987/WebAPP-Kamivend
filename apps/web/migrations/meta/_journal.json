@@ -15,6 +15,13 @@
       "when": 1782751034584,
       "tag": "0001_removed_symbols",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784221350283,
+      "tag": "0002_brown_victor_mancha",
+      "breakpoints": true
     }
   ]
 }

@@ -1,4 +1,5 @@
 import {
+  boolean,
   date,
   decimal,
   index,
@@ -34,6 +35,7 @@ export const machines = pgTable('machines', {
     .primaryKey()
     .$defaultFn(() => uuidv7()),
   machineName: varchar('machine_name', { length: 100 }).notNull(),
+  enabled: boolean('enabled').notNull().default(true),
   serialNumber: varchar('serial_number', { length: 100 }).notNull().unique(),
   productionYear: integer('production_year').notNull(),
   compartmentCount: integer('compartment_count').notNull(),

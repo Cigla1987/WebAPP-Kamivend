@@ -36,7 +36,17 @@ export const createMachineFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, requireRole(UserRole.Admin)])
   .validator(createMachineApiSchema)
   .handler(
-    async ({ data, context }): Promise<{ id: string; activationCode: string }> => {
+    async ({
+      data,
+      context,
+    }): Promise<{
+      id: string;
+      machineName: string;
+      serialNumber: string;
+      machineType: string;
+      activationCode: string;
+      activationCodeExpiresAt: Date;
+    }> => {
       return createMachine(data, context.user);
     }
   );
@@ -65,9 +75,14 @@ export const claimMachineFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, requireRole(MemberRole.Owner)])
   .validator(claimMachineApiSchema)
   .handler(
-    async (
-      { data, context }
-    ): Promise<{ machineId: string; machineName: string }> => {
+    async ({
+      data,
+      context,
+    }): Promise<{
+      machineId: string;
+      machineName: string;
+      organizationId: string;
+    }> => {
       return claimMachine(data, context.user, context.activeOrganization);
     }
   );
@@ -79,9 +94,5 @@ export const updateMachineModeFn = createServerFn({ method: 'POST' })
   ])
   .validator(updateMachineModeApiSchema)
   .handler(async ({ data, context }): Promise<{ machineName: string }> => {
-    return updateMachineMode(
-      data,
-      context.user,
-      context.activeOrganization
-    );
+    return updateMachineMode(data, context.user, context.activeOrganization);
   });

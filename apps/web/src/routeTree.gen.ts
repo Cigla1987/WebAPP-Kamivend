@@ -25,8 +25,16 @@ import { Route as AuthMembersIndexRouteImport } from './routes/_auth/members/ind
 import { Route as AuthMachinesIndexRouteImport } from './routes/_auth/machines/index'
 import { Route as InviteAcceptTokenRouteImport } from './routes/invite/accept/$token'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
+import { Route as ApiEdgeV1UsersRouteImport } from './routes/api/edge/v1/users'
+import { Route as ApiEdgeV1PairRouteImport } from './routes/api/edge/v1/pair'
+import { Route as ApiEdgeV1HeartbeatRouteImport } from './routes/api/edge/v1/heartbeat'
+import { Route as AuthMachinesMachineIdSmartfridgeRouteRouteImport } from './routes/_auth/machines/$machineId/smartfridge/route'
 import { Route as AuthMachinesMachineIdCompartmentsRouteRouteImport } from './routes/_auth/machines/$machineId/compartments/route'
+import { Route as AuthMachinesMachineIdSmartfridgeIndexRouteImport } from './routes/_auth/machines/$machineId/smartfridge/index'
 import { Route as AuthMachinesMachineIdCompartmentsIndexRouteImport } from './routes/_auth/machines/$machineId/compartments/index'
+import { Route as ApiEdgeV1SyncPushRouteImport } from './routes/api/edge/v1/sync/push'
+import { Route as ApiEdgeV1SyncPullRouteImport } from './routes/api/edge/v1/sync/pull'
+import { Route as ApiEdgeV1AuthLoginRouteImport } from './routes/api/edge/v1/auth/login'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/_auth',
@@ -107,11 +115,38 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   path: '/api/auth/$',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiEdgeV1UsersRoute = ApiEdgeV1UsersRouteImport.update({
+  id: '/api/edge/v1/users',
+  path: '/api/edge/v1/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiEdgeV1PairRoute = ApiEdgeV1PairRouteImport.update({
+  id: '/api/edge/v1/pair',
+  path: '/api/edge/v1/pair',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiEdgeV1HeartbeatRoute = ApiEdgeV1HeartbeatRouteImport.update({
+  id: '/api/edge/v1/heartbeat',
+  path: '/api/edge/v1/heartbeat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthMachinesMachineIdSmartfridgeRouteRoute =
+  AuthMachinesMachineIdSmartfridgeRouteRouteImport.update({
+    id: '/$machineId/smartfridge',
+    path: '/$machineId/smartfridge',
+    getParentRoute: () => AuthMachinesRouteRoute,
+  } as any)
 const AuthMachinesMachineIdCompartmentsRouteRoute =
   AuthMachinesMachineIdCompartmentsRouteRouteImport.update({
     id: '/$machineId/compartments',
     path: '/$machineId/compartments',
     getParentRoute: () => AuthMachinesRouteRoute,
+  } as any)
+const AuthMachinesMachineIdSmartfridgeIndexRoute =
+  AuthMachinesMachineIdSmartfridgeIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthMachinesMachineIdSmartfridgeRouteRoute,
   } as any)
 const AuthMachinesMachineIdCompartmentsIndexRoute =
   AuthMachinesMachineIdCompartmentsIndexRouteImport.update({
@@ -119,6 +154,21 @@ const AuthMachinesMachineIdCompartmentsIndexRoute =
     path: '/',
     getParentRoute: () => AuthMachinesMachineIdCompartmentsRouteRoute,
   } as any)
+const ApiEdgeV1SyncPushRoute = ApiEdgeV1SyncPushRouteImport.update({
+  id: '/api/edge/v1/sync/push',
+  path: '/api/edge/v1/sync/push',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiEdgeV1SyncPullRoute = ApiEdgeV1SyncPullRouteImport.update({
+  id: '/api/edge/v1/sync/pull',
+  path: '/api/edge/v1/sync/pull',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiEdgeV1AuthLoginRoute = ApiEdgeV1AuthLoginRouteImport.update({
+  id: '/api/edge/v1/auth/login',
+  path: '/api/edge/v1/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof publicIndexRoute
@@ -137,7 +187,15 @@ export interface FileRoutesByFullPath {
   '/pictures/': typeof AuthPicturesIndexRoute
   '/products/': typeof AuthProductsIndexRoute
   '/machines/$machineId/compartments': typeof AuthMachinesMachineIdCompartmentsRouteRouteWithChildren
+  '/machines/$machineId/smartfridge': typeof AuthMachinesMachineIdSmartfridgeRouteRouteWithChildren
+  '/api/edge/v1/heartbeat': typeof ApiEdgeV1HeartbeatRoute
+  '/api/edge/v1/pair': typeof ApiEdgeV1PairRoute
+  '/api/edge/v1/users': typeof ApiEdgeV1UsersRoute
+  '/api/edge/v1/auth/login': typeof ApiEdgeV1AuthLoginRoute
+  '/api/edge/v1/sync/pull': typeof ApiEdgeV1SyncPullRoute
+  '/api/edge/v1/sync/push': typeof ApiEdgeV1SyncPushRoute
   '/machines/$machineId/compartments/': typeof AuthMachinesMachineIdCompartmentsIndexRoute
+  '/machines/$machineId/smartfridge/': typeof AuthMachinesMachineIdSmartfridgeIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof publicIndexRoute
@@ -151,7 +209,14 @@ export interface FileRoutesByTo {
   '/members': typeof AuthMembersIndexRoute
   '/pictures': typeof AuthPicturesIndexRoute
   '/products': typeof AuthProductsIndexRoute
+  '/api/edge/v1/heartbeat': typeof ApiEdgeV1HeartbeatRoute
+  '/api/edge/v1/pair': typeof ApiEdgeV1PairRoute
+  '/api/edge/v1/users': typeof ApiEdgeV1UsersRoute
+  '/api/edge/v1/auth/login': typeof ApiEdgeV1AuthLoginRoute
+  '/api/edge/v1/sync/pull': typeof ApiEdgeV1SyncPullRoute
+  '/api/edge/v1/sync/push': typeof ApiEdgeV1SyncPushRoute
   '/machines/$machineId/compartments': typeof AuthMachinesMachineIdCompartmentsIndexRoute
+  '/machines/$machineId/smartfridge': typeof AuthMachinesMachineIdSmartfridgeIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -172,7 +237,15 @@ export interface FileRoutesById {
   '/_auth/pictures/': typeof AuthPicturesIndexRoute
   '/_auth/products/': typeof AuthProductsIndexRoute
   '/_auth/machines/$machineId/compartments': typeof AuthMachinesMachineIdCompartmentsRouteRouteWithChildren
+  '/_auth/machines/$machineId/smartfridge': typeof AuthMachinesMachineIdSmartfridgeRouteRouteWithChildren
+  '/api/edge/v1/heartbeat': typeof ApiEdgeV1HeartbeatRoute
+  '/api/edge/v1/pair': typeof ApiEdgeV1PairRoute
+  '/api/edge/v1/users': typeof ApiEdgeV1UsersRoute
+  '/api/edge/v1/auth/login': typeof ApiEdgeV1AuthLoginRoute
+  '/api/edge/v1/sync/pull': typeof ApiEdgeV1SyncPullRoute
+  '/api/edge/v1/sync/push': typeof ApiEdgeV1SyncPushRoute
   '/_auth/machines/$machineId/compartments/': typeof AuthMachinesMachineIdCompartmentsIndexRoute
+  '/_auth/machines/$machineId/smartfridge/': typeof AuthMachinesMachineIdSmartfridgeIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -193,7 +266,15 @@ export interface FileRouteTypes {
     | '/pictures/'
     | '/products/'
     | '/machines/$machineId/compartments'
+    | '/machines/$machineId/smartfridge'
+    | '/api/edge/v1/heartbeat'
+    | '/api/edge/v1/pair'
+    | '/api/edge/v1/users'
+    | '/api/edge/v1/auth/login'
+    | '/api/edge/v1/sync/pull'
+    | '/api/edge/v1/sync/push'
     | '/machines/$machineId/compartments/'
+    | '/machines/$machineId/smartfridge/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -207,7 +288,14 @@ export interface FileRouteTypes {
     | '/members'
     | '/pictures'
     | '/products'
+    | '/api/edge/v1/heartbeat'
+    | '/api/edge/v1/pair'
+    | '/api/edge/v1/users'
+    | '/api/edge/v1/auth/login'
+    | '/api/edge/v1/sync/pull'
+    | '/api/edge/v1/sync/push'
     | '/machines/$machineId/compartments'
+    | '/machines/$machineId/smartfridge'
   id:
     | '__root__'
     | '/_auth'
@@ -227,7 +315,15 @@ export interface FileRouteTypes {
     | '/_auth/pictures/'
     | '/_auth/products/'
     | '/_auth/machines/$machineId/compartments'
+    | '/_auth/machines/$machineId/smartfridge'
+    | '/api/edge/v1/heartbeat'
+    | '/api/edge/v1/pair'
+    | '/api/edge/v1/users'
+    | '/api/edge/v1/auth/login'
+    | '/api/edge/v1/sync/pull'
+    | '/api/edge/v1/sync/push'
     | '/_auth/machines/$machineId/compartments/'
+    | '/_auth/machines/$machineId/smartfridge/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -237,6 +333,12 @@ export interface RootRouteChildren {
   publicIndexRoute: typeof publicIndexRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
   InviteAcceptTokenRoute: typeof InviteAcceptTokenRoute
+  ApiEdgeV1HeartbeatRoute: typeof ApiEdgeV1HeartbeatRoute
+  ApiEdgeV1PairRoute: typeof ApiEdgeV1PairRoute
+  ApiEdgeV1UsersRoute: typeof ApiEdgeV1UsersRoute
+  ApiEdgeV1AuthLoginRoute: typeof ApiEdgeV1AuthLoginRoute
+  ApiEdgeV1SyncPullRoute: typeof ApiEdgeV1SyncPullRoute
+  ApiEdgeV1SyncPushRoute: typeof ApiEdgeV1SyncPushRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -353,6 +455,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/edge/v1/users': {
+      id: '/api/edge/v1/users'
+      path: '/api/edge/v1/users'
+      fullPath: '/api/edge/v1/users'
+      preLoaderRoute: typeof ApiEdgeV1UsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/edge/v1/pair': {
+      id: '/api/edge/v1/pair'
+      path: '/api/edge/v1/pair'
+      fullPath: '/api/edge/v1/pair'
+      preLoaderRoute: typeof ApiEdgeV1PairRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/edge/v1/heartbeat': {
+      id: '/api/edge/v1/heartbeat'
+      path: '/api/edge/v1/heartbeat'
+      fullPath: '/api/edge/v1/heartbeat'
+      preLoaderRoute: typeof ApiEdgeV1HeartbeatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_auth/machines/$machineId/smartfridge': {
+      id: '/_auth/machines/$machineId/smartfridge'
+      path: '/$machineId/smartfridge'
+      fullPath: '/machines/$machineId/smartfridge'
+      preLoaderRoute: typeof AuthMachinesMachineIdSmartfridgeRouteRouteImport
+      parentRoute: typeof AuthMachinesRouteRoute
+    }
     '/_auth/machines/$machineId/compartments': {
       id: '/_auth/machines/$machineId/compartments'
       path: '/$machineId/compartments'
@@ -360,12 +490,40 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthMachinesMachineIdCompartmentsRouteRouteImport
       parentRoute: typeof AuthMachinesRouteRoute
     }
+    '/_auth/machines/$machineId/smartfridge/': {
+      id: '/_auth/machines/$machineId/smartfridge/'
+      path: '/'
+      fullPath: '/machines/$machineId/smartfridge/'
+      preLoaderRoute: typeof AuthMachinesMachineIdSmartfridgeIndexRouteImport
+      parentRoute: typeof AuthMachinesMachineIdSmartfridgeRouteRoute
+    }
     '/_auth/machines/$machineId/compartments/': {
       id: '/_auth/machines/$machineId/compartments/'
       path: '/'
       fullPath: '/machines/$machineId/compartments/'
       preLoaderRoute: typeof AuthMachinesMachineIdCompartmentsIndexRouteImport
       parentRoute: typeof AuthMachinesMachineIdCompartmentsRouteRoute
+    }
+    '/api/edge/v1/sync/push': {
+      id: '/api/edge/v1/sync/push'
+      path: '/api/edge/v1/sync/push'
+      fullPath: '/api/edge/v1/sync/push'
+      preLoaderRoute: typeof ApiEdgeV1SyncPushRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/edge/v1/sync/pull': {
+      id: '/api/edge/v1/sync/pull'
+      path: '/api/edge/v1/sync/pull'
+      fullPath: '/api/edge/v1/sync/pull'
+      preLoaderRoute: typeof ApiEdgeV1SyncPullRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/edge/v1/auth/login': {
+      id: '/api/edge/v1/auth/login'
+      path: '/api/edge/v1/auth/login'
+      fullPath: '/api/edge/v1/auth/login'
+      preLoaderRoute: typeof ApiEdgeV1AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
     }
   }
 }
@@ -385,15 +543,33 @@ const AuthMachinesMachineIdCompartmentsRouteRouteWithChildren =
     AuthMachinesMachineIdCompartmentsRouteRouteChildren,
   )
 
+interface AuthMachinesMachineIdSmartfridgeRouteRouteChildren {
+  AuthMachinesMachineIdSmartfridgeIndexRoute: typeof AuthMachinesMachineIdSmartfridgeIndexRoute
+}
+
+const AuthMachinesMachineIdSmartfridgeRouteRouteChildren: AuthMachinesMachineIdSmartfridgeRouteRouteChildren =
+  {
+    AuthMachinesMachineIdSmartfridgeIndexRoute:
+      AuthMachinesMachineIdSmartfridgeIndexRoute,
+  }
+
+const AuthMachinesMachineIdSmartfridgeRouteRouteWithChildren =
+  AuthMachinesMachineIdSmartfridgeRouteRoute._addFileChildren(
+    AuthMachinesMachineIdSmartfridgeRouteRouteChildren,
+  )
+
 interface AuthMachinesRouteRouteChildren {
   AuthMachinesIndexRoute: typeof AuthMachinesIndexRoute
   AuthMachinesMachineIdCompartmentsRouteRoute: typeof AuthMachinesMachineIdCompartmentsRouteRouteWithChildren
+  AuthMachinesMachineIdSmartfridgeRouteRoute: typeof AuthMachinesMachineIdSmartfridgeRouteRouteWithChildren
 }
 
 const AuthMachinesRouteRouteChildren: AuthMachinesRouteRouteChildren = {
   AuthMachinesIndexRoute: AuthMachinesIndexRoute,
   AuthMachinesMachineIdCompartmentsRouteRoute:
     AuthMachinesMachineIdCompartmentsRouteRouteWithChildren,
+  AuthMachinesMachineIdSmartfridgeRouteRoute:
+    AuthMachinesMachineIdSmartfridgeRouteRouteWithChildren,
 }
 
 const AuthMachinesRouteRouteWithChildren =
@@ -459,6 +635,12 @@ const rootRouteChildren: RootRouteChildren = {
   publicIndexRoute: publicIndexRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
   InviteAcceptTokenRoute: InviteAcceptTokenRoute,
+  ApiEdgeV1HeartbeatRoute: ApiEdgeV1HeartbeatRoute,
+  ApiEdgeV1PairRoute: ApiEdgeV1PairRoute,
+  ApiEdgeV1UsersRoute: ApiEdgeV1UsersRoute,
+  ApiEdgeV1AuthLoginRoute: ApiEdgeV1AuthLoginRoute,
+  ApiEdgeV1SyncPullRoute: ApiEdgeV1SyncPullRoute,
+  ApiEdgeV1SyncPushRoute: ApiEdgeV1SyncPushRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

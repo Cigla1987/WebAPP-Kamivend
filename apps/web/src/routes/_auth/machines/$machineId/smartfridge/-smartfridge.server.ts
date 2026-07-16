@@ -20,7 +20,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 export type SmartFridgeShelfOverview = {
   id: string;
-  deviceUid: number;
+  deviceUid: bigint;
   currentCanAddress: number;
   displayName: string | null;
   calibrationValid: boolean;
@@ -79,7 +79,10 @@ export async function getSmartFridgeOverview(
     })
     .from(machines)
     .innerJoin(machineTypes, eq(machines.machineTypeId, machineTypes.id))
-    .innerJoin(smartFridgeProfiles, eq(smartFridgeProfiles.machineId, machines.id))
+    .innerJoin(
+      smartFridgeProfiles,
+      eq(smartFridgeProfiles.machineId, machines.id)
+    )
     .where(eq(machines.id, machineId))
     .limit(1);
 
