@@ -20,7 +20,7 @@ import { and, eq, isNull } from 'drizzle-orm';
 
 export type SmartFridgeShelfOverview = {
   id: string;
-  deviceUid: bigint;
+  deviceUid: string;
   currentCanAddress: number;
   displayName: string | null;
   calibrationValid: boolean;
@@ -156,6 +156,9 @@ export async function getSmartFridgeOverview(
     setupCompleted: profile.setupCompleted,
     customerOperationEnabled: profile.customerOperationEnabled,
     lastOnlineAt: profile.lastOnlineAt,
-    shelves: shelfRows,
+    shelves: shelfRows.map((shelf) => ({
+      ...shelf,
+      deviceUid: shelf.deviceUid.toString(),
+    })),
   };
 }
