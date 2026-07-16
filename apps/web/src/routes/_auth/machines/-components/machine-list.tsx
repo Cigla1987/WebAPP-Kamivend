@@ -2,11 +2,12 @@ import { type FC } from 'react';
 import TabbedList from '#/client/components/custom/tabbed-list';
 import { getColumns } from './columns';
 import { capitalizeFirstLetter } from '#/client/lib/utils';
-import { UserRole } from '@vending/domain';
+import { MemberRole, UserRole } from '@vending/domain';
 import type { MachineDto, MachineTypeDto } from '../-machines.server';
 import { useRouteContext } from '@tanstack/react-router';
 import CreateMachine from './create-machine';
 import AssignMachine from './assign-machine';
+import ClaimMachine from './claim-machine';
 
 interface MachinesListProps {
   machines: MachineDto[];
@@ -14,7 +15,7 @@ interface MachinesListProps {
 }
 
 const MachinesList: FC<MachinesListProps> = ({ machines, machineTypes }) => {
-  const { user } = useRouteContext({ from: '/_auth' });
+  const { user, memberRole } = useRouteContext({ from: '/_auth' });
   const userRole = user.role;
 
   const tabs = [
@@ -30,10 +31,15 @@ const MachinesList: FC<MachinesListProps> = ({ machines, machineTypes }) => {
     })),
   ];
 
-  const actions = userRole === UserRole.Admin && (
+  const actions = (
     <>
-      <CreateMachine />
-      <AssignMachine />
+      {userRole === UserRole.Admin && (
+        <>
+          <CreateMachine />
+          <AssignMachine />
+        </>
+      )}
+      {memberRole === MemberRole.Owner && <ClaimMachine />}
     </>
   );
 
