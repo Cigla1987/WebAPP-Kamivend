@@ -8,6 +8,7 @@ import {
   machineTypes,
   machineModes,
   compartments,
+  smartFridgeProfiles,
 } from '@vending/db';
 import { user, organization } from '@vending/auth';
 import { eq } from 'drizzle-orm';
@@ -131,34 +132,51 @@ export async function createMachine(
     }
   }
 
-  const [createdMachine] = await db
-    .insert(machines)
-    .values({
-      machineName: data.machineName,
-      serialNumber: data.serialNumber,
-      productionYear: data.productionYear,
-      machineModeId: data.machineModeId,
-      machineTypeId: data.machineTypeId,
-      compartmentCount: data.compartmentCount || 0,
-      createdBy: currentUser.id,
-    })
-    .returning();
-
-  if (
-    machineType.machineTypeName === MachineType.Lockbox &&
-    data.compartmentCount > 0
-  ) {
-    const compartmentsToInsert = Array.from(
-      { length: data.compartmentCount },
-      (_, index) => ({
-        machineId: createdMachine.id,
-        compartmentNumber: index + 1,
+  const createdMachine = await db.transaction(async (tx) => {
+    const [machine] = await tx
+      .insert(machines)
+      .values({
+        machineName: data.machineName,
+        serialNumber: data.serialNumber,
+        productionYear: data.productionYear,
+        machineModeId: data.machineModeId,
+        machineTypeId: data.machineTypeId,
+        compartmentCount:
+          machineType.machineTypeName === MachineType.Lockbox
+            ? data.compartmentCount
+            : 0,
         createdBy: currentUser.id,
       })
-    );
+      .returning();
 
-    await db.insert(compartments).values(compartmentsToInsert);
-  }
+    if (machineType.machineTypeName === MachineType.Lockbox) {
+      const compartmentsToInsert = Array.from(
+        { length: data.compartmentCount },
+        (_, index) => ({
+          machineId: machine.id,
+          compartmentNumber: index + 1,
+          managedBy: currentUser.id,
+        })
+      );
+
+      await tx.insert(compartments).values(compartmentsToInsert);
+    }
+
+    if (machineType.machineTypeName === MachineType.Smartfridge) {
+      await tx.insert(smartFridgeProfiles).values({
+        machineId: machine.id,
+        fridgeCode: data.serialNumber,
+        expectedShelfCount: 0,
+        canBitrate: 250000,
+        protocolMajor: 1,
+        protocolMinor: 3,
+        setupCompleted: false,
+        customerOperationEnabled: false,
+      });
+    }
+
+    return machine;
+  });
 
   return { id: createdMachine.id };
 }
