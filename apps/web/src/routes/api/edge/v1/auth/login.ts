@@ -8,15 +8,30 @@ import {
   requireEdgeContext,
   verifyServicePin,
 } from '#/server/smartfridge/edge-auth';
+import { serverEnv } from '#/config/env';
+import {
+  assertLoginAllowed,
+  clearLoginFailures,
+  recordLoginFailure,
+} from '#/server/smartfridge/login-rate-limit';
+
 const schema = z
   .object({ username: z.string().email(), pin: z.string().regex(/^\d{6,12}$/) })
   .strict();
+
 export const Route = createFileRoute('/api/edge/v1/auth/login')({
   server: {
     handlers: {
       POST: async ({ request }) => {
         const edge = await requireEdgeContext(request);
         const input = schema.parse(await request.json());
+        const username = input.username.trim().toLowerCase();
+        const rateLimitKey = `${edge.edgeDeviceId}:${username}`;
+        assertLoginAllowed(
+          rateLimitKey,
+          serverEnv().SMART_FRIDGE_EDGE_LOGIN_RATE_LIMIT
+        );
+
         const [row] = await db
           .select({
             userId: user.id,
@@ -48,22 +63,29 @@ export const Route = createFileRoute('/api/edge/v1/auth/login')({
                 organizationServiceCredentials.organizationId,
                 edge.organizationId
               ),
-              eq(user.email, input.username.toLowerCase()),
+              eq(user.email, username),
               isNull(organizationServiceCredentials.revokedAt)
             )
           )
           .limit(1);
-        if (
-          !row ||
-          row.banned ||
-          !row.enabled ||
-          !verifyServicePin(input.pin, row.pinVerifier, row.pinSalt)
-        )
+
+        const valid =
+          row &&
+          !row.banned &&
+          row.enabled &&
+          row.offlineAuthorizedUntil > new Date() &&
+          verifyServicePin(input.pin, row.pinVerifier, row.pinSalt);
+
+        if (!valid) {
+          recordLoginFailure(rateLimitKey);
           return Response.json(
             { code: 'AUTHORIZATION_FAILED' },
             { status: 401 }
           );
-        const result = {
+        }
+
+        clearLoginFailures(rateLimitKey);
+        return Response.json({
           ok: true,
           userId: row.userId,
           username: row.username,
@@ -75,12 +97,9 @@ export const Route = createFileRoute('/api/edge/v1/auth/login')({
           permissions: row.permissions,
           offlineAuthorizedUntil: row.offlineAuthorizedUntil,
           authorizationVersion: row.authorizationVersion,
-          pinVerifier: row.pinVerifier,
-          pinSalt: row.pinSalt,
           updatedAt: new Date().toISOString(),
           enabled: true,
-        };
-        return Response.json({ ...result, user: result, cursor: Date.now() });
+        });
       },
     },
   },
