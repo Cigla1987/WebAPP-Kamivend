@@ -9,8 +9,10 @@ import {
   getMachineModes,
   createMachine,
   updateMachineOwner,
+  claimMachine,
   updateMachineMode,
   assignMachineApiSchema,
+  claimMachineApiSchema,
   createMachineApiSchema,
   updateMachineModeApiSchema,
 } from './-machines.server';
@@ -33,9 +35,11 @@ export const getMachinesFn = createServerFn({ method: 'GET' })
 export const createMachineFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, requireRole(UserRole.Admin)])
   .validator(createMachineApiSchema)
-  .handler(async ({ data, context }): Promise<{ id: string }> => {
-    return createMachine(data, context.user);
-  });
+  .handler(
+    async ({ data, context }): Promise<{ id: string; activationCode: string }> => {
+      return createMachine(data, context.user);
+    }
+  );
 
 export const getMachineTypesFn = createServerFn({ method: 'GET' })
   .middleware([errorMiddlewareFn, authMiddlewareFn])
@@ -49,6 +53,7 @@ export const getMachineModesFn = createServerFn({ method: 'GET' })
     return getMachineModes();
   });
 
+/** Platform-admin support assignment. Owners use claimMachineFn instead. */
 export const assignMachineFn = createServerFn({ method: 'POST' })
   .middleware([errorMiddlewareFn, requireRole(UserRole.Admin)])
   .validator(assignMachineApiSchema)
@@ -56,9 +61,27 @@ export const assignMachineFn = createServerFn({ method: 'POST' })
     return updateMachineOwner(data, context.user, context.activeOrganization);
   });
 
+export const claimMachineFn = createServerFn({ method: 'POST' })
+  .middleware([errorMiddlewareFn, requireRole(MemberRole.Owner)])
+  .validator(claimMachineApiSchema)
+  .handler(
+    async (
+      { data, context }
+    ): Promise<{ machineId: string; machineName: string }> => {
+      return claimMachine(data, context.user, context.activeOrganization);
+    }
+  );
+
 export const updateMachineModeFn = createServerFn({ method: 'POST' })
-  .middleware([errorMiddlewareFn, requireRole(UserRole.Admin, MemberRole.Owner)])
+  .middleware([
+    errorMiddlewareFn,
+    requireRole(UserRole.Admin, MemberRole.Owner),
+  ])
   .validator(updateMachineModeApiSchema)
-  .handler(async ({ data }): Promise<{ machineName: string }> => {
-    return updateMachineMode(data);
+  .handler(async ({ data, context }): Promise<{ machineName: string }> => {
+    return updateMachineMode(
+      data,
+      context.user,
+      context.activeOrganization
+    );
   });
