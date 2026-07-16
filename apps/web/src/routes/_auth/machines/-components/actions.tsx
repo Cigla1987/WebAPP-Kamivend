@@ -24,23 +24,32 @@ const Actions = ({ machine }: { machine: MachineDto }) => {
   return (
     <>
       <DropdownMenu modal={false}>
-        {machine.machineTypeName === MachineType.Lockbox && (
-          <DropdownMenuTrigger
-            render={
-              <Button variant="ghost" className="h-8 w-8 p-0">
-                <span className="sr-only">Open menu</span>
-                <MoreHorizontal className="h-4 w-4" />
-              </Button>
-            }
-          ></DropdownMenuTrigger>
-        )}
+        <DropdownMenuTrigger
+          render={
+            <Button variant="ghost" className="h-8 w-8 p-0">
+              <span className="sr-only">Open menu</span>
+              <MoreHorizontal className="h-4 w-4" />
+            </Button>
+          }
+        />
         <DropdownMenuContent align="end">
-          <Link
-            to="/machines/$machineId/compartments"
-            params={{ machineId: machine.id.toString() }}
-          >
-            <DropdownMenuItem>View compartments</DropdownMenuItem>
-          </Link>
+          {machine.machineTypeName === MachineType.Lockbox && (
+            <Link
+              to="/machines/$machineId/compartments"
+              params={{ machineId: machine.id.toString() }}
+            >
+              <DropdownMenuItem>View compartments</DropdownMenuItem>
+            </Link>
+          )}
+
+          {machine.machineTypeName === MachineType.Smartfridge && (
+            <Link
+              to="/machines/$machineId/smartfridge"
+              params={{ machineId: machine.id.toString() }}
+            >
+              <DropdownMenuItem>View SmartFridge</DropdownMenuItem>
+            </Link>
+          )}
 
           {memberRole === MemberRole.Owner && (
             <DropdownMenuItem onClick={handleUpdate}>
