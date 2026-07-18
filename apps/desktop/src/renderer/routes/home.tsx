@@ -3,7 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 import {
   Boxes,
   Cable,
-  Calibration,
+  Gauge,
   LayoutGrid,
   PackagePlus,
   RefreshCw,
@@ -24,7 +24,7 @@ interface SessionUser {
 const cards = [
   { title: 'Setup', description: 'Complete the guided Smart Fridge commissioning workflow.', icon: SlidersHorizontal, status: 'Not started' },
   { title: 'Shelf recognition', description: 'Find real CAN shelves connected through the Waveshare adapter.', icon: Cable, status: 'Hardware required' },
-  { title: 'Shelf calibration', description: 'Calibrate every physical four-load-cell shelf.', icon: Calibration, status: 'Not checked' },
+  { title: 'Shelf calibration', description: 'Calibrate every physical four-load-cell shelf.', icon: Gauge, status: 'Not checked' },
   { title: 'Shelf layout', description: 'Map recognised shelves to their real fridge positions.', icon: LayoutGrid, status: 'Not configured' },
   { title: 'Product creation', description: 'Create products through the existing Kamivend workflow.', icon: PackagePlus, status: 'Online required' },
   { title: 'Refill', description: 'Refill assigned shelves without changing product assignments.', icon: Boxes, status: 'Not ready' },

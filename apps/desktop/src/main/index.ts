@@ -59,6 +59,27 @@ function createWindow() {
     });
   }
 
+  win.webContents.on('did-finish-load', () => {
+    console.log('[Main] Renderer finished loading');
+    void win.webContents.executeJavaScript(
+      "({ text: document.body.innerText, html: document.body.innerHTML })",
+    ).then((dom) => console.log('[Renderer DOM]', JSON.stringify(dom)));
+    win.show();
+    win.focus();
+  });
+
+  win.webContents.on('console-message', (_event, level, message) => {
+    console.log('[Renderer Console]', level, message);
+  });
+
+  win.webContents.on('did-fail-load', (_event, code, description) => {
+    console.error('[Main] Renderer failed to load:', code, description);
+  });
+
+  win.webContents.on('render-process-gone', (_event, details) => {
+    console.error('[Main] Renderer process gone:', details);
+  });
+
   win.webContents.setWindowOpenHandler(({ url }) => {
     shell.openExternal(url);
     return { action: 'deny' };
@@ -69,7 +90,11 @@ function createWindow() {
 }
 
 app.whenReady().then(() => {
-  getLocalDatabase();
+  try {
+    getLocalDatabase();
+  } catch (error) {
+    console.warn('[Main] Local database is unavailable:', error);
+  }
 
   ipcMain.handle('store:get', (_event, key: keyof typeof store.store) =>
     store.get(key),
@@ -109,6 +134,7 @@ app.whenReady().then(() => {
 
   ipcMain.handle('auth:getSession', async () => authClient.getSession());
   ipcMain.handle('auth:signOut', async () => authClient.signOut());
+
 
   createWindow();
 

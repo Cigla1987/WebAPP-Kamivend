@@ -11,6 +11,15 @@ import LoginPage from './routes/login';
 import HomePage from './routes/home';
 import CustomerPage from './routes/customer';
 
+async function getSessionOrNull() {
+  try {
+    const { data: session } = await getAuthClient().getSession();
+    return session;
+  } catch {
+    return null;
+  }
+}
+
 const rootRoute = createRootRoute({
   component: () => (
     <div className="min-h-screen bg-background text-foreground">
@@ -29,7 +38,7 @@ const adminLoginRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin/login',
   beforeLoad: async () => {
-    const { data: session } = await getAuthClient().getSession();
+    const session = await getSessionOrNull();
     if (session) throw redirect({ to: '/admin' });
   },
   component: LoginPage,
@@ -39,7 +48,7 @@ const adminRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: '/admin',
   beforeLoad: async () => {
-    const { data: session } = await getAuthClient().getSession();
+    const session = await getSessionOrNull();
     if (!session) throw redirect({ to: '/admin/login' });
     return { session };
   },
