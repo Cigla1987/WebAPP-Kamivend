@@ -3,15 +3,31 @@ import { contextBridge, ipcRenderer } from 'electron';
 
 setupRenderer();
 
+export interface BoundMachine {
+  id: number;
+  cloud_machine_id: string;
+  serial_number: string;
+  machine_name: string;
+  organization_id: string | null;
+  machine_type: 'smartfridge';
+  last_validated_at: string | null;
+}
+
 export interface DesktopAPI {
   store: {
     get: (key: string) => Promise<unknown>;
     set: (key: string, value: unknown) => Promise<void>;
     delete: (key: string) => Promise<void>;
   };
-  db: {
-    query: (sql: string) => Promise<unknown[]>;
-    exec: (sql: string) => Promise<void>;
+  machine: {
+    getBound: () => Promise<BoundMachine | undefined>;
+    bindSmartfridge: (input: {
+      cloudMachineId: string;
+      serialNumber: string;
+      machineName: string;
+      organizationId?: string | null;
+      machineType: 'smartfridge';
+    }) => Promise<BoundMachine>;
   };
   auth: {
     signInEmail: (credentials: { email: string; password: string }) => Promise<{
@@ -33,9 +49,10 @@ const api: DesktopAPI = {
     set: (key, value) => ipcRenderer.invoke('store:set', key, value),
     delete: (key) => ipcRenderer.invoke('store:delete', key),
   },
-  db: {
-    query: (sql) => ipcRenderer.invoke('db:query', sql),
-    exec: (sql) => ipcRenderer.invoke('db:exec', sql),
+  machine: {
+    getBound: () => ipcRenderer.invoke('machine:getBound'),
+    bindSmartfridge: (input) =>
+      ipcRenderer.invoke('machine:bindSmartfridge', input),
   },
   auth: {
     signInEmail: (credentials) =>
