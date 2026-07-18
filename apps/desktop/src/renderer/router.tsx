@@ -1,7 +1,15 @@
-import { createHashHistory, createRootRoute, createRoute, createRouter, Outlet, redirect } from '@tanstack/react-router';
+import {
+  createHashHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  Outlet,
+  redirect,
+} from '@tanstack/react-router';
 import { getAuthClient } from './lib/auth-client';
 import LoginPage from './routes/login';
 import HomePage from './routes/home';
+import CustomerPage from './routes/customer';
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -11,34 +19,38 @@ const rootRoute = createRootRoute({
   ),
 });
 
-const loginRoute = createRoute({
+const customerRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/login',
+  path: '/',
+  component: CustomerPage,
+});
+
+const adminLoginRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: '/admin/login',
   beforeLoad: async () => {
-    const client = getAuthClient();
-    const { data: session } = await client.getSession();
-    if (session) {
-      throw redirect({ to: '/' });
-    }
+    const { data: session } = await getAuthClient().getSession();
+    if (session) throw redirect({ to: '/admin' });
   },
   component: LoginPage,
 });
 
-const indexRoute = createRoute({
+const adminRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: '/',
+  path: '/admin',
   beforeLoad: async () => {
-    const client = getAuthClient();
-    const { data: session } = await client.getSession();
-    if (!session) {
-      throw redirect({ to: '/login' });
-    }
+    const { data: session } = await getAuthClient().getSession();
+    if (!session) throw redirect({ to: '/admin/login' });
     return { session };
   },
   component: HomePage,
 });
 
-export const routeTree = rootRoute.addChildren([loginRoute, indexRoute]);
+export const routeTree = rootRoute.addChildren([
+  customerRoute,
+  adminLoginRoute,
+  adminRoute,
+]);
 
 const hashHistory = createHashHistory();
 
